@@ -484,7 +484,7 @@ def find_pubkeys(source_address):
         return out["embedded"]["pubkeys"] # for segwit addresses
 
 
-def get_fee_interactive(source_address, destinations, redeem_script, input_txs):
+def get_fee_interactive(xact, source_address, destinations, redeem_script, input_txs):
     """
     Returns a recommended transaction fee, given market fee data provided by the user interactively
     Because fees tend to be a function of transaction size, we build the transaction in order to
@@ -827,7 +827,7 @@ def withdraw_interactive():
         ###### fees, amount, and change #######
 
         input_amount = utxo_sum
-        fee = get_fee_interactive(
+        fee = get_fee_interactive(xact,
             xact.source_address, addresses, xact.redeem_script, xact.txs)
         # Got this far
         if fee > input_amount:
