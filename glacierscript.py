@@ -544,7 +544,7 @@ class WithdrawalXact:
         return signed_tx
 
 
-def calc_prevtxs(xact):
+def calc_prevtxs(self):
     """
     Constructs the prevtxs parameter for either `createrawtransaction` or `signrawtransaction`
     output => string
@@ -556,8 +556,8 @@ def calc_prevtxs(xact):
     # For each UTXO used as input, we need the txid, vout index, scriptPubKey, amount, and redeemScript
     # to generate a signature
     inputs = []
-    for tx in xact.txs:
-        utxos = get_utxos(tx, xact.source_address)
+    for tx in self.txs:
+        utxos = get_utxos(tx, self.source_address)
         txid = tx["txid"]
         for utxo in utxos:
             inputs.append(OrderedDict([
@@ -565,7 +565,7 @@ def calc_prevtxs(xact):
                 ("vout", int(utxo["n"])),
                 ("amount", utxo["value"]),
                 ("scriptPubKey", utxo["scriptPubKey"]["hex"]),
-                ("redeemScript", xact.redeem_script),
+                ("redeemScript", self.redeem_script),
             ]))
     return json.dumps(inputs)
 
