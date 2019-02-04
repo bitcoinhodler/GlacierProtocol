@@ -560,7 +560,7 @@ def create_signed_transaction(xact, source_address, destinations, redeem_script,
     # prune destination addresses sent 0 btc
     destinations = OrderedDict((key, val) for key, val in destinations.items() if val != '0')
 
-    prev_txs = calc_prevtxs(source_address, redeem_script, input_txs)
+    prev_txs = calc_prevtxs(xact.source_address, xact.redeem_script, xact.txs)
     tx_unsigned_hex = bitcoin_cli_checkoutput(
         "createrawtransaction",
         prev_txs,
