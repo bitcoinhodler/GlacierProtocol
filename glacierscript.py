@@ -780,8 +780,8 @@ def withdraw_interactive():
         utxos = []
         utxo_sum = Decimal(0).quantize(SATOSHI_PLACES)
 
-        while len(txs) < num_tx:
-            print("\nPlease paste raw transaction #{} (hexadecimal format) with unspent outputs at the source address".format(len(txs) + 1))
+        for txcount in range(num_tx):
+            print("\nPlease paste raw transaction #{} (hexadecimal format) with unspent outputs at the source address".format(txcount + 1))
             print("OR")
             print("input a filename located in the current directory which contains the raw transaction data")
             print("(If the transaction data is over ~4000 characters long, you _must_ use a file.):")
