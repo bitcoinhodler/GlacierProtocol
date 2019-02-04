@@ -512,13 +512,13 @@ def sign_transaction(source_address, redeem_script, unsigned_hex, input_txs):
         utxos = get_utxos(tx, source_address)
         txid = tx["txid"]
         for utxo in utxos:
-            inputs.append({
-                "txid": txid,
-                "vout": int(utxo["n"]),
-                "amount": utxo["value"],
-                "scriptPubKey": utxo["scriptPubKey"]["hex"],
-                "redeemScript": redeem_script
-            })
+            inputs.append(OrderedDict([
+                ("txid", txid),
+                ("vout", int(utxo["n"])),
+                ("amount", utxo["value"]),
+                ("scriptPubKey", utxo["scriptPubKey"]["hex"]),
+                ("redeemScript", redeem_script),
+            ]))
 
     signed_tx = bitcoin_cli_json(
         "signrawtransactionwithwallet",
