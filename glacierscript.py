@@ -556,8 +556,8 @@ def calc_prevtxs(xact, source_address, redeem_script, input_txs):
     # For each UTXO used as input, we need the txid, vout index, scriptPubKey, amount, and redeemScript
     # to generate a signature
     inputs = []
-    for tx in input_txs:
-        utxos = get_utxos(tx, source_address)
+    for tx in xact.txs:
+        utxos = get_utxos(tx, xact.source_address)
         txid = tx["txid"]
         for utxo in utxos:
             inputs.append(OrderedDict([
@@ -565,7 +565,7 @@ def calc_prevtxs(xact, source_address, redeem_script, input_txs):
                 ("vout", int(utxo["n"])),
                 ("amount", utxo["value"]),
                 ("scriptPubKey", utxo["scriptPubKey"]["hex"]),
-                ("redeemScript", redeem_script),
+                ("redeemScript", xact.redeem_script),
             ]))
     return json.dumps(inputs)
 
