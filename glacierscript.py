@@ -543,7 +543,7 @@ class WithdrawalXact:
         self.txs = []
 
 
-def create_signed_transaction(xact, destinations):
+def create_signed_transaction(self, destinations):
     """
     Returns a hex string representing a signed bitcoin transaction
     returns => <string>
@@ -558,7 +558,7 @@ def create_signed_transaction(xact, destinations):
     # prune destination addresses sent 0 btc
     destinations = OrderedDict((key, val) for key, val in destinations.items() if val != '0')
 
-    prev_txs = calc_prevtxs(xact.source_address, xact.redeem_script, xact.txs)
+    prev_txs = calc_prevtxs(self.source_address, self.redeem_script, self.txs)
     tx_unsigned_hex = bitcoin_cli_checkoutput(
         "createrawtransaction",
         prev_txs,
