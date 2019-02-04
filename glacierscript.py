@@ -509,7 +509,7 @@ def get_fee_interactive(xact, source_address, destinations, redeem_script, input
         print("\nEnter fee rate.")
         fee_basis_satoshis_per_byte = int(input("Satoshis per vbyte: "))
 
-        signed_tx = create_signed_transaction(
+        signed_tx = create_signed_transaction(xact,
             source_address, destinations, redeem_script, input_txs)
 
         decoded_tx = bitcoin_cli_json("decoderawtransaction", signed_tx["hex"])
@@ -545,7 +545,7 @@ class WithdrawalXact:
         self.txs = []
 
 
-def create_signed_transaction(source_address, destinations, redeem_script, input_txs):
+def create_signed_transaction(xact, source_address, destinations, redeem_script, input_txs):
     """
     Returns a hex string representing a signed bitcoin transaction
     returns => <string>
@@ -942,7 +942,7 @@ def withdraw_interactive():
     #### Calculate Transaction ####
     print("\nCalculating transaction...\n")
 
-    signed_tx = create_signed_transaction(
+    signed_tx = create_signed_transaction(xact,
         xact.source_address, addresses, xact.redeem_script, xact.txs)
 
     print("\nSufficient private keys to execute transaction?")
