@@ -435,7 +435,7 @@ class WithdrawalXact:
         self.source_address = source_address
         self.redeem_script = redeem_script
         self.seen_txhashes = set()  # only for detecting duplicates
-        self.inputs = []
+        self._inputs = []
         self.keys = []
         self.validate_address()
         self.teach_address_to_wallet()
@@ -461,7 +461,7 @@ class WithdrawalXact:
         # prune destination addresses sent 0 btc
         destinations = OrderedDict((key, val) for key, val in destinations.items() if val != '0')
 
-        prev_txs = json.dumps(self.inputs)
+        prev_txs = json.dumps(self._inputs)
         tx_unsigned_hex = bitcoin_cli_checkoutput(
             "createrawtransaction",
             prev_txs,
@@ -477,7 +477,7 @@ class WithdrawalXact:
         Return the total amount of BTC available to spend from the input UTXOs
         """
         utxo_sum = Decimal(0).quantize(SATOSHI_PLACES)
-        for utxo in self.inputs:
+        for utxo in self._inputs:
             value = Decimal(utxo["amount"]).quantize(SATOSHI_PLACES)
             utxo_sum += value
         return utxo_sum
@@ -504,7 +504,7 @@ class WithdrawalXact:
 
         txid = tx["txid"]
         for utxo in utxos:
-            self.inputs.append(OrderedDict([
+            self._inputs.append(OrderedDict([
                 ("txid", txid),
                 ("vout", int(utxo["n"])),
                 ("amount", utxo["value"]),
