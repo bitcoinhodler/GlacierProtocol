@@ -774,7 +774,7 @@ def withdraw_interactive():
 
         validate_address(xact.source_address, xact.redeem_script)
         teach_address_to_wallet(xact.source_address, xact.redeem_script)
-        pubkeys = find_pubkeys(xact.source_address)
+        xact.pubkeys = find_pubkeys(xact.source_address)
 
         dest_address = input("\nDestination address: ")
         addresses[dest_address] = 0
@@ -813,7 +813,7 @@ def withdraw_interactive():
             keys.append(key)
             # Teach the wallet about this key
             pubkey = get_pubkey_for_wif_privkey(key)
-            if pubkey not in pubkeys:
+            if pubkey not in xact.pubkeys:
                 print("ERROR: that key does not belong to this source address, exiting...")
                 sys.exit()
 
