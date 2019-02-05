@@ -510,6 +510,10 @@ class WithdrawalXact:
         self.seen_txhashes.add(tx['hash'])
 
         utxos = get_utxos(tx, self.source_address)
+        if len(utxos) == 0:
+            print("\nTransaction data not found for source address: {}".format(self.source_address))
+            sys.exit()
+
         txid = tx["txid"]
         for utxo in utxos:
             self.inputs.append(OrderedDict([
@@ -793,10 +797,6 @@ def withdraw_interactive():
                 hex_tx = open(hex_tx).read().strip()
 
             xact.add_input_xact(hex_tx)
-
-        if len(xact.inputs) == 0:
-            print("\nTransaction data not found for source address: {}".format(xact.source_address))
-            sys.exit()
 
         print("\nTransaction data found for source address.")
 
