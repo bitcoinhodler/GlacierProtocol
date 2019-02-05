@@ -803,7 +803,7 @@ def withdraw_interactive():
             xact.txs.append(tx)
             xact.add_input_xact(tx)
 
-        if len(xact.utxos) == 0:
+        if len(xact.inputs) == 0:
             print("\nTransaction data not found for source address: {}".format(xact.source_address))
             sys.exit()
 
