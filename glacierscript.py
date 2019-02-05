@@ -799,14 +799,14 @@ def withdraw_interactive():
         if len(xact.utxos) == 0:
             print("\nTransaction data not found for source address: {}".format(xact.source_address))
             sys.exit()
-        else:
-            print("\nTransaction data found for source address.")
 
-            for utxo in xact.utxos:
-                value = Decimal(utxo["value"]).quantize(SATOSHI_PLACES)
-                utxo_sum += value
+        print("\nTransaction data found for source address.")
 
-            print("TOTAL unspent amount for this raw transaction: {} BTC".format(utxo_sum))
+        for utxo in xact.utxos:
+            value = Decimal(utxo["value"]).quantize(SATOSHI_PLACES)
+            utxo_sum += value
+
+        print("TOTAL unspent amount for this raw transaction: {} BTC".format(utxo_sum))
 
         print("\nHow many private keys will you be signing this transaction with? ")
         key_count = int(input("#: "))
