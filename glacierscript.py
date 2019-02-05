@@ -435,13 +435,13 @@ class WithdrawalXact:
         self.keys = []
         self._validate_address()
         self._teach_address_to_wallet()
-        self.pubkeys = self._find_pubkeys()
+        self._pubkeys = self._find_pubkeys()
 
     def add_key(self, key):
         self.keys.append(key)
         # Teach the wallet about this key
         pubkey = get_pubkey_for_wif_privkey(key)
-        if pubkey not in self.pubkeys:
+        if pubkey not in self._pubkeys:
             print("ERROR: that key does not belong to this source address, exiting...")
             sys.exit()
 
