@@ -459,7 +459,7 @@ class WithdrawalXact:
         self.redeem_script = redeem_script
         self.seen_txhashes = set()  # only for detecting duplicates
         self.inputs = []
-        self.validate_address(self.source_address, self.redeem_script)
+        self.validate_address()
         self.teach_address_to_wallet()
         self.pubkeys = self.find_pubkeys()
 
@@ -554,12 +554,12 @@ class WithdrawalXact:
         else:
             return out["embedded"]["pubkeys"] # for segwit addresses
 
-    def validate_address(self, source_address, redeem_script):
+    def validate_address(self):
         """
         Given a source cold storage address and redemption script,
         make sure the redeem script is valid and matches the address.
         """
-        decoded_script = bitcoin_cli_json("decodescript", redeem_script)
+        decoded_script = bitcoin_cli_json("decodescript", self.redeem_script)
         if decoded_script["type"] != "multisig":
             print("ERROR: Unrecognized redemption script. Doublecheck for typos. Exiting...")
             sys.exit()
@@ -567,7 +567,7 @@ class WithdrawalXact:
         if "segwit" in decoded_script:
             ok_addresses.append(decoded_script["segwit"]["p2sh-segwit"])
             ok_addresses.extend(decoded_script["segwit"]["addresses"])
-        if source_address not in ok_addresses:
+        if self.source_address not in ok_addresses:
             print("ERROR: Redemption script does not match cold storage address. Doublecheck for typos. Exiting...")
             sys.exit()
 
