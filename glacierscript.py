@@ -558,8 +558,8 @@ class WithdrawalXact:
 
     def unspent_total(self):
         utxo_sum = Decimal(0).quantize(SATOSHI_PLACES)
-        for utxo in self.utxos:
-            value = Decimal(utxo["value"]).quantize(SATOSHI_PLACES)
+        for utxo in self.inputs:
+            value = Decimal(utxo["amount"]).quantize(SATOSHI_PLACES)
             utxo_sum += value
         return utxo_sum
 
