@@ -436,9 +436,9 @@ class WithdrawalXact:
         self._seen_txhashes = set()  # only for detecting duplicates
         self._inputs = []
         self.keys = []
-        self.validate_address()
-        self.teach_address_to_wallet()
-        self.pubkeys = self.find_pubkeys()
+        self._validate_address()
+        self._teach_address_to_wallet()
+        self.pubkeys = self._find_pubkeys()
 
     def add_key(self, key):
         self.keys.append(key)
@@ -496,7 +496,7 @@ class WithdrawalXact:
             sys.exit()
         self._seen_txhashes.add(tx['hash'])
 
-        utxos = self.get_utxos(tx)
+        utxos = self._get_utxos(tx)
         if len(utxos) == 0:
             print("\nTransaction data not found for source address: {}".format(self.source_address))
             sys.exit()
@@ -511,7 +511,7 @@ class WithdrawalXact:
                 ("redeemScript", self.redeem_script),
             ]))
 
-    def teach_address_to_wallet(self):
+    def _teach_address_to_wallet(self):
         """
         Teaches the bitcoind wallet about our multisig address, so it can
         use that knowledge to sign the transaction we're about to create.
@@ -540,7 +540,7 @@ class WithdrawalXact:
            any("warnings" in result for result in results):
             raise Exception("Problem importing address to wallet")
 
-    def find_pubkeys(self):
+    def _find_pubkeys(self):
         """
         Return a list of the pubkeys associated with our source address.
 
@@ -552,7 +552,7 @@ class WithdrawalXact:
         else:
             return out["embedded"]["pubkeys"] # for segwit addresses
 
-    def validate_address(self):
+    def _validate_address(self):
         """
         Given our source cold storage address and redemption script,
         make sure the redeem script is valid and matches the address.
@@ -569,7 +569,7 @@ class WithdrawalXact:
             print("ERROR: Redemption script does not match cold storage address. Doublecheck for typos. Exiting...")
             sys.exit()
 
-    def get_utxos(self, tx):
+    def _get_utxos(self, tx):
         """
         Given a transaction, find all the outputs that were sent to an address
         returns => List<Dictionary> list of UTXOs in bitcoin core format
