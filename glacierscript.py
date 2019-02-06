@@ -382,8 +382,6 @@ def get_fee_interactive(xact, destinations):
       destinations: {address <string>: amount<string>} dictionary mapping destination addresses to amount in BTC
     """
 
-    MAX_FEE = .005  # in btc.  hardcoded limit to protect against user typos
-
     ensure_bitcoind_running()
 
     approve = False
@@ -393,8 +391,8 @@ def get_fee_interactive(xact, destinations):
 
         fee = xact.calculate_fee(destinations, fee_basis_satoshis_per_byte)
 
-        if fee > MAX_FEE:
-            print("Calculated fee ({}) is too high. Must be under {}".format(fee, MAX_FEE))
+        if fee > xact.MAX_FEE:
+            print("Calculated fee ({}) is too high. Must be under {}".format(fee, xact.MAX_FEE))
         else:
             print("\nBased on the provided rate, the fee will be {} bitcoin.".format(fee))
             confirm = yes_no_interactive()
@@ -421,6 +419,9 @@ class WithdrawalXact:
     source_address: <string> input_txs will be filtered for utxos to this source address
     redeem_script: <string>
     """
+
+    MAX_FEE = .005  # in btc.  hardcoded limit to protect against user typos
+
     def __init__(self, source_address, redeem_script):
         self.source_address = source_address
         self.redeem_script = redeem_script
