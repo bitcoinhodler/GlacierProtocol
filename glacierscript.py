@@ -922,14 +922,14 @@ def withdraw_interactive():
 
         if change_amount > 0:
             print("{0} being returned to cold storage address address {1}.".format(change_amount, xact.source_address))
-            addresses[xact.source_address] = str(change_amount)
+            addresses[xact.source_address] = change_amount
         else:
             del addresses[xact.source_address]
             fee = xact.calculate_fee(addresses) # Recompute fee with no change output
             withdrawal_amount = input_amount - fee
             print("With no change output, the transaction fee is reduced, and {0} BTC will be sent to your destination.".format(withdrawal_amount))
 
-        addresses[dest_address] = str(withdrawal_amount)
+        addresses[dest_address] = withdrawal_amount
 
         # check data
         print("\nIs this data correct?")
