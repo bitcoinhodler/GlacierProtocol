@@ -392,13 +392,7 @@ def get_fee_interactive(xact, destinations):
         print("\nEnter fee rate.")
         fee_basis_satoshis_per_byte = int(input("Satoshis per vbyte: "))
 
-        signed_tx = xact.create_signed_transaction(destinations)
-
-        decoded_tx = bitcoin_cli_json("decoderawtransaction", signed_tx["hex"])
-        size = decoded_tx["vsize"]
-
-        fee = size * fee_basis_satoshis_per_byte
-        fee = satoshi_to_btc(fee)
+        fee = xact.calculate_fee(destinations, fee_basis_satoshis_per_byte)
 
         if fee > MAX_FEE:
             print("Calculated fee ({}) is too high. Must be under {}".format(fee, MAX_FEE))
@@ -582,6 +576,23 @@ class WithdrawalXact:
                 utxos.append(output)
 
         return utxos
+
+    def calculate_fee(self, destinations, fee_basis_satoshis_per_byte):
+        """
+        Given a list of destinations, calculate the total fee in BTC at the given basis
+        returbs => Decimal total fee in BTC
+
+        destinations - <Dictionary> pairs of {addresss:amount} to send
+        """
+        signed_tx = self.create_signed_transaction(destinations)
+
+        decoded_tx = bitcoin_cli_json("decoderawtransaction", signed_tx["hex"])
+        size = decoded_tx["vsize"]
+
+        fee = size * fee_basis_satoshis_per_byte
+        return satoshi_to_btc(fee)
+
+
 
 ################################################################################################
 #
