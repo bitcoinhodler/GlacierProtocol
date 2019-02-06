@@ -294,6 +294,18 @@ def hex_private_key_to_WIF_private_key(hex_key):
     return wif_key.decode('ascii')
 
 
+
+################################################################################################
+#
+# Local exception classes
+#
+################################################################################################
+
+class GlacierExcessiveFee(Exception):
+    """
+    Raised when transaction fee is determined to be excessive.
+    """
+
 ################################################################################################
 #
 # Bitcoin helper functions
@@ -390,10 +402,10 @@ def get_fee_interactive(xact, destinations):
         print("\nEnter fee rate.")
         fee_basis_satoshis_per_byte = int(input("Satoshis per vbyte: "))
 
-        fee = xact.calculate_fee(destinations, fee_basis_satoshis_per_byte)
-
-        if fee > xact.MAX_FEE:
-            print("Calculated fee ({}) is too high. Must be under {}".format(fee, xact.MAX_FEE))
+        try:
+            fee = xact.calculate_fee(destinations, fee_basis_satoshis_per_byte)
+        except GlacierExcessiveFee as e:
+            print(e)
         else:
             print("\nBased on the provided rate, the fee will be {} bitcoin.".format(fee))
             confirm = yes_no_interactive()
@@ -590,8 +602,10 @@ class WithdrawalXact:
         decoded_tx = bitcoin_cli_json("decoderawtransaction", signed_tx["hex"])
         size = decoded_tx["vsize"]
 
-        fee = size * fee_basis_satoshis_per_byte
-        return satoshi_to_btc(fee)
+        fee = satoshi_to_btc(size * fee_basis_satoshis_per_byte)
+        if fee > self.MAX_FEE:
+            raise GlacierExcessiveFee("Calculated fee ({}) is too high. Must be under {}".format(fee, self.MAX_FEE))
+        return fee
 
 
 
