@@ -400,10 +400,9 @@ def get_fee_interactive(xact, destinations):
     approve = False
     while not approve:
         print("\nEnter fee rate.")
-        fee_basis_satoshis_per_byte = int(input("Satoshis per vbyte: "))
-
+        xact.fee_basis_satoshis_per_byte = int(input("Satoshis per vbyte: "))
         try:
-            fee = xact.calculate_fee(destinations, fee_basis_satoshis_per_byte)
+            fee = xact.calculate_fee(destinations)
         except GlacierExcessiveFee as e:
             print(e)
         else:
@@ -590,7 +589,7 @@ class WithdrawalXact:
 
         return utxos
 
-    def calculate_fee(self, destinations, fee_basis_satoshis_per_byte):
+    def calculate_fee(self, destinations):
         """
         Given a list of destinations, calculate the total fee in BTC at the given basis
         returbs => Decimal total fee in BTC
@@ -602,7 +601,7 @@ class WithdrawalXact:
         decoded_tx = bitcoin_cli_json("decoderawtransaction", signed_tx["hex"])
         size = decoded_tx["vsize"]
 
-        fee = satoshi_to_btc(size * fee_basis_satoshis_per_byte)
+        fee = satoshi_to_btc(size * self.fee_basis_satoshis_per_byte)
         if fee > self.MAX_FEE:
             raise GlacierExcessiveFee("Calculated fee ({}) is too high. Must be under {}".format(fee, self.MAX_FEE))
         return fee
