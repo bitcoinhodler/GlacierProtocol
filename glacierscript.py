@@ -577,6 +577,8 @@ class WithdrawalXact:
             utxo_sum += value
         return utxo_sum
 
+    def add_input_xact(self, tx):
+        self.utxos += get_utxos(tx, self.source_address)
 
 ################################################################################################
 #
@@ -855,7 +857,7 @@ def withdraw_interactive():
                 sys.exit()
 
             xact.txs.append(tx)
-            xact.utxos += get_utxos(tx, xact.source_address)
+            xact.add_input_xact(tx)
 
         if len(xact.utxos) == 0:
             print("\nTransaction data not found for source address: {}".format(xact.source_address))
