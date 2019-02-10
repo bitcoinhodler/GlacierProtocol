@@ -511,6 +511,14 @@ def get_fee_interactive(xact, source_address, destinations, redeem_script, input
 ################################################################################################
 
 class WithdrawalXact:
+    """
+    Class for constructing a withdrawal transaction
+
+    Attributes:
+    source_address: <string> input_txs will be filtered for utxos to this source address
+    redeem_script: <string>
+    txs: List<dict> List of input transactions in dictionary form (bitcoind decoded format)
+    """
     def __init__(self, source_address, redeem_script):
         self.source_address = source_address
         self.redeem_script = redeem_script
@@ -521,10 +529,7 @@ class WithdrawalXact:
         Returns a hex string representing a signed bitcoin transaction
         returns => <string>
 
-        source_address: <string> input_txs will be filtered for utxos to this source address
         destinations: {address <string>: amount<string>} dictionary mapping destination addresses to amount in BTC
-        redeem_script: <string>
-        input_txs: List<dict> List of input transactions in dictionary form (bitcoind decoded format)
         """
         ensure_bitcoind_running()
 
@@ -545,11 +550,7 @@ class WithdrawalXact:
     def calc_prevtxs(self):
         """
         Constructs the prevtxs parameter for either `createrawtransaction` or `signrawtransaction`
-        output => string
-
-        source_address: <string> input_txs will be filtered for utxos to this source address
-        redeem_script: <string>
-        input_txs: List<dict> A list of input transactions to use (bitcoind decoded format)
+        output => string of json data structure as required by bitcoin-cli
         """
         # For each UTXO used as input, we need the txid, vout index, scriptPubKey, amount, and redeemScript
         # to generate a signature
