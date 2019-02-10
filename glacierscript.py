@@ -561,6 +561,18 @@ def get_fee_interactive(source_address, destinations, redeem_script, input_txs):
 
 ################################################################################################
 #
+# Withdrawal transaction construction class
+#
+################################################################################################
+
+class WithdrawalXact:
+    def __init__(self, source_address, redeem_script):
+        self.source_address = source_address
+        self.redeem_script = redeem_script
+
+
+################################################################################################
+#
 # QR code helper functions
 #
 ################################################################################################
@@ -808,10 +820,11 @@ def withdraw_interactive():
         addresses[source_address] = 0
 
         redeem_script = input("\nRedemption script for source cold storage address: ")
+        xact = WithdrawalXact(source_address, redeem_script)
 
-        validate_address(source_address, redeem_script)
-        teach_address_to_wallet(source_address, redeem_script)
-        pubkeys = find_pubkeys(source_address)
+        validate_address(xact.source_address, xact.redeem_script)
+        teach_address_to_wallet(xact.source_address, xact.redeem_script)
+        pubkeys = find_pubkeys(xact.source_address)
 
         dest_address = input("\nDestination address: ")
         addresses[dest_address] = 0
@@ -838,10 +851,10 @@ def withdraw_interactive():
                 sys.exit()
 
             txs.append(tx)
-            utxos += get_utxos(tx, source_address)
+            utxos += get_utxos(tx, xact.source_address)
 
         if len(utxos) == 0:
-            print("\nTransaction data not found for source address: {}".format(source_address))
+            print("\nTransaction data not found for source address: {}".format(xact.source_address))
             sys.exit()
         else:
             print("\nTransaction data found for source address.")
@@ -870,7 +883,7 @@ def withdraw_interactive():
 
         input_amount = utxo_sum
         fee = get_fee_interactive(
-            source_address, addresses, redeem_script, txs)
+            xact.source_address, addresses, xact.redeem_script, txs)
         # Got this far
         if fee > input_amount:
             print("ERROR: Your fee is greater than the sum of your unspent transactions.  Try using larger unspent transactions. Exiting...")
@@ -898,10 +911,10 @@ def withdraw_interactive():
             change_amount = 0
 
         if change_amount > 0:
-            print("{0} being returned to cold storage address address {1}.".format(change_amount, source_address))
+            print("{0} being returned to cold storage address address {1}.".format(change_amount, xact.source_address))
 
         addresses[dest_address] = str(withdrawal_amount)
-        addresses[source_address] = str(change_amount)
+        addresses[xact.source_address] = str(change_amount)
 
         # check data
         print("\nIs this data correct?")
@@ -909,7 +922,7 @@ def withdraw_interactive():
 
         print("{0} BTC in unspent supplied transactions".format(input_amount))
         for address, value in addresses.items():
-            if address == source_address:
+            if address == xact.source_address:
                 print("{0} BTC going back to cold storage address {1}".format(value, address))
             else:
                 print("{0} BTC going to destination address {1}".format(value, address))
@@ -930,7 +943,7 @@ def withdraw_interactive():
     print("\nCalculating transaction...\n")
 
     signed_tx = create_signed_transaction(
-        source_address, addresses, redeem_script, txs)
+        xact.source_address, addresses, xact.redeem_script, txs)
 
     print("\nSufficient private keys to execute transaction?")
     print(signed_tx["complete"])
