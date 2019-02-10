@@ -141,7 +141,7 @@ def bitcoin_cli_json(*args):
     """
     Run `bitcoin-cli`, parse output as JSON
     """
-    return json.loads(bitcoin_cli_checkoutput(*args))
+    return json.loads(bitcoin_cli_checkoutput(*args), parse_float=Decimal)
 
 
 def bitcoind_call(*args):
@@ -423,6 +423,13 @@ def get_fee_interactive(xact, destinations):
 #
 ################################################################################################
 
+# From https://stackoverflow.com/a/3885198 modified to dump as string, so no floats ever involved
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, Decimal):
+            return str(o)
+        return super().default(o)
+
 class WithdrawalXact:
     """
     Class for constructing a withdrawal transaction
@@ -461,11 +468,11 @@ class WithdrawalXact:
         """
         ensure_bitcoind_running()
 
-        prev_txs = json.dumps(self._inputs)
+        prev_txs = json.dumps(self._inputs, cls=DecimalEncoder)
         tx_unsigned_hex = bitcoin_cli_checkoutput(
             "createrawtransaction",
             prev_txs,
-            json.dumps(destinations)).strip()
+            json.dumps(destinations, cls=DecimalEncoder)).strip()
 
         signed_tx = bitcoin_cli_json(
             "signrawtransactionwithwallet",
@@ -476,7 +483,7 @@ class WithdrawalXact:
         """
         Return the total amount of BTC available to spend from the input UTXOs
         """
-        return sum(Decimal(utxo["amount"]).quantize(SATOSHI_PLACES) for utxo in self._inputs)
+        return sum(utxo["amount"] for utxo in self._inputs).quantize(SATOSHI_PLACES)
 
     def add_input_xact(self, hex_tx):
         """
