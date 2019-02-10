@@ -443,6 +443,11 @@ class WithdrawalXact:
 
     def add_key(self, key):
         self.keys.append(key)
+        # Teach the wallet about this key
+        pubkey = get_pubkey_for_wif_privkey(key)
+        if pubkey not in self.pubkeys:
+            print("ERROR: that key does not belong to this source address, exiting...")
+            sys.exit()
 
     def create_signed_transaction(self, destinations):
         """
@@ -866,12 +871,6 @@ def withdraw_interactive():
         for key_idx in range(key_count):
             key = input("Key #{0}: ".format(key_idx + 1))
             xact.add_key(key)
-            # Teach the wallet about this key
-            pubkey = get_pubkey_for_wif_privkey(key)
-            if pubkey not in xact.pubkeys:
-                print("ERROR: that key does not belong to this source address, exiting...")
-                sys.exit()
-
 
         ###### fees, amount, and change #######
 
