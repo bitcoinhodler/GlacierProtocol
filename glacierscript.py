@@ -458,6 +458,7 @@ class WithdrawalXact:
         self.redeem_script = redeem_script
         self.seen_txhashes = set()  # only for detecting duplicates
         self.inputs = []
+        validate_address(self.source_address, self.redeem_script)
 
     def create_signed_transaction(self, destinations):
         """
@@ -773,7 +774,6 @@ def withdraw_interactive():
         redeem_script = input("\nRedemption script for source cold storage address: ")
         xact = WithdrawalXact(source_address, redeem_script)
 
-        validate_address(xact.source_address, xact.redeem_script)
         teach_address_to_wallet(xact.source_address, xact.redeem_script)
         xact.pubkeys = find_pubkeys(xact.source_address)
 
