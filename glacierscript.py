@@ -509,7 +509,7 @@ def get_fee_interactive(xact, source_address, destinations, redeem_script, input
         print("\nEnter fee rate.")
         fee_basis_satoshis_per_byte = int(input("Satoshis per vbyte: "))
 
-        signed_tx = create_signed_transaction(xact, destinations)
+        signed_tx = xact.create_signed_transaction(destinations)
 
         decoded_tx = bitcoin_cli_json("decoderawtransaction", signed_tx["hex"])
         size = decoded_tx["vsize"]
@@ -543,32 +543,31 @@ class WithdrawalXact:
         self.redeem_script = redeem_script
         self.txs = []
 
+    def create_signed_transaction(self, destinations):
+        """
+        Returns a hex string representing a signed bitcoin transaction
+        returns => <string>
 
-def create_signed_transaction(self, destinations):
-    """
-    Returns a hex string representing a signed bitcoin transaction
-    returns => <string>
+        source_address: <string> input_txs will be filtered for utxos to this source address
+        destinations: {address <string>: amount<string>} dictionary mapping destination addresses to amount in BTC
+        redeem_script: <string>
+        input_txs: List<dict> List of input transactions in dictionary form (bitcoind decoded format)
+        """
+        ensure_bitcoind_running()
 
-    source_address: <string> input_txs will be filtered for utxos to this source address
-    destinations: {address <string>: amount<string>} dictionary mapping destination addresses to amount in BTC
-    redeem_script: <string>
-    input_txs: List<dict> List of input transactions in dictionary form (bitcoind decoded format)
-    """
-    ensure_bitcoind_running()
+        # prune destination addresses sent 0 btc
+        destinations = OrderedDict((key, val) for key, val in destinations.items() if val != '0')
 
-    # prune destination addresses sent 0 btc
-    destinations = OrderedDict((key, val) for key, val in destinations.items() if val != '0')
+        prev_txs = calc_prevtxs(self.source_address, self.redeem_script, self.txs)
+        tx_unsigned_hex = bitcoin_cli_checkoutput(
+            "createrawtransaction",
+            prev_txs,
+            json.dumps(destinations)).strip()
 
-    prev_txs = calc_prevtxs(self.source_address, self.redeem_script, self.txs)
-    tx_unsigned_hex = bitcoin_cli_checkoutput(
-        "createrawtransaction",
-        prev_txs,
-        json.dumps(destinations)).strip()
-
-    signed_tx = bitcoin_cli_json(
-        "signrawtransactionwithwallet",
-        tx_unsigned_hex, prev_txs)
-    return signed_tx
+        signed_tx = bitcoin_cli_json(
+            "signrawtransactionwithwallet",
+            tx_unsigned_hex, prev_txs)
+        return signed_tx
 
 
 ################################################################################################
@@ -941,7 +940,7 @@ def withdraw_interactive():
     #### Calculate Transaction ####
     print("\nCalculating transaction...\n")
 
-    signed_tx = create_signed_transaction(xact, addresses)
+    signed_tx = xact.create_signed_transaction(addresses)
 
     print("\nSufficient private keys to execute transaction?")
     print(signed_tx["complete"])
