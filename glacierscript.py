@@ -451,21 +451,7 @@ def create_unsigned_transaction(source_address, destinations, redeem_script, inp
     # prune destination addresses sent 0 btc
     destinations = OrderedDict((key, val) for key, val in destinations.items() if val != '0')
 
-    # For each UTXO used as input, we need the txid and vout index to generate a transaction
-    inputs = []
-    for tx in input_txs:
-        utxos = get_utxos(tx, source_address)
-        txid = tx["txid"]
-        for utxo in utxos:
-            inputs.append(OrderedDict([
-                ("txid", txid),
-                ("vout", int(utxo["n"])),
-                ("amount", utxo["value"]),
-                ("scriptPubKey", utxo["scriptPubKey"]["hex"]),
-                ("redeemScript", redeem_script),
-            ]))
-
-    prev_txs = json.dumps(inputs)
+    prev_txs = calc_prevtxs(source_address, redeem_script, input_txs)
     tx_unsigned_hex = bitcoin_cli_checkoutput(
         "createrawtransaction",
         prev_txs,
