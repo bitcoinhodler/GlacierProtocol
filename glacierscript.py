@@ -460,6 +460,7 @@ class WithdrawalXact:
         self.inputs = []
         validate_address(self.source_address, self.redeem_script)
         teach_address_to_wallet(self.source_address, self.redeem_script)
+        self.pubkeys = find_pubkeys(self.source_address)
 
     def create_signed_transaction(self, destinations):
         """
@@ -774,8 +775,6 @@ def withdraw_interactive():
 
         redeem_script = input("\nRedemption script for source cold storage address: ")
         xact = WithdrawalXact(source_address, redeem_script)
-
-        xact.pubkeys = find_pubkeys(xact.source_address)
 
         dest_address = input("\nDestination address: ")
         addresses[dest_address] = 0
