@@ -523,6 +523,7 @@ class WithdrawalXact:
         self.source_address = source_address
         self.redeem_script = redeem_script
         self.txs = []
+        self.utxos = []
 
     def create_signed_transaction(self, destinations):
         """
@@ -775,7 +776,6 @@ def withdraw_interactive():
 
         num_tx = int(input("\nHow many unspent transactions will you be using for this withdrawal? "))
 
-        utxos = []
         utxo_sum = Decimal(0).quantize(SATOSHI_PLACES)
 
         for txcount in range(num_tx):
@@ -794,15 +794,15 @@ def withdraw_interactive():
                 sys.exit()
 
             xact.txs.append(tx)
-            utxos += get_utxos(tx, xact.source_address)
+            xact.utxos += get_utxos(tx, xact.source_address)
 
-        if len(utxos) == 0:
+        if len(xact.utxos) == 0:
             print("\nTransaction data not found for source address: {}".format(xact.source_address))
             sys.exit()
         else:
             print("\nTransaction data found for source address.")
 
-            for utxo in utxos:
+            for utxo in xact.utxos:
                 value = Decimal(utxo["value"]).quantize(SATOSHI_PLACES)
                 utxo_sum += value
 
