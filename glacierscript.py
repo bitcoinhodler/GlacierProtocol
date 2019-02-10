@@ -440,6 +440,9 @@ class WithdrawalXact:
         self.teach_address_to_wallet()
         self.pubkeys = self.find_pubkeys()
 
+    def add_key(self, key):
+        self.keys.append(key)
+
     def create_signed_transaction(self, destinations):
         """
         Returns a hex string representing a signed bitcoin transaction
@@ -807,7 +810,7 @@ def withdraw_interactive():
 
         for key_idx in range(key_count):
             key = input("Key #{0}: ".format(key_idx + 1))
-            xact.keys.append(key)
+            xact.add_key(key)
             # Teach the wallet about this key
             pubkey = get_pubkey_for_wif_privkey(key)
             if pubkey not in xact.pubkeys:
