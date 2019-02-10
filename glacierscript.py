@@ -411,21 +411,6 @@ def get_utxos(tx, address):
     return utxos
 
 
-def find_pubkeys(source_address):
-    """
-    Return a list of the pubkeys associated with the supplied multisig address.
-
-    Assumes this address has already been imported to the wallet using `importmulti`
-
-    source_address: <string> multisig address
-    """
-    out = bitcoin_cli_json("getaddressinfo", source_address)
-    if "pubkeys" in out:
-        return out["pubkeys"] # for non-segwit addresses
-    else:
-        return out["embedded"]["pubkeys"] # for segwit addresses
-
-
 def get_fee_interactive(xact, destinations):
     """
     Returns a recommended transaction fee, given market fee data provided by the user interactively
@@ -575,6 +560,21 @@ def teach_address_to_wallet(source_address, redeem_script):
     if not all(result["success"] for result in results) or \
        any("warnings" in result for result in results):
         raise Exception("Problem importing address to wallet")
+
+
+def find_pubkeys(source_address):
+    """
+    Return a list of the pubkeys associated with the supplied multisig address.
+
+    Assumes this address has already been imported to the wallet using `importmulti`
+
+    source_address: <string> multisig address
+    """
+    out = bitcoin_cli_json("getaddressinfo", source_address)
+    if "pubkeys" in out:
+        return out["pubkeys"] # for non-segwit addresses
+    else:
+        return out["embedded"]["pubkeys"] # for segwit addresses
 
 
 ################################################################################################
