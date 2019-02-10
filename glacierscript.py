@@ -537,7 +537,7 @@ class WithdrawalXact:
         # prune destination addresses sent 0 btc
         destinations = OrderedDict((key, val) for key, val in destinations.items() if val != '0')
 
-        prev_txs = self.calc_prevtxs()
+        prev_txs = json.dumps(self.inputs)
         tx_unsigned_hex = bitcoin_cli_checkoutput(
             "createrawtransaction",
             prev_txs,
@@ -547,13 +547,6 @@ class WithdrawalXact:
             "signrawtransactionwithwallet",
             tx_unsigned_hex, prev_txs)
         return signed_tx
-
-    def calc_prevtxs(self):
-        """
-        Constructs the prevtxs parameter for either `createrawtransaction` or `signrawtransaction`
-        output => string of json data structure as required by bitcoin-cli
-        """
-        return json.dumps(self.inputs)
 
     def unspent_total(self):
         utxo_sum = Decimal(0).quantize(SATOSHI_PLACES)
