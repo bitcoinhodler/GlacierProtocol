@@ -522,9 +522,10 @@ def sign_transaction(source_address, redeem_script, unsigned_hex, input_txs):
                 ("redeemScript", redeem_script),
             ]))
 
+    prev_txs = json.dumps(inputs)
     signed_tx = bitcoin_cli_json(
         "signrawtransactionwithwallet",
-        unsigned_hex, json.dumps(inputs))
+        unsigned_hex, prev_txs)
     return signed_tx
 
 
