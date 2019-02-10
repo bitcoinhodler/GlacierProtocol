@@ -488,7 +488,7 @@ class WithdrawalXact:
             sys.exit()
         self.seen_txhashes.add(tx['hash'])
 
-        utxos = get_utxos(tx, self.source_address)
+        utxos = self.get_utxos(tx, self.source_address)
         if len(utxos) == 0:
             print("\nTransaction data not found for source address: {}".format(self.source_address))
             sys.exit()
@@ -561,27 +561,26 @@ class WithdrawalXact:
             print("ERROR: Redemption script does not match cold storage address. Doublecheck for typos. Exiting...")
             sys.exit()
 
+    def get_utxos(self, tx, address):
+        """
+        Given a transaction, find all the outputs that were sent to an address
+        returns => List<Dictionary> list of UTXOs in bitcoin core format
 
-def get_utxos(tx, address):
-    """
-    Given a transaction, find all the outputs that were sent to an address
-    returns => List<Dictionary> list of UTXOs in bitcoin core format
+        tx - <Dictionary> in bitcoin core format
+        address - <string>
+        """
+        utxos = []
 
-    tx - <Dictionary> in bitcoin core format
-    address - <string>
-    """
-    utxos = []
+        for output in tx["vout"]:
+            if "addresses" not in output["scriptPubKey"]:
+                # In Bitcoin Core versions older than v0.16, native segwit outputs have no address decoded
+                continue
+            out_addresses = output["scriptPubKey"]["addresses"]
+            amount_btc = output["value"]
+            if address in out_addresses:
+                utxos.append(output)
 
-    for output in tx["vout"]:
-        if "addresses" not in output["scriptPubKey"]:
-            # In Bitcoin Core versions older than v0.16, native segwit outputs have no address decoded
-            continue
-        out_addresses = output["scriptPubKey"]["addresses"]
-        amount_btc = output["value"]
-        if address in out_addresses:
-            utxos.append(output)
-
-    return utxos
+        return utxos
 
 ################################################################################################
 #
