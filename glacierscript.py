@@ -569,6 +569,7 @@ class WithdrawalXact:
     def __init__(self, source_address, redeem_script):
         self.source_address = source_address
         self.redeem_script = redeem_script
+        self.txs = []
 
 
 ################################################################################################
@@ -831,7 +832,6 @@ def withdraw_interactive():
 
         num_tx = int(input("\nHow many unspent transactions will you be using for this withdrawal? "))
 
-        txs = []
         utxos = []
         utxo_sum = Decimal(0).quantize(SATOSHI_PLACES)
 
@@ -846,11 +846,11 @@ def withdraw_interactive():
                 hex_tx = open(hex_tx).read().strip()
 
             tx = bitcoin_cli_json("decoderawtransaction", hex_tx)
-            if tx in txs:
+            if tx in xact.txs:
                 print("ERROR: duplicated input transactions, exiting...")
                 sys.exit()
 
-            txs.append(tx)
+            xact.txs.append(tx)
             utxos += get_utxos(tx, xact.source_address)
 
         if len(utxos) == 0:
@@ -883,7 +883,7 @@ def withdraw_interactive():
 
         input_amount = utxo_sum
         fee = get_fee_interactive(
-            xact.source_address, addresses, xact.redeem_script, txs)
+            xact.source_address, addresses, xact.redeem_script, xact.txs)
         # Got this far
         if fee > input_amount:
             print("ERROR: Your fee is greater than the sum of your unspent transactions.  Try using larger unspent transactions. Exiting...")
@@ -943,7 +943,7 @@ def withdraw_interactive():
     print("\nCalculating transaction...\n")
 
     signed_tx = create_signed_transaction(
-        xact.source_address, addresses, xact.redeem_script, txs)
+        xact.source_address, addresses, xact.redeem_script, xact.txs)
 
     print("\nSufficient private keys to execute transaction?")
     print(signed_tx["complete"])
