@@ -524,7 +524,6 @@ class WithdrawalXact:
         self.source_address = source_address
         self.redeem_script = redeem_script
         self.txs = []
-        self.utxos = []
         self.inputs = []
 
     def create_signed_transaction(self, destinations):
@@ -577,7 +576,6 @@ class WithdrawalXact:
                 ("scriptPubKey", utxo["scriptPubKey"]["hex"]),
                 ("redeemScript", self.redeem_script),
             ]))
-        self.utxos += get_utxos(tx, self.source_address)
 
 ################################################################################################
 #
