@@ -525,6 +525,7 @@ class WithdrawalXact:
         self.redeem_script = redeem_script
         self.txs = []
         self.utxos = []
+        self.inputs = []
 
     def create_signed_transaction(self, destinations):
         """
@@ -554,21 +555,7 @@ class WithdrawalXact:
         Constructs the prevtxs parameter for either `createrawtransaction` or `signrawtransaction`
         output => string of json data structure as required by bitcoin-cli
         """
-        # For each UTXO used as input, we need the txid, vout index, scriptPubKey, amount, and redeemScript
-        # to generate a signature
-        inputs = []
-        for tx in self.txs:
-            utxos = get_utxos(tx, self.source_address)
-            txid = tx["txid"]
-            for utxo in utxos:
-                inputs.append(OrderedDict([
-                    ("txid", txid),
-                    ("vout", int(utxo["n"])),
-                    ("amount", utxo["value"]),
-                    ("scriptPubKey", utxo["scriptPubKey"]["hex"]),
-                    ("redeemScript", self.redeem_script),
-                ]))
-        return json.dumps(inputs)
+        return json.dumps(self.inputs)
 
     def unspent_total(self):
         utxo_sum = Decimal(0).quantize(SATOSHI_PLACES)
@@ -578,6 +565,18 @@ class WithdrawalXact:
         return utxo_sum
 
     def add_input_xact(self, tx):
+        # For each UTXO used as input, we need the txid, vout index, scriptPubKey, amount, and redeemScript
+        # to generate a signature
+        utxos = get_utxos(tx, self.source_address)
+        txid = tx["txid"]
+        for utxo in utxos:
+            self.inputs.append(OrderedDict([
+                ("txid", txid),
+                ("vout", int(utxo["n"])),
+                ("amount", utxo["value"]),
+                ("scriptPubKey", utxo["scriptPubKey"]["hex"]),
+                ("redeemScript", self.redeem_script),
+            ]))
         self.utxos += get_utxos(tx, self.source_address)
 
 ################################################################################################
