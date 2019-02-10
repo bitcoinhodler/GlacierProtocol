@@ -437,9 +437,9 @@ def calc_prevtxs(source_address, redeem_script, input_txs):
     return json.dumps(inputs)
 
 
-def create_unsigned_transaction(source_address, destinations, redeem_script, input_txs):
+def create_signed_transaction(source_address, destinations, redeem_script, input_txs):
     """
-    Returns a hex string representing an unsigned bitcoin transaction
+    Returns a hex string representing a signed bitcoin transaction
     returns => <string>
 
     source_address: <string> input_txs will be filtered for utxos to this source address
@@ -458,7 +458,10 @@ def create_unsigned_transaction(source_address, destinations, redeem_script, inp
         prev_txs,
         json.dumps(destinations)).strip()
 
-    return tx_unsigned_hex
+    signed_tx = bitcoin_cli_json(
+        "signrawtransactionwithwallet",
+        tx_unsigned_hex, prev_txs)
+    return signed_tx
 
 
 def teach_address_to_wallet(source_address, redeem_script):
@@ -509,23 +512,6 @@ def find_pubkeys(source_address):
         return out["embedded"]["pubkeys"] # for segwit addresses
 
 
-def sign_transaction(source_address, redeem_script, unsigned_hex, input_txs):
-    """
-    Creates a signed transaction
-    output => dictionary {"hex": transaction <string>, "complete": <boolean>}
-
-    source_address: <string> input_txs will be filtered for utxos to this source address
-    redeem_script: <string>
-    unsigned_hex: <string> The unsigned transaction, in hex format
-    input_txs: List<dict> A list of input transactions to use (bitcoind decoded format)
-    """
-    prev_txs = calc_prevtxs(source_address, redeem_script, input_txs)
-    signed_tx = bitcoin_cli_json(
-        "signrawtransactionwithwallet",
-        unsigned_hex, prev_txs)
-    return signed_tx
-
-
 def get_fee_interactive(source_address, destinations, redeem_script, input_txs):
     """
     Returns a recommended transaction fee, given market fee data provided by the user interactively
@@ -550,11 +536,8 @@ def get_fee_interactive(source_address, destinations, redeem_script, input_txs):
         print("\nEnter fee rate.")
         fee_basis_satoshis_per_byte = int(input("Satoshis per vbyte: "))
 
-        unsigned_tx = create_unsigned_transaction(
+        signed_tx = create_signed_transaction(
             source_address, destinations, redeem_script, input_txs)
-
-        signed_tx = sign_transaction(source_address,
-                                     redeem_script, unsigned_tx, input_txs)
 
         decoded_tx = bitcoin_cli_json("decoderawtransaction", signed_tx["hex"])
         size = decoded_tx["vsize"]
@@ -946,11 +929,8 @@ def withdraw_interactive():
     #### Calculate Transaction ####
     print("\nCalculating transaction...\n")
 
-    unsigned_tx = create_unsigned_transaction(
+    signed_tx = create_signed_transaction(
         source_address, addresses, redeem_script, txs)
-
-    signed_tx = sign_transaction(source_address,
-                                 redeem_script, unsigned_tx, txs)
 
     print("\nSufficient private keys to execute transaction?")
     print(signed_tx["complete"])
