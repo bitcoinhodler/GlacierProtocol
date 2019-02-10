@@ -452,7 +452,6 @@ class WithdrawalXact:
     Attributes:
     source_address: <string> input_txs will be filtered for utxos to this source address
     redeem_script: <string>
-    txs: List<dict> List of input transactions in dictionary form (bitcoind decoded format)
     """
     def __init__(self, source_address, redeem_script):
         self.source_address = source_address
@@ -487,6 +486,9 @@ class WithdrawalXact:
         return signed_tx
 
     def unspent_total(self):
+        """
+        Return the total amount of BTC available to spend from the input UTXOs
+        """
         utxo_sum = Decimal(0).quantize(SATOSHI_PLACES)
         for utxo in self.inputs:
             value = Decimal(utxo["amount"]).quantize(SATOSHI_PLACES)
@@ -494,6 +496,12 @@ class WithdrawalXact:
         return utxo_sum
 
     def add_input_xact(self, hex_tx):
+        """
+        Look for outputs in the supplied transaction which match our cold storage address.
+        Save them for later use in constructing the withdrawal.
+
+        hex_tx (string): hex-encoded transaction whose outputs we want to spend
+        """
         # For each UTXO used as input, we need the txid, vout index, scriptPubKey, amount, and redeemScript
         # to generate a signature
         tx = bitcoin_cli_json("decoderawtransaction", hex_tx)
@@ -544,7 +552,7 @@ class WithdrawalXact:
 
     def find_pubkeys(self):
         """
-        Return a list of the pubkeys associated with the supplied multisig address.
+        Return a list of the pubkeys associated with our source address.
 
         Assumes that source_address has already been imported to the wallet using `importmulti`
         """
@@ -556,7 +564,7 @@ class WithdrawalXact:
 
     def validate_address(self):
         """
-        Given a source cold storage address and redemption script,
+        Given our source cold storage address and redemption script,
         make sure the redeem script is valid and matches the address.
         """
         decoded_script = bitcoin_cli_json("decodescript", self.redeem_script)
