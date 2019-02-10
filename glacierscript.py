@@ -531,7 +531,7 @@ class WithdrawalXact:
         # prune destination addresses sent 0 btc
         destinations = OrderedDict((key, val) for key, val in destinations.items() if val != '0')
 
-        prev_txs = calc_prevtxs(self)
+        prev_txs = self.calc_prevtxs()
         tx_unsigned_hex = bitcoin_cli_checkoutput(
             "createrawtransaction",
             prev_txs,
@@ -542,31 +542,30 @@ class WithdrawalXact:
             tx_unsigned_hex, prev_txs)
         return signed_tx
 
+    def calc_prevtxs(self):
+        """
+        Constructs the prevtxs parameter for either `createrawtransaction` or `signrawtransaction`
+        output => string
 
-def calc_prevtxs(self):
-    """
-    Constructs the prevtxs parameter for either `createrawtransaction` or `signrawtransaction`
-    output => string
-
-    source_address: <string> input_txs will be filtered for utxos to this source address
-    redeem_script: <string>
-    input_txs: List<dict> A list of input transactions to use (bitcoind decoded format)
-    """
-    # For each UTXO used as input, we need the txid, vout index, scriptPubKey, amount, and redeemScript
-    # to generate a signature
-    inputs = []
-    for tx in self.txs:
-        utxos = get_utxos(tx, self.source_address)
-        txid = tx["txid"]
-        for utxo in utxos:
-            inputs.append(OrderedDict([
-                ("txid", txid),
-                ("vout", int(utxo["n"])),
-                ("amount", utxo["value"]),
-                ("scriptPubKey", utxo["scriptPubKey"]["hex"]),
-                ("redeemScript", self.redeem_script),
-            ]))
-    return json.dumps(inputs)
+        source_address: <string> input_txs will be filtered for utxos to this source address
+        redeem_script: <string>
+        input_txs: List<dict> A list of input transactions to use (bitcoind decoded format)
+        """
+        # For each UTXO used as input, we need the txid, vout index, scriptPubKey, amount, and redeemScript
+        # to generate a signature
+        inputs = []
+        for tx in self.txs:
+            utxos = get_utxos(tx, self.source_address)
+            txid = tx["txid"]
+            for utxo in utxos:
+                inputs.append(OrderedDict([
+                    ("txid", txid),
+                    ("vout", int(utxo["n"])),
+                    ("amount", utxo["value"]),
+                    ("scriptPubKey", utxo["scriptPubKey"]["hex"]),
+                    ("redeemScript", self.redeem_script),
+                ]))
+        return json.dumps(inputs)
 
 
 ################################################################################################
