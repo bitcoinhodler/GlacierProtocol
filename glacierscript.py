@@ -410,6 +410,32 @@ def get_utxos(tx, address):
     return utxos
 
 
+def calc_prevtxs(source_address, redeem_script, input_txs):
+    """
+    Constructs the prevtxs parameter for either `createrawtransaction` or `signrawtransaction`
+    output => string
+
+    source_address: <string> input_txs will be filtered for utxos to this source address
+    redeem_script: <string>
+    input_txs: List<dict> A list of input transactions to use (bitcoind decoded format)
+    """
+    # For each UTXO used as input, we need the txid, vout index, scriptPubKey, amount, and redeemScript
+    # to generate a signature
+    inputs = []
+    for tx in input_txs:
+        utxos = get_utxos(tx, source_address)
+        txid = tx["txid"]
+        for utxo in utxos:
+            inputs.append(OrderedDict([
+                ("txid", txid),
+                ("vout", int(utxo["n"])),
+                ("amount", utxo["value"]),
+                ("scriptPubKey", utxo["scriptPubKey"]["hex"]),
+                ("redeemScript", redeem_script),
+            ]))
+    return json.dumps(inputs)
+
+
 def create_unsigned_transaction(source_address, destinations, redeem_script, input_txs):
     """
     Returns a hex string representing an unsigned bitcoin transaction
@@ -506,23 +532,7 @@ def sign_transaction(source_address, redeem_script, unsigned_hex, input_txs):
     unsigned_hex: <string> The unsigned transaction, in hex format
     input_txs: List<dict> A list of input transactions to use (bitcoind decoded format)
     """
-
-    # For each UTXO used as input, we need the txid, vout index, scriptPubKey, amount, and redeemScript
-    # to generate a signature
-    inputs = []
-    for tx in input_txs:
-        utxos = get_utxos(tx, source_address)
-        txid = tx["txid"]
-        for utxo in utxos:
-            inputs.append(OrderedDict([
-                ("txid", txid),
-                ("vout", int(utxo["n"])),
-                ("amount", utxo["value"]),
-                ("scriptPubKey", utxo["scriptPubKey"]["hex"]),
-                ("redeemScript", redeem_script),
-            ]))
-
-    prev_txs = json.dumps(inputs)
+    prev_txs = calc_prevtxs(source_address, redeem_script, input_txs)
     signed_tx = bitcoin_cli_json(
         "signrawtransactionwithwallet",
         unsigned_hex, prev_txs)
