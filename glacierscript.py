@@ -504,10 +504,6 @@ def sign_transaction(source_address, keys, redeem_script, unsigned_hex, input_tx
                 "redeemScript": redeem_script
             })
 
-    teach_address_to_wallet(source_address, redeem_script)
-    # Teach the wallet about each of our privkeys
-    for key in keys:
-        bitcoin_cli_checkcall("importprivkey", key)
     signed_tx = bitcoin_cli_json(
         "signrawtransactionwithwallet",
         unsigned_hex, json.dumps(inputs))
@@ -818,6 +814,7 @@ def withdraw_interactive():
         redeem_script = input("\nRedemption script for source cold storage address: ")
 
         validate_address(source_address, redeem_script)
+        teach_address_to_wallet(source_address, redeem_script)
 
         dest_address = input("\nDestination address: ")
         addresses[dest_address] = 0
@@ -861,6 +858,10 @@ def withdraw_interactive():
         while len(keys) < key_count:
             key = input("Key #{0}: ".format(len(keys) + 1))
             keys.append(key)
+
+        # Teach the wallet about each of our privkeys
+        for key in keys:
+            bitcoin_cli_checkcall("importprivkey", key)
 
         ###### fees, amount, and change #######
 
