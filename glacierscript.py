@@ -435,6 +435,7 @@ class WithdrawalXact:
         self.redeem_script = redeem_script
         self.seen_txhashes = set()  # only for detecting duplicates
         self.inputs = []
+        self.keys = []
         self.validate_address()
         self.teach_address_to_wallet()
         self.pubkeys = self.find_pubkeys()
@@ -804,10 +805,9 @@ def withdraw_interactive():
         print("\nHow many private keys will you be signing this transaction with? ")
         key_count = int(input("#: "))
 
-        keys = []
-        while len(keys) < key_count:
-            key = input("Key #{0}: ".format(len(keys) + 1))
-            keys.append(key)
+        for key_idx in range(key_count):
+            key = input("Key #{0}: ".format(key_idx + 1))
+            xact.keys.append(key)
             # Teach the wallet about this key
             pubkey = get_pubkey_for_wif_privkey(key)
             if pubkey not in xact.pubkeys:
@@ -863,7 +863,7 @@ def withdraw_interactive():
                 print("{0} BTC going to destination address {1}".format(value, address))
         print("Fee amount: {0}".format(fee))
         print("\nSigning with private keys: ")
-        for key in keys:
+        for key in xact.keys:
             print("{}".format(key))
 
         print("\n")
