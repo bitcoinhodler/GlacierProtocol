@@ -370,28 +370,6 @@ def addmultisigaddress(m, pubkeys, address_type='p2sh-segwit'):
     return bitcoin_cli_json("addmultisigaddress", str(m), pubkey_string, "", address_type)
 
 
-def get_utxos(tx, address):
-    """
-    Given a transaction, find all the outputs that were sent to an address
-    returns => List<Dictionary> list of UTXOs in bitcoin core format
-
-    tx - <Dictionary> in bitcoind core format
-    address - <string>
-    """
-    utxos = []
-
-    for output in tx["vout"]:
-        if "addresses" not in output["scriptPubKey"]:
-            # In Bitcoin Core versions older than v0.16, native segwit outputs have no address decoded
-            continue
-        out_addresses = output["scriptPubKey"]["addresses"]
-        amount_btc = output["value"]
-        if address in out_addresses:
-            utxos.append(output)
-
-    return utxos
-
-
 def get_fee_interactive(xact, destinations):
     """
     Returns a recommended transaction fee, given market fee data provided by the user interactively
@@ -582,6 +560,27 @@ class WithdrawalXact:
             print("ERROR: Redemption script does not match cold storage address. Doublecheck for typos. Exiting...")
             sys.exit()
 
+
+def get_utxos(tx, address):
+    """
+    Given a transaction, find all the outputs that were sent to an address
+    returns => List<Dictionary> list of UTXOs in bitcoin core format
+
+    tx - <Dictionary> in bitcoind core format
+    address - <string>
+    """
+    utxos = []
+
+    for output in tx["vout"]:
+        if "addresses" not in output["scriptPubKey"]:
+            # In Bitcoin Core versions older than v0.16, native segwit outputs have no address decoded
+            continue
+        out_addresses = output["scriptPubKey"]["addresses"]
+        amount_btc = output["value"]
+        if address in out_addresses:
+            utxos.append(output)
+
+    return utxos
 
 ################################################################################################
 #
