@@ -473,11 +473,7 @@ class WithdrawalXact:
         """
         Return the total amount of BTC available to spend from the input UTXOs
         """
-        utxo_sum = Decimal(0).quantize(SATOSHI_PLACES)
-        for utxo in self._inputs:
-            value = Decimal(utxo["amount"]).quantize(SATOSHI_PLACES)
-            utxo_sum += value
-        return utxo_sum
+        return sum(Decimal(utxo["amount"]).quantize(SATOSHI_PLACES) for utxo in self._inputs)
 
     def add_input_xact(self, hex_tx):
         """
