@@ -411,39 +411,6 @@ def get_utxos(tx, address):
     return utxos
 
 
-def teach_address_to_wallet(source_address, redeem_script):
-    """
-    Teaches the bitcoind wallet about our multisig address, so it can
-    use that knowledge to sign the transaction we're about to create.
-
-    source_address: <string> multisig address
-    redeem_script: <string>
-    """
-
-    # If address is p2wsh-in-p2sh, then the user-provided
-    # redeem_script is actually witnessScript, and I need to get the
-    # redeemScript from `decodescript`.
-
-    decoded_script = bitcoin_cli_json("decodescript", redeem_script)
-
-    import_this = {
-        "scriptPubKey": { "address": source_address },
-        "timestamp": "now",
-        "watchonly": True # to avoid warning about "Some private keys are missing[...]"
-    }
-    if decoded_script["p2sh"] == source_address:
-        import_this["redeemscript"] = redeem_script
-    else:
-        # segwit (either p2wsh or p2sh-in-p2wsh)
-        import_this["witnessscript"] = redeem_script
-        if source_address == decoded_script["segwit"]["p2sh-segwit"]:
-            import_this["redeemscript"] = decoded_script["segwit"]["hex"]
-    results = bitcoin_cli_json("importmulti", json.dumps([import_this]))
-    if not all(result["success"] for result in results) or \
-       any("warnings" in result for result in results):
-        raise Exception("Problem importing address to wallet")
-
-
 def find_pubkeys(source_address):
     """
     Return a list of the pubkeys associated with the supplied multisig address.
@@ -575,6 +542,40 @@ class WithdrawalXact:
                 ("scriptPubKey", utxo["scriptPubKey"]["hex"]),
                 ("redeemScript", self.redeem_script),
             ]))
+
+
+def teach_address_to_wallet(source_address, redeem_script):
+    """
+    Teaches the bitcoind wallet about our multisig address, so it can
+    use that knowledge to sign the transaction we're about to create.
+
+    source_address: <string> multisig address
+    redeem_script: <string>
+    """
+
+    # If address is p2wsh-in-p2sh, then the user-provided
+    # redeem_script is actually witnessScript, and I need to get the
+    # redeemScript from `decodescript`.
+
+    decoded_script = bitcoin_cli_json("decodescript", redeem_script)
+
+    import_this = {
+        "scriptPubKey": { "address": source_address },
+        "timestamp": "now",
+        "watchonly": True # to avoid warning about "Some private keys are missing[...]"
+    }
+    if decoded_script["p2sh"] == source_address:
+        import_this["redeemscript"] = redeem_script
+    else:
+        # segwit (either p2wsh or p2sh-in-p2wsh)
+        import_this["witnessscript"] = redeem_script
+        if source_address == decoded_script["segwit"]["p2sh-segwit"]:
+            import_this["redeemscript"] = decoded_script["segwit"]["hex"]
+    results = bitcoin_cli_json("importmulti", json.dumps([import_this]))
+    if not all(result["success"] for result in results) or \
+       any("warnings" in result for result in results):
+        raise Exception("Problem importing address to wallet")
+
 
 ################################################################################################
 #
