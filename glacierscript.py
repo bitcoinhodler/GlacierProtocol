@@ -523,7 +523,6 @@ class WithdrawalXact:
     def __init__(self, source_address, redeem_script):
         self.source_address = source_address
         self.redeem_script = redeem_script
-        self.txs = []
         self.seen_txhashes = set()  # only for detecting duplicates
         self.inputs = []
 
@@ -855,7 +854,6 @@ def withdraw_interactive():
                 hex_tx = open(hex_tx).read().strip()
 
             tx = bitcoin_cli_json("decoderawtransaction", hex_tx)
-            xact.txs.append(tx)
             xact.add_input_xact(tx)
 
         if len(xact.inputs) == 0:
