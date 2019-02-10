@@ -858,10 +858,6 @@ def withdraw_interactive():
 
         change_amount = input_amount - withdrawal_amount - fee
 
-        # less than a satoshi due to weird floating point imprecision
-        if change_amount < 1e-8:
-            change_amount = 0
-
         if change_amount > 0:
             print("{0} being returned to cold storage address address {1}.".format(change_amount, xact.source_address))
             addresses[xact.source_address] = str(change_amount)
