@@ -570,6 +570,13 @@ class WithdrawalXact:
                 ]))
         return json.dumps(inputs)
 
+    def unspent_total(self):
+        utxo_sum = Decimal(0).quantize(SATOSHI_PLACES)
+        for utxo in self.utxos:
+            value = Decimal(utxo["value"]).quantize(SATOSHI_PLACES)
+            utxo_sum += value
+        return utxo_sum
+
 
 ################################################################################################
 #
@@ -831,7 +838,6 @@ def withdraw_interactive():
 
         num_tx = int(input("\nHow many unspent transactions will you be using for this withdrawal? "))
 
-        utxo_sum = Decimal(0).quantize(SATOSHI_PLACES)
 
         for txcount in range(num_tx):
             print("\nPlease paste raw transaction #{} (hexadecimal format) with unspent outputs at the source address".format(txcount + 1))
@@ -857,9 +863,7 @@ def withdraw_interactive():
 
         print("\nTransaction data found for source address.")
 
-        for utxo in xact.utxos:
-            value = Decimal(utxo["value"]).quantize(SATOSHI_PLACES)
-            utxo_sum += value
+        utxo_sum = xact.unspent_total()
 
         print("TOTAL unspent amount for this raw transaction: {} BTC".format(utxo_sum))
 
