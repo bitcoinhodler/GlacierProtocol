@@ -436,33 +436,6 @@ def calc_prevtxs(source_address, redeem_script, input_txs):
     return json.dumps(inputs)
 
 
-def create_signed_transaction(source_address, destinations, redeem_script, input_txs):
-    """
-    Returns a hex string representing a signed bitcoin transaction
-    returns => <string>
-
-    source_address: <string> input_txs will be filtered for utxos to this source address
-    destinations: {address <string>: amount<string>} dictionary mapping destination addresses to amount in BTC
-    redeem_script: <string>
-    input_txs: List<dict> List of input transactions in dictionary form (bitcoind decoded format)
-    """
-    ensure_bitcoind_running()
-
-    # prune destination addresses sent 0 btc
-    destinations = OrderedDict((key, val) for key, val in destinations.items() if val != '0')
-
-    prev_txs = calc_prevtxs(source_address, redeem_script, input_txs)
-    tx_unsigned_hex = bitcoin_cli_checkoutput(
-        "createrawtransaction",
-        prev_txs,
-        json.dumps(destinations)).strip()
-
-    signed_tx = bitcoin_cli_json(
-        "signrawtransactionwithwallet",
-        tx_unsigned_hex, prev_txs)
-    return signed_tx
-
-
 def teach_address_to_wallet(source_address, redeem_script):
     """
     Teaches the bitcoind wallet about our multisig address, so it can
@@ -569,6 +542,33 @@ class WithdrawalXact:
         self.source_address = source_address
         self.redeem_script = redeem_script
         self.txs = []
+
+
+def create_signed_transaction(source_address, destinations, redeem_script, input_txs):
+    """
+    Returns a hex string representing a signed bitcoin transaction
+    returns => <string>
+
+    source_address: <string> input_txs will be filtered for utxos to this source address
+    destinations: {address <string>: amount<string>} dictionary mapping destination addresses to amount in BTC
+    redeem_script: <string>
+    input_txs: List<dict> List of input transactions in dictionary form (bitcoind decoded format)
+    """
+    ensure_bitcoind_running()
+
+    # prune destination addresses sent 0 btc
+    destinations = OrderedDict((key, val) for key, val in destinations.items() if val != '0')
+
+    prev_txs = calc_prevtxs(source_address, redeem_script, input_txs)
+    tx_unsigned_hex = bitcoin_cli_checkoutput(
+        "createrawtransaction",
+        prev_txs,
+        json.dumps(destinations)).strip()
+
+    signed_tx = bitcoin_cli_json(
+        "signrawtransactionwithwallet",
+        tx_unsigned_hex, prev_txs)
+    return signed_tx
 
 
 ################################################################################################
