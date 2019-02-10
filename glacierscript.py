@@ -379,11 +379,8 @@ def get_fee_interactive(xact, destinations):
     return => <Decimal> fee value
 
     Parameters:
-      source_address: <string> input_txs will be filtered for utxos to this source address
+      xact: WithdrawalXact object
       destinations: {address <string>: amount<string>} dictionary mapping destination addresses to amount in BTC
-      redeem_script: String
-      input_txs: List<dict> List of input transactions in dictionary form (bitcoind decoded format)
-      fee_basis_satoshis_per_byte: <int> optional basis for fee calculation
     """
 
     MAX_FEE = .005  # in btc.  hardcoded limit to protect against user typos
