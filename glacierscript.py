@@ -461,7 +461,7 @@ class WithdrawalXact:
         self.inputs = []
         validate_address(self.source_address, self.redeem_script)
         self.teach_address_to_wallet()
-        self.pubkeys = find_pubkeys(self.source_address)
+        self.pubkeys = self.find_pubkeys(self.source_address)
 
     def create_signed_transaction(self, destinations):
         """
@@ -542,20 +542,19 @@ class WithdrawalXact:
            any("warnings" in result for result in results):
             raise Exception("Problem importing address to wallet")
 
+    def find_pubkeys(self, source_address):
+        """
+        Return a list of the pubkeys associated with the supplied multisig address.
 
-def find_pubkeys(source_address):
-    """
-    Return a list of the pubkeys associated with the supplied multisig address.
+        Assumes this address has already been imported to the wallet using `importmulti`
 
-    Assumes this address has already been imported to the wallet using `importmulti`
-
-    source_address: <string> multisig address
-    """
-    out = bitcoin_cli_json("getaddressinfo", source_address)
-    if "pubkeys" in out:
-        return out["pubkeys"] # for non-segwit addresses
-    else:
-        return out["embedded"]["pubkeys"] # for segwit addresses
+        source_address: <string> multisig address
+        """
+        out = bitcoin_cli_json("getaddressinfo", source_address)
+        if "pubkeys" in out:
+            return out["pubkeys"] # for non-segwit addresses
+        else:
+            return out["embedded"]["pubkeys"] # for segwit addresses
 
 
 def validate_address(source_address, redeem_script):
