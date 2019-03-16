@@ -49,15 +49,15 @@ $(foreach t,$(all-tests),$(eval $(call set_compteur, $(t))))
 # Simulate actual conditions on Quarantined Laptop...bitcoind will
 # normally not be running yet and ~/.bitcoin will not exist
 define cleanup_bitcoind =
-@mkdir -p $(RUNDIR)/bitcoin-test-data
-@bitcoin-cli -testnet -rpcport=$(compteur) -datadir=$(RUNDIR)/bitcoin-test-data stop >/dev/null 2>&1 || exit 0
+@mkdir -p $(BITCOIN_DATA_DIR)
+@bitcoin-cli -testnet -rpcport=$(compteur) -datadir=$(BITCOIN_DATA_DIR) stop >/dev/null 2>&1 || exit 0
 @if pgrep -f "^bitcoind -testnet -rpcport=$(compteur)" >/dev/null; then sleep 1; fi
 @if pgrep -f "^bitcoind -testnet -rpcport=$(compteur)" >/dev/null; then sleep 1; fi
 @if pgrep -f "^bitcoind -testnet -rpcport=$(compteur)" >/dev/null; then sleep 1; fi
 @if pgrep -f "^bitcoind -testnet -rpcport=$(compteur)" >/dev/null; then sleep 1; fi
 @if pgrep -f "^bitcoind -testnet -rpcport=$(compteur)" >/dev/null; then echo Error: unable to stop bitcoind on port $(compteur); exit 1; fi
 @sleep 1
-@rm -rf $(RUNDIR)/bitcoin-test-data
+@rm -rf $(BITCOIN_DATA_DIR)
 endef
 
 test : $(all-tests)
@@ -70,16 +70,18 @@ ifdef COVERAGE
 	@echo HTML coverage report generated in coverage-report/index.html
 	#@rm -rf coverage
 endif
+	@rmdir testrun/bitcoin-data
 	@rmdir testrun
 	@echo "Success, all tests passed."
 
 OUTPUT = $(addsuffix .out, $(basename $<))
 RUNDIR = testrun/$(notdir $@)
+BITCOIN_DATA_DIR = testrun/bitcoin-data/$(compteur)
 
 
 define test_recipe =
 	$(cleanup_bitcoind)
-	@mkdir -p $(RUNDIR)/bitcoin-test-data
+	@mkdir -p $(BITCOIN_DATA_DIR) $(RUNDIR)
 	cd $(RUNDIR) && ../../$< $(compteur) 2>&1 > ../../$(OUTPUT)
 	@$(1) $(word 2, $?) $(OUTPUT) || \
 	  (echo "Test $@ failed" && exit 1)

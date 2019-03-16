@@ -999,7 +999,7 @@ def main():
     args = parser.parse_args()
 
     bitcoin_cli.verbose_mode = args.verbose
-    bitcoin_cli.cli_args = ["-testnet", "-rpcport={}".format(args.testnet), "-datadir=bitcoin-test-data"] if args.testnet else []
+    bitcoin_cli.cli_args = ["-testnet", "-rpcport={}".format(args.testnet), "-datadir=../bitcoin-data/{}".format(args.testnet)] if args.testnet else []
 
     global wif_prefix
     wif_prefix = "EF" if args.testnet else "80"
