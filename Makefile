@@ -56,6 +56,12 @@ define cleanup_bitcoind =
 @if pgrep -f "^bitcoind -testnet -rpcport=$(compteur)" >/dev/null; then sleep 1; fi
 @if pgrep -f "^bitcoind -testnet -rpcport=$(compteur)" >/dev/null; then sleep 1; fi
 @if pgrep -f "^bitcoind -testnet -rpcport=$(compteur)" >/dev/null; then echo Error: unable to stop bitcoind on port $(compteur); exit 1; fi
+@bitcoin-cli -regtest -rpcport=$(compteur) -datadir=$(BITCOIN_DATA_DIR) stop >/dev/null 2>&1 || exit 0
+@if pgrep -f "^bitcoind -regtest -rpcport=$(compteur)" >/dev/null; then sleep 1; fi
+@if pgrep -f "^bitcoind -regtest -rpcport=$(compteur)" >/dev/null; then sleep 1; fi
+@if pgrep -f "^bitcoind -regtest -rpcport=$(compteur)" >/dev/null; then sleep 1; fi
+@if pgrep -f "^bitcoind -regtest -rpcport=$(compteur)" >/dev/null; then sleep 1; fi
+@if pgrep -f "^bitcoind -regtest -rpcport=$(compteur)" >/dev/null; then echo Error: unable to stop bitcoind on port $(compteur); exit 1; fi
 @sleep 1
 @rm -rf $(BITCOIN_DATA_DIR)
 endef

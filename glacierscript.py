@@ -966,26 +966,31 @@ def withdraw_interactive():
     write_and_verify_qr_code("transaction", "transaction.png", signed_tx["hex"].upper())
 
 
-def set_network_params(testnet):
+def set_network_params(testnet, regtest):
     """
     Set global vars cli_args and wif_prefix based on which network we are targeting.
 
     testnet: integer: port for testnet RPC, or None if not testnet
+    regtest: integer: port for regtest RPC, or None if not regtest
     """
     global wif_prefix
     if testnet:
         network = 'testnet'
+    elif regtest:
+        network = 'regtest'
     else:
         network = 'mainnet'
 
     bitcoin_cli.cli_args = {
         'mainnet': [],
         'testnet': ["-testnet", "-rpcport={}".format(testnet), "-datadir=../bitcoin-data/{}".format(testnet)],
+        'regtest': ["-regtest", "-rpcport={}".format(regtest), "-datadir=../bitcoin-data/{}".format(regtest)],
     }[network]
 
     wif_prefix = {
         'mainnet': "80",
         'testnet': "EF",
+        'regtest': "EF",
     }[network]
 
 
@@ -1018,12 +1023,13 @@ def main():
     parser.add_argument(
         "--p2wsh", action="store_true", help="Generate p2wsh (native segwit) deposit address, instead of p2wsh-in-p2sh")
     parser.add_argument('--testnet', type=int, help=argparse.SUPPRESS)
+    parser.add_argument('--regtest', type=int, help=argparse.SUPPRESS)
     parser.add_argument('-v', '--verbose', action='store_true', help='increase output verbosity')
     args = parser.parse_args()
 
     bitcoin_cli.verbose_mode = args.verbose
 
-    set_network_params(args.testnet)
+    set_network_params(args.testnet, args.regtest)
 
     if args.program == "entropy":
         entropy(args.num_keys, args.rng)
