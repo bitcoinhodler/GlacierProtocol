@@ -12,6 +12,7 @@
 ###################################################################
 
 import argparse
+from decimal import Decimal
 import os
 import sys
 
@@ -27,7 +28,15 @@ def start():
     os.makedirs('bitcoin-online-data', exist_ok=True)
     glacierscript.ensure_bitcoind_running()
     adrs = bitcoin_cli.checkoutput("getnewaddress", '', 'p2sh-segwit').strip()
-    bitcoin_cli.checkcall("generatetoaddress", "101", adrs)
+    mine_block(101)  # 101 so we have some coinbase outputs that are spendable
+
+
+def mine_block(count=1):
+    """
+    Mine one or more blocks in our regtest blockchain.
+    """
+    adrs = bitcoin_cli.checkoutput("getnewaddress", '', 'p2sh-segwit').strip()
+    bitcoin_cli.checkcall("generatetoaddress", "{}".format(count), adrs)
 
 
 def stop():
