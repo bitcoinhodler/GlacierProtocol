@@ -966,6 +966,29 @@ def withdraw_interactive():
     write_and_verify_qr_code("transaction", "transaction.png", signed_tx["hex"].upper())
 
 
+def set_network_params(testnet):
+    """
+    Set global vars cli_args and wif_prefix based on which network we are targeting.
+
+    testnet: integer: port for testnet RPC, or None if not testnet
+    """
+    global wif_prefix
+    if testnet:
+        network = 'testnet'
+    else:
+        network = 'mainnet'
+
+    bitcoin_cli.cli_args = {
+        'mainnet': [],
+        'testnet': ["-testnet", "-rpcport={}".format(testnet), "-datadir=../bitcoin-data/{}".format(testnet)],
+    }[network]
+
+    wif_prefix = {
+        'mainnet': "80",
+        'testnet': "EF",
+    }[network]
+
+
 ################################################################################################
 #
 # main function
@@ -1000,21 +1023,7 @@ def main():
 
     bitcoin_cli.verbose_mode = args.verbose
 
-    global wif_prefix
-    if args.testnet:
-        network = 'testnet'
-    else:
-        network = 'mainnet'
-
-    bitcoin_cli.cli_args = {
-        'mainnet': [],
-        'testnet': ["-testnet", "-rpcport={}".format(args.testnet), "-datadir=../bitcoin-data/{}".format(args.testnet)],
-    }[network]
-
-    wif_prefix = {
-        'mainnet': "80",
-        'testnet': "EF",
-    }[network]
+    set_network_params(args.testnet)
 
     if args.program == "entropy":
         entropy(args.num_keys, args.rng)
