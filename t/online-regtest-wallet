@@ -13,6 +13,7 @@
 
 import argparse
 from decimal import Decimal
+import json
 import os
 import sys
 
@@ -29,6 +30,7 @@ def start():
     glacierscript.ensure_bitcoind_running()
     adrs = bitcoin_cli.checkoutput("getnewaddress", '', 'p2sh-segwit').strip()
     mine_block(101)  # 101 so we have some coinbase outputs that are spendable
+    print("Created this for p2sh-segwit:", build_input_xacts())
 
 
 def mine_block(count=1):
@@ -37,6 +39,66 @@ def mine_block(count=1):
     """
     adrs = bitcoin_cli.checkoutput("getnewaddress", '', 'p2sh-segwit').strip()
     bitcoin_cli.checkcall("generatetoaddress", "{}".format(count), adrs)
+
+
+def create_input2(addresstype, amount):
+    """
+    Create an input for an input (input^2).
+
+    Because GlacierScript needs the entire transaction for each input,
+    the format of the inputs to that transaction matter. This function
+    will create transactions which become inputs to the transactions
+    we feed to GlacierScript.
+
+    addresstype: string: legacy, p2sh-segwit, or bech32
+    amount: Decimal: amount in tBTC
+
+    Returns an input in the format expected by createrawtransaction,
+    e.g. a dict with keys txid, vout.
+
+    Creates & mines transactions.
+    """
+    adrs = bitcoin_cli.checkoutput("getnewaddress", '', addresstype).strip()
+    txid = bitcoin_cli.checkoutput("sendtoaddress", adrs, str(amount)).strip()
+    mine_block()
+    rawtx = bitcoin_cli.json("gettransaction", txid)["hex"]
+    tx = bitcoin_cli.json("decoderawtransaction", rawtx)
+    # Find our vout
+    vout = next(vout for vout in tx["vout"] if adrs in vout["scriptPubKey"]["addresses"])
+    return {
+        "txid": tx["txid"],
+        "vout": vout["n"]
+    }
+
+
+def build_input_xacts():
+    """
+    Construct transactions on the blockchain as expected by our Glacier withdrawal tests.
+
+    Returns: raw hex transaction for the one input expected by create-withdrawal-data.p2sh-segwit.run.
+    Obviously this will change soon.
+    """
+    # Start with create-withdrawal-data.p2sh-segwit.run:
+    inputs = [ create_input2('legacy', Decimal("1.0")) ]
+    change_adrs = bitcoin_cli.checkoutput("getnewaddress", '', 'legacy').strip()
+    outputs = [
+        { change_adrs: '0.89912787'},
+        { '2N93du8YobdgsHyu3qgBvSyhGUT52utMNeA': '0.1' }
+    ]
+    rawtx = bitcoin_cli.checkoutput("createrawtransaction",
+                                                  json.dumps(inputs),
+                                                  json.dumps(outputs)).strip()
+    signedtx = bitcoin_cli.json("signrawtransactionwithwallet", rawtx)
+    if not signedtx["complete"]:
+        raise ValueError("unable to sign transaction")
+    txid = bitcoin_cli.checkoutput("sendrawtransaction", signedtx["hex"]).strip()
+    mine_block()
+    # Ensure that transaction was mined successfully
+    tx = bitcoin_cli.json("gettransaction", txid)
+    if tx["confirmations"] != 1:
+        raise ValueError("somehow my xact did not get mined?")
+    return tx["hex"]
+
 
 
 def stop():
