@@ -999,10 +999,22 @@ def main():
     args = parser.parse_args()
 
     bitcoin_cli.verbose_mode = args.verbose
-    bitcoin_cli.cli_args = ["-testnet", "-rpcport={}".format(args.testnet), "-datadir=../bitcoin-data/{}".format(args.testnet)] if args.testnet else []
 
     global wif_prefix
-    wif_prefix = "EF" if args.testnet else "80"
+    if args.testnet:
+        network = 'testnet'
+    else:
+        network = 'mainnet'
+
+    bitcoin_cli.cli_args = {
+        'mainnet': [],
+        'testnet': ["-testnet", "-rpcport={}".format(args.testnet), "-datadir=../bitcoin-data/{}".format(args.testnet)],
+    }[network]
+
+    wif_prefix = {
+        'mainnet': "80",
+        'testnet': "EF",
+    }[network]
 
     if args.program == "entropy":
         entropy(args.num_keys, args.rng)
