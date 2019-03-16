@@ -20,11 +20,11 @@ import glacierscript
 import bitcoin_cli
 
 # Vars that glacierscript expects (ugh)
-bitcoin_cli.cli_args = ["-regtest", "-datadir=bitcoin-data"]
+bitcoin_cli.cli_args = ["-regtest", "-datadir=bitcoin-online-data"]
 glacierscript.wif_prefix = "EF"
 
 def start():
-    os.makedirs('bitcoin-data', exist_ok=True)
+    os.makedirs('bitcoin-online-data', exist_ok=True)
     glacierscript.ensure_bitcoind_running()
     adrs = bitcoin_cli.checkoutput("getnewaddress", '', 'p2sh-segwit').strip()
     bitcoin_cli.checkcall("generatetoaddress", "101", adrs)
