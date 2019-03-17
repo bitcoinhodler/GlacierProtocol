@@ -45,7 +45,9 @@ def start(_):
     glacierscript.ensure_bitcoind_running()
     adrs = bitcoin_cli.checkoutput("getnewaddress", '', 'p2sh-segwit').strip()
     mine_block(101)  # 101 so we have some coinbase outputs that are spendable
-    print("Created this for p2sh-segwit:", build_input_xacts())
+    tx = build_input_xacts()
+    print("Created this for p2sh-segwit:", tx)
+    print("Signature is", glacierscript.hash_md5(tx.encode("ascii")))
 
 
 def mine_block(count=1):
