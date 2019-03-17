@@ -509,7 +509,7 @@ class WithdrawalXact:
             import_this["witnessscript"] = self.redeem_script
             if self.source_address == decoded_script["segwit"]["p2sh-segwit"]:
                 import_this["redeemscript"] = decoded_script["segwit"]["hex"]
-        results = bitcoin_cli.json("importmulti", json.dumps([import_this]))
+        results = bitcoin_cli.json("importmulti", jsonstr([import_this]))
         if not all(result["success"] for result in results) or \
            any("warnings" in result for result in results):
             raise Exception("Problem importing address to wallet")  # pragma: no cover
