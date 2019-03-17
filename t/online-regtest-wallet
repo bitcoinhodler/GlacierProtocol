@@ -55,9 +55,11 @@ def start(_):
 def mine_block(count=1):
     """
     Mine one or more blocks in our regtest blockchain.
+    Returns the block hash of the most recent block.
     """
     adrs = bitcoin_cli.checkoutput("getnewaddress", '', 'p2sh-segwit').strip()
-    bitcoin_cli.checkcall("generatetoaddress", "{}".format(count), adrs)
+    block_hashes = bitcoin_cli.json("generatetoaddress", "{}".format(count), adrs)
+    return block_hashes[-1]
 
 
 def create_input2(addresstype, amount):
@@ -140,9 +142,9 @@ def confirm_raw_tx(tx):
 
     """
     txid = bitcoin_cli.checkoutput("sendrawtransaction", tx).strip()
-    mine_block()
+    block_hash = mine_block()
     # Ensure that transaction was mined successfully
-    tx = bitcoin_cli.json("gettransaction", txid)
+    tx = bitcoin_cli.json("getrawtransaction", txid, 'true', block_hash)
     if tx["confirmations"] != 1:
         raise ValueError("somehow my xact did not get mined?")
 
