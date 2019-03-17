@@ -25,7 +25,7 @@ import bitcoin_cli
 bitcoin_cli.cli_args = ["-regtest", "-datadir=bitcoin-online-data"]
 glacierscript.wif_prefix = "EF"
 
-def start():
+def start(_):
     os.makedirs('bitcoin-online-data', exist_ok=True)
     glacierscript.ensure_bitcoind_running()
     adrs = bitcoin_cli.checkoutput("getnewaddress", '', 'p2sh-segwit').strip()
@@ -101,7 +101,7 @@ def build_input_xacts():
 
 
 
-def stop():
+def stop(_):
     bitcoin_cli.checkcall("stop")
 
 # HACK add cmdline option to transmit a transaction (and validate it)
@@ -109,13 +109,17 @@ def stop():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('program', choices=['start', 'stop'])
     parser.add_argument('-v', '--verbose', action='store_true', help='increase output verbosity')
+    subparsers = parser.add_subparsers()
+
+    parser_start = subparsers.add_parser('start')
+    parser_start.set_defaults(program=start)
+
+    parser_stop = subparsers.add_parser('stop')
+    parser_stop.set_defaults(program=stop)
+
     args = parser.parse_args()
 
     bitcoin_cli.verbose_mode = args.verbose
 
-    if args.program == 'start':
-        start()
-    if args.program == 'stop':
-        stop()
+    args.program(args)
