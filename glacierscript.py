@@ -440,7 +440,7 @@ class WithdrawalXact:
         tx_unsigned_hex = bitcoin_cli.checkoutput(
             "createrawtransaction",
             prev_txs,
-            json.dumps(destinations, cls=DecimalEncoder)).strip()
+            jsonstr(destinations)).strip()
 
         signed_tx = bitcoin_cli.json(
             "signrawtransactionwithwallet",
