@@ -149,6 +149,10 @@ def confirm_raw_tx(tx):
         raise ValueError("somehow my xact did not get mined?")
 
 
+def submit(args):
+    confirm_raw_tx(args.tx)
+
+
 def stop(_):
     bitcoin_cli.checkcall("stop")
 
@@ -162,6 +166,10 @@ if __name__ == "__main__":
 
     parser_start = subparsers.add_parser('start')
     parser_start.set_defaults(program=start)
+
+    parser_submit = subparsers.add_parser('submit')
+    parser_submit.set_defaults(program=submit)
+    parser_submit.add_argument('--tx', required=True)
 
     parser_stop = subparsers.add_parser('stop')
     parser_stop.set_defaults(program=stop)
