@@ -27,6 +27,8 @@ import bitcoin_cli
 bitcoin_cli.cli_args = ["-regtest", "-datadir=bitcoin-online-data"]
 glacierscript.wif_prefix = "EF"
 
+MIN_FEE = Decimal("0.00010000")
+
 def start(_):
     # We start with a pre-created wallet.dat so that our addressess
     # will be the same every time we run.
@@ -75,13 +77,28 @@ def create_input2(addresstype, amount):
 
     Creates & mines transactions.
     """
-    adrs = bitcoin_cli.checkoutput("getnewaddress", '', addresstype).strip()
-    txid = bitcoin_cli.checkoutput("sendtoaddress", adrs, str(amount)).strip()
-    mine_block()
-    rawtx = bitcoin_cli.json("gettransaction", txid)["hex"]
-    tx = bitcoin_cli.json("decoderawtransaction", rawtx)
-    # Find our vout
-    vout = next(vout for vout in tx["vout"] if adrs in vout["scriptPubKey"]["addresses"])
+    unspents = bitcoin_cli.json("listunspent")
+    # Choose first unspent that's large enough. There should always be one because of
+    # all our coinbase outputs of 50.0 BTC
+    input = next(unspent for unspent in unspents if unspent["amount"] >= amount)
+    change_adrs = bitcoin_cli.checkoutput("getnewaddress", '', addresstype).strip()
+    dest_adrs = bitcoin_cli.checkoutput("getnewaddress", '', addresstype).strip()
+    outputs = [
+        { change_adrs: input["amount"] - amount - MIN_FEE },
+        { dest_adrs: amount }
+    ]
+    rawtx = bitcoin_cli.checkoutput("createrawtransaction",
+                                                  json.dumps([input], cls=glacierscript.DecimalEncoder),
+                                                  json.dumps(outputs, cls=glacierscript.DecimalEncoder)).strip()
+    signedtx = bitcoin_cli.json("signrawtransactionwithwallet", rawtx)
+    if not signedtx["complete"]:
+        raise ValueError("unable to sign transaction")
+    confirm_raw_tx(signedtx["hex"])
+
+    tx = bitcoin_cli.json("decoderawtransaction", signedtx["hex"])
+    # Find our vout. This is more flexible than necessary since we
+    # fix the order of our two outputs above.
+    vout = next(vout for vout in tx["vout"] if dest_adrs in vout["scriptPubKey"]["addresses"])
     return {
         "txid": tx["txid"],
         "vout": vout["n"]
@@ -103,8 +120,8 @@ def build_input_xacts():
         { '2N93du8YobdgsHyu3qgBvSyhGUT52utMNeA': '0.1' }
     ]
     rawtx = bitcoin_cli.checkoutput("createrawtransaction",
-                                                  json.dumps(inputs),
-                                                  json.dumps(outputs)).strip()
+                                                  json.dumps(inputs, cls=glacierscript.DecimalEncoder),
+                                                  json.dumps(outputs, cls=glacierscript.DecimalEncoder)).strip()
     signedtx = bitcoin_cli.json("signrawtransactionwithwallet", rawtx)
     if not signedtx["complete"]:
         raise ValueError("unable to sign transaction")
