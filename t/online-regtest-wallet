@@ -91,14 +91,22 @@ def build_input_xacts():
     signedtx = bitcoin_cli.json("signrawtransactionwithwallet", rawtx)
     if not signedtx["complete"]:
         raise ValueError("unable to sign transaction")
-    txid = bitcoin_cli.checkoutput("sendrawtransaction", signedtx["hex"]).strip()
+    confirm_raw_tx(signedtx["hex"])
+    return signedtx["hex"]
+
+
+def confirm_raw_tx(tx):
+    """
+    Given a raw transaction, submit that to bitcoind (which must
+    already be running) and mine it, failing if it's not accepted.
+
+    """
+    txid = bitcoin_cli.checkoutput("sendrawtransaction", tx).strip()
     mine_block()
     # Ensure that transaction was mined successfully
     tx = bitcoin_cli.json("gettransaction", txid)
     if tx["confirmations"] != 1:
         raise ValueError("somehow my xact did not get mined?")
-    return tx["hex"]
-
 
 
 def stop(_):
