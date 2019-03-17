@@ -372,6 +372,15 @@ class DecimalEncoder(json.JSONEncoder):
         return super().default(o)  # pragma: no cover
 
 
+
+def jsonstr(thing):
+    """
+    Return a JSON string representation of thing.
+    Decimal values are encoded as strings to avoid any floating point imprecision.
+    """
+    return json.dumps(thing, cls=DecimalEncoder)
+
+
 ################################################################################################
 #
 # Withdrawal transaction construction class
@@ -426,7 +435,7 @@ class WithdrawalXact:
         """
         ensure_bitcoind_running()
 
-        prev_txs = json.dumps(self._inputs, cls=DecimalEncoder)
+        prev_txs = jsonstr(self._inputs)
         tx_unsigned_hex = bitcoin_cli.checkoutput(
             "createrawtransaction",
             prev_txs,
