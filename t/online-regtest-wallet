@@ -88,8 +88,8 @@ def create_input2(addresstype, amount):
         { dest_adrs: amount }
     ]
     rawtx = bitcoin_cli.checkoutput("createrawtransaction",
-                                                  json.dumps([input], cls=glacierscript.DecimalEncoder),
-                                                  json.dumps(outputs, cls=glacierscript.DecimalEncoder)).strip()
+                                                  glacierscript.jsonstr([input]),
+                                                  glacierscript.jsonstr(outputs)).strip()
     signedtx = bitcoin_cli.json("signrawtransactionwithwallet", rawtx)
     if not signedtx["complete"]:
         raise ValueError("unable to sign transaction")
@@ -120,8 +120,8 @@ def build_input_xacts():
         { '2N93du8YobdgsHyu3qgBvSyhGUT52utMNeA': '0.1' }
     ]
     rawtx = bitcoin_cli.checkoutput("createrawtransaction",
-                                                  json.dumps(inputs, cls=glacierscript.DecimalEncoder),
-                                                  json.dumps(outputs, cls=glacierscript.DecimalEncoder)).strip()
+                                                  glacierscript.jsonstr(inputs),
+                                                  glacierscript.jsonstr(outputs)).strip()
     signedtx = bitcoin_cli.json("signrawtransactionwithwallet", rawtx)
     if not signedtx["complete"]:
         raise ValueError("unable to sign transaction")
