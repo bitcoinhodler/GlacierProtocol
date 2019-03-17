@@ -357,12 +357,6 @@ def get_fee_interactive(xact, destinations):
     return fee
 
 
-################################################################################################
-#
-# Withdrawal transaction construction class
-#
-################################################################################################
-
 # From https://stackoverflow.com/a/3885198 modified to dump as string, so no floats ever involved
 class DecimalEncoder(json.JSONEncoder):
     """
@@ -377,6 +371,12 @@ class DecimalEncoder(json.JSONEncoder):
             return str(o)
         return super().default(o)  # pragma: no cover
 
+
+################################################################################################
+#
+# Withdrawal transaction construction class
+#
+################################################################################################
 
 class WithdrawalXact:
     """
