@@ -119,9 +119,19 @@ def build_input_xacts():
         { change_adrs: '0.89912787'},
         { '2N93du8YobdgsHyu3qgBvSyhGUT52utMNeA': '0.1' }
     ]
+    return create_and_mine(inputs, outputs)
+
+
+def create_and_mine(inputs, outputs):
+    """
+    Take the given inputs and outputs (in createrawtransaction form)
+    and put that transaction into the blockchain.
+
+    Returns the raw hex transaction.
+    """
     rawtx = bitcoin_cli.checkoutput("createrawtransaction",
-                                                  glacierscript.jsonstr(inputs),
-                                                  glacierscript.jsonstr(outputs)).strip()
+                                    glacierscript.jsonstr(inputs),
+                                    glacierscript.jsonstr(outputs)).strip()
     signedtx = bitcoin_cli.json("signrawtransactionwithwallet", rawtx)
     if not signedtx["complete"]:
         raise ValueError("unable to sign transaction")
