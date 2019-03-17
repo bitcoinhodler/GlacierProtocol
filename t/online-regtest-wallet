@@ -15,7 +15,9 @@ import argparse
 from decimal import Decimal
 import json
 import os
+import shutil
 import sys
+import time
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import glacierscript
@@ -26,7 +28,20 @@ bitcoin_cli.cli_args = ["-regtest", "-datadir=bitcoin-online-data"]
 glacierscript.wif_prefix = "EF"
 
 def start(_):
-    os.makedirs('bitcoin-online-data', exist_ok=True)
+    # We start with a pre-created wallet.dat so that our addressess
+    # will be the same every time we run.
+    if bitcoin_cli.call('stop') == 0:
+        # in case already running, wait a bit for it to exit
+        time.sleep(1)
+
+    try:
+        shutil.rmtree('bitcoin-online-data')
+    except FileNotFoundError:
+        pass  # we don't care if it wasn't already there
+    os.makedirs('bitcoin-online-data/regtest/wallets')
+    shutil.copyfile(os.path.join(os.path.dirname(__file__), 'regtest-initial-wallet.dat'),
+                    'bitcoin-online-data/regtest/wallets/wallet.dat')
+
     glacierscript.ensure_bitcoind_running()
     adrs = bitcoin_cli.checkoutput("getnewaddress", '', 'p2sh-segwit').strip()
     mine_block(101)  # 101 so we have some coinbase outputs that are spendable
