@@ -85,13 +85,14 @@ endif
 OUTPUT = $(addsuffix .out, $(basename $<))
 RUNDIR = testrun/$(notdir $@)
 BITCOIN_DATA_DIR = testrun/bitcoin-data/$(compteur)
-
+# Used only within the %.test rule:
+GOLDEN_FILE = $(word 2, $?)
 
 define test_recipe =
 	$(cleanup_bitcoind)
 	@mkdir -p $(BITCOIN_DATA_DIR) $(RUNDIR)
 	cd $(RUNDIR) && ../../$< $(compteur) 2>&1 > ../../$(OUTPUT)
-	@$(1) $(word 2, $?) $(OUTPUT) || \
+	@$(1) $(GOLDEN_FILE) $(OUTPUT) || \
 	  (echo "Test $@ failed" && exit 1)
 	$(cleanup_bitcoind)
 	@rm -rf $(RUNDIR)
