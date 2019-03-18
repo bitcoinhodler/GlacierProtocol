@@ -167,7 +167,7 @@ def submit(args):
         confirm_raw_tx(rawtx)
         decoded_tx = bitcoin_cli.checkoutput("decoderawtransaction", rawtx)
     except NoTransactionFound:
-        decoded_tx = "No transaction found"
+        decoded_tx = "No transaction found\n"
     write_decoded_tx(infile, decoded_tx)
 
 
@@ -192,7 +192,17 @@ def find_withdrawal_tx(infile):
 
 
 def write_decoded_tx(infile, decoded_tx):
-    print("Need to write this decoded tx:", decoded_tx)
+    """
+    Write out the decoded_tx to the *.decoded file.
+    """
+    EXPECTED_SUFFIX = ".golden"
+    NEW_SUFFIX = ".decoded"
+    if not infile.endswith(EXPECTED_SUFFIX):
+        raise ValueError("expected filename to end with " + EXPECTED_SUFFIX)
+    base = infile[:-len(EXPECTED_SUFFIX)]
+    decoded_file = base + NEW_SUFFIX
+    with open(decoded_file, 'wt') as f:
+        f.write(decoded_tx)
 
 
 def stop(_):
