@@ -15,6 +15,7 @@ import argparse
 from decimal import Decimal
 import json
 import os
+import re
 import shutil
 import sys
 import time
@@ -195,12 +196,11 @@ def write_decoded_tx(infile, decoded_tx):
     """
     Write out the decoded_tx to the *.decoded file.
     """
-    EXPECTED_SUFFIX = ".golden"
+    EXPECTED_SUFFIX = r"\.golden(\.re)?\Z"
     NEW_SUFFIX = ".decoded"
-    if not infile.endswith(EXPECTED_SUFFIX):
+    decoded_file = re.sub(EXPECTED_SUFFIX, NEW_SUFFIX, infile)
+    if not decoded_file.endswith(NEW_SUFFIX):
         raise ValueError("expected filename to end with " + EXPECTED_SUFFIX)
-    base = infile[:-len(EXPECTED_SUFFIX)]
-    decoded_file = base + NEW_SUFFIX
     with open(decoded_file, 'wt') as f:
         f.write(decoded_tx)
 
