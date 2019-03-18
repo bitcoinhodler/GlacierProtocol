@@ -94,6 +94,11 @@ define test_recipe =
 	cd $(RUNDIR) && ../../$< $(compteur) 2>&1 > ../../$(OUTPUT)
 	@$(1) $(GOLDEN_FILE) $(OUTPUT) || \
 	  (echo "Test $@ failed" && exit 1)
+	@if [[ "$@" == *"withdrawal"* ]]; then \
+	  if grep --word-regexp --quiet -- -regtest $<; then \
+	    (cd testrun && ../t/online-regtest-wallet submit ../$(GOLDEN_FILE)); \
+	  fi; \
+	fi
 	$(cleanup_bitcoind)
 	@rm -rf $(RUNDIR)
 	@rm $(OUTPUT)
