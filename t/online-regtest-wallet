@@ -212,18 +212,26 @@ def stop(_):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="""
+        This tool is used to control an "online" Bitcoin node for testing Glacier.
+    """)
     parser.add_argument('-v', '--verbose', action='store_true', help='increase output verbosity')
     subparsers = parser.add_subparsers()
 
-    parser_start = subparsers.add_parser('start')
+    parser_start = subparsers.add_parser('start', help="""
+        Start the regtest server and create transactions as expected by test withdrawals.
+    """)
     parser_start.set_defaults(program=start)
 
-    parser_submit = subparsers.add_parser('submit')
+    parser_submit = subparsers.add_parser('submit', help="""
+        Parse a *.golden test output, submit its withdrawal transaction to bitcoind.
+    """)
     parser_submit.set_defaults(program=submit)
     parser_submit.add_argument('goldenfile')
 
-    parser_stop = subparsers.add_parser('stop')
+    parser_stop = subparsers.add_parser('stop', help="""
+        Stop the regtest server.
+    """)
     parser_stop.set_defaults(program=stop)
 
     args = parser.parse_args()
