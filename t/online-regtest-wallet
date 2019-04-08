@@ -17,6 +17,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 import time
 
@@ -211,7 +212,11 @@ def create_and_mine(inputs, outputs):
     signedtx = bitcoin_cli.json("signrawtransactionwithwallet", rawtx)
     if not signedtx["complete"]:
         raise ValueError("unable to sign transaction")
-    confirm_raw_tx(signedtx["hex"])
+    try:
+        confirm_raw_tx(signedtx["hex"])
+    except subprocess.CalledProcessError as e:
+        print("Failed to confirm tx:\n", e.output)
+        raise e
     return signedtx["hex"]
 
 
