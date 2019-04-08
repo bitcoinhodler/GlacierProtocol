@@ -147,6 +147,15 @@ wallets. But we do want to test such withdrawals!
 
 """
 
+def build_inputs2(like_tx):
+    """Given a JSON decoded transaction, build the inputs needed.
+
+    Returns: list of inputs in createrawtransaction form, which you
+    can give directly to create_and_mine().
+
+    """
+
+    return [ create_input2('legacy', Decimal("1.0")) ]
 
 def build_input_xact(cold_address, like_this):
     """Construct a single transaction on the blockchain as expected by
@@ -163,7 +172,8 @@ def build_input_xact(cold_address, like_this):
     """
     like_tx = bitcoin_cli.checkoutput("decoderawtransaction", like_this)
     # TODO: parse like_tx
-    inputs = [ create_input2('legacy', Decimal("1.0")) ]
+    print(like_tx)
+    inputs = build_inputs2(like_tx)
     change_adrs = bitcoin_cli.checkoutput("getnewaddress", '', 'legacy').strip()
     outputs = [
         { change_adrs: '0.89912787'},
