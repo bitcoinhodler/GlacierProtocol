@@ -193,6 +193,23 @@ def build_inputs2(like_tx):
     return [ build_one_input2(vin, each_input_btc) for vin in like_tx["vin"] ]
 
 
+def build_inp_outputs(cold_address, like_tx):
+    """Given a JSON decoded transaction, build the outputs needed.
+
+    cold_address: Glacier-created cold storage address that this
+    transaction should deposit to
+
+    Returns: list of outputs in createrawtransaction form, which you
+    can give directly to create_and_mine().
+
+    """
+    change_adrs = bitcoin_cli.checkoutput("getnewaddress", '', 'legacy').strip()
+    return [
+        { change_adrs: '0.89912787'},
+        { cold_address: '0.1' }
+    ]
+
+
 def build_input_xact(cold_address, like_this):
     """Construct a single transaction on the blockchain as expected by
     one of our Glacier withdrawal tests.
@@ -208,11 +225,7 @@ def build_input_xact(cold_address, like_this):
     """
     like_tx = bitcoin_cli.json("decoderawtransaction", like_this)
     inputs = build_inputs2(like_tx)
-    change_adrs = bitcoin_cli.checkoutput("getnewaddress", '', 'legacy').strip()
-    outputs = [
-        { change_adrs: '0.89912787'},
-        { cold_address: '0.1' }
-    ]
+    outputs = build_inp_outputs(cold_address, like_tx)
     return create_and_mine(inputs, outputs)
 
 
