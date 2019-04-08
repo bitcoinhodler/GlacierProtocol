@@ -155,7 +155,7 @@ def build_one_input2(vin, amount_btc):
     amount_btc: amount in BTC to put in this utxo
     """
     # TODO: implement me
-    return create_input2('legacy', Decimal("1.0"))
+    return create_input2('legacy', amount_btc)
 
 
 def build_inputs2(like_tx):
