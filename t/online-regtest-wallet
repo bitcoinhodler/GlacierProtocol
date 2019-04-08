@@ -252,7 +252,6 @@ def write_decoded_tx(infile, decoded_tx):
 def stop(_):
     bitcoin_cli.checkcall("stop")
 
-# HACK add cmdline option to transmit a transaction (and validate it)
 
 
 if __name__ == "__main__":
