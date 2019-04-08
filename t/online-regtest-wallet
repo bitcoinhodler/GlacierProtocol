@@ -171,7 +171,7 @@ def build_inputs2(like_tx):
     input_count = len(like_tx["vin"])
     # Add one sat to each input (which will go to the miner fee)
     # so that rounding doesn't result in a less-than-min miner fee
-    each_input_btc = (total_output_btc / input_count).quantize(glacierscript.SATOSHI_PLACES) + glacierscript.SATOSHI_PLACES
+    each_input_btc = ((total_output_btc + MIN_FEE) / input_count).quantize(glacierscript.SATOSHI_PLACES) + glacierscript.SATOSHI_PLACES
 
     return [ build_one_input2(vin, each_input_btc) for vin in like_tx["vin"] ]
 
