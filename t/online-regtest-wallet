@@ -147,6 +147,16 @@ wallets. But we do want to test such withdrawals!
 
 """
 
+def build_one_input2(vin, amount_btc):
+    """Construct a single input for an input (input^2).
+
+    vin: One entry from tx["vin"] that we want to reconstruct
+    amount_btc: amount in BTC to put in this utxo
+    """
+    # TODO: implement me
+    return create_input2('legacy', Decimal("1.0"))
+
+
 def build_inputs2(like_tx):
     """Given a JSON decoded transaction, build the inputs needed.
 
@@ -154,8 +164,16 @@ def build_inputs2(like_tx):
     can give directly to create_and_mine().
 
     """
+    # The total value of all the inputs we create must add up to the
+    # total outputs plus the min xact fee.
+    total_output_btc = sum(vout["value"] for vout in like_tx["vout"])
+    input_count = len(like_tx["vin"])
+    # Add one sat to each input (which will go to the miner fee)
+    # so that rounding doesn't result in a less-than-min miner fee
+    each_input_btc = (total_output_btc / input_count).quantize(glacierscript.SATOSHI_PLACES) + glacierscript.SATOSHI_PLACES
 
-    return [ create_input2('legacy', Decimal("1.0")) ]
+    return [ build_one_input2(vin, each_input_btc) for vin in like_tx["vin"] ]
+
 
 def build_input_xact(cold_address, like_this):
     """Construct a single transaction on the blockchain as expected by
@@ -170,9 +188,7 @@ def build_input_xact(cold_address, like_this):
     Returns: raw hex transaction.
 
     """
-    like_tx = bitcoin_cli.checkoutput("decoderawtransaction", like_this)
-    # TODO: parse like_tx
-    print(like_tx)
+    like_tx = bitcoin_cli.json("decoderawtransaction", like_this)
     inputs = build_inputs2(like_tx)
     change_adrs = bitcoin_cli.checkoutput("getnewaddress", '', 'legacy').strip()
     outputs = [
