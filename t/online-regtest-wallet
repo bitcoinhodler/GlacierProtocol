@@ -346,6 +346,72 @@ def write_decoded_tx(infile, decoded_tx):
         f.write(decoded_tx)
 
 
+class ParsedRunfile():
+    """
+    Representation of a *.run file.
+
+    This class will parse a *.run file, convert its glacierscript
+    command-line to use --regtest instead of --testnet, find the input
+    transactions used, and present them as an API for possible
+    modification. It can then write out the regenerated file.
+    """
+
+    def __init__(self, filename):
+        """Open file and parse it."""
+        self.modified = False
+        with open(filename, 'rt') as infile:
+            contents = infile.read()
+        self.parse_lines(contents)
+
+
+    @staticmethod
+    def parser_coroutine(contents):
+        """
+        Accept a sequence of regexps that contents must match, yielding matched strings.
+
+        The contents must match each regexp in order.
+
+        Exits once all the contents have been consumed.
+        """
+        match = None
+        while len(contents) > 0:
+            regexp = yield match.group() if match else None
+            match = re.match(regexp, contents, re.DOTALL | re.MULTILINE | re.VERBOSE)
+            if not match:
+                raise RuntimeError("did not match expected regexp")
+            contents = contents[match.end():]
+
+
+    def parse_lines(self, contents):
+        """Go through contents (one giant string) to find what we need."""
+        parser = self.parser_coroutine(contents)
+        next(parser)  # prime the coroutine
+        front_matter = parser.send(r"""
+                           \A     # beginning of file
+                           .*?    # match as few as possible
+                           ^      # beginning of line
+                           \$GLACIERSCRIPT  # Run script
+                           \s+ -- # beginning of --testnet or --regtest
+                        """)
+        print("WOW found front matter:", front_matter)
+        testmode = parser.send(r"""
+                       (testnet|regtest)
+                    """)
+        print("WOW found testmode:", testmode)
+        raise NotImplementedError("finish this")
+
+
+def convert_one_file(filename):
+
+    """
+    Convert one *.run file from testnet to regtest.
+    """
+    runfile = ParsedRunfile(filename)
+    for intx in runfile.input_txs():
+        print("Found input tx: {}".format(intx))
+    runfile.save()
+
+
 def convert(args):
     """
     Parse a *.run test input, convert it from testnet to regtest (if needed),
@@ -353,7 +419,8 @@ def convert(args):
     write out new *.run file with its input transactions replaced with regtest versions.
     """
     for runfile in args.runfile:
-        print("TODO: convert {}".format(runfile))
+        print("Converting {} to regtest...".format(runfile))
+        convert_one_file(runfile)
 
 
 def stop(_):
