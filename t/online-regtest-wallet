@@ -465,6 +465,7 @@ def convert(args):
             convert_one_file(runfile)
         except ParseError:
             print("*** Error converting that one. This is expected, if this test doesn't actually create any withdrawal transaction.")
+    stop(args)
 
 
 def stop(_):
