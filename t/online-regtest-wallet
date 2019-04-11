@@ -340,6 +340,27 @@ def write_decoded_tx(infile, decoded_tx):
         f.write(decoded_tx)
 
 
+class TxFile():
+    """Class to model tx.json file.
+
+    This file keeps track of all the transactions we need to create
+    which will be used as inputs to our test withdrawals.
+
+    If a developer changes a test, it's important for test stability
+    that that test's new transactions get created after all the
+    previous ones, including the ones previously used by that test.
+
+    Otherwise, touching one test could change all the inputs used by
+    all of the tests.
+
+    Therefore, we keep track of even obsolete tests formerly used by a
+    given *.run file. The tx.json file is effectively append-only:
+    except for marking old transactions as obsolete, the only changes
+    we make are to append new transactions to the end of the list. (By
+    the `convert` subcommand.)
+
+    """
+
 class ParseError(RuntimeError):
     """Exception class for errors encountered in parsing a *.run file."""
 
