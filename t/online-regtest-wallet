@@ -22,6 +22,7 @@ import sys
 import textwrap
 import time
 
+from atomic_write import atomic_write
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import glacierscript
 import bitcoin_cli
@@ -432,7 +433,7 @@ class ParsedRunfile():
     def save(self):
         if not self.modified:
             return
-        with open(self.filename, 'wt') as outfile:
+        with atomic_write(self.filename) as outfile:
             outfile.write(self.front_matter)
             outfile.write("\n".join(self.input_txs))
             outfile.write("\n")  # one more after last input tx
