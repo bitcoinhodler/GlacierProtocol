@@ -455,7 +455,16 @@ def convert(args):
     Parse a *.run test input, convert it from testnet to regtest (if needed),
     save the generated input transactions in file tx.json,
     write out new *.run file with its input transactions replaced with regtest versions.
+
+    We must run start() first, to be sure the current blockchain is in a known state,
+    before we start creating additional transactions.
+
+    TODO: It's important that our updates of tx.json happen before the *.run script is rewritten.
+    That way, if we get interrupted between those two, the next time we run, we'll find our
+    transactions in tx.json and everything will just work. If we did it in the opposite order,
+    we'd leave things in a broken state.
     """
+    start(args)
     for runfile in args.runfile:
         print("Converting {} to regtest...".format(runfile))
         try:
