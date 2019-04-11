@@ -361,6 +361,25 @@ class TxFile():
 
     """
 
+    def __init__(self):
+        """Load tx.json and populate our database."""
+        raise NotImplementedError()
+
+    def get(self, filename):
+        """Return a list of TX structures for the specified *.run file."""
+        raise NotImplementedError()
+
+    def put(self, filename, txs):
+        """Replace the TX structures for the specified filename with txs.
+
+        If txs matches the previous TXs for that filename, do nothing.
+
+        If txs is different, mark the old txs as obsolete, append the
+        new txs to the list, and write the list back to tx.json.
+        """
+        raise NotImplementedError()
+
+
 class ParseError(RuntimeError):
     """Exception class for errors encountered in parsing a *.run file."""
 
