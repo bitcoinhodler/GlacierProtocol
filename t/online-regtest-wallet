@@ -445,8 +445,8 @@ def convert_one_file(filename):
     Convert one *.run file from testnet to regtest.
     """
     runfile = ParsedRunfile(filename)
-    for intx in runfile.input_txs:
-        print("Found input tx: {}".format(intx))
+    #for intx in runfile.input_txs:
+    #    print("Found input tx: {}".format(intx))
     runfile.save()
 
 
@@ -458,7 +458,10 @@ def convert(args):
     """
     for runfile in args.runfile:
         print("Converting {} to regtest...".format(runfile))
-        convert_one_file(runfile)
+        try:
+            convert_one_file(runfile)
+        except ParseError:
+            print("*** Error converting that one. This is expected, if this test doesn't actually create any withdrawal transaction.")
 
 
 def stop(_):
