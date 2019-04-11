@@ -81,8 +81,7 @@ ifdef COVERAGE
 	@echo HTML coverage report generated in coverage-report/index.html
 	#@rm -rf coverage
 endif
-	@(cd testrun && ../t/online-regtest-wallet stop && sleep 1)
-	@rm -rf testrun/bitcoin-online-data
+	@(cd testrun && ../t/online-regtest-wallet stop)
 	@rmdir testrun/bitcoin-data
 	@rmdir testrun
 	@echo "Success, all tests passed."

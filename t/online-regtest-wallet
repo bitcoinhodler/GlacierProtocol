@@ -36,14 +36,7 @@ MIN_FEE = Decimal("0.00010000")
 def start(_):
     # We start with a pre-created wallet.dat so that our addresses
     # will be the same every time we run.
-    if bitcoin_cli.call('stop') == 0:
-        # in case already running, wait a bit for it to exit
-        time.sleep(1)
-
-    try:
-        shutil.rmtree('bitcoin-online-data')
-    except FileNotFoundError:
-        pass  # we don't care if it wasn't already there
+    stop(None)
     os.makedirs('bitcoin-online-data/regtest/wallets')
     shutil.copyfile(os.path.join(os.path.dirname(__file__), 'regtest-initial-wallet.dat'),
                     'bitcoin-online-data/regtest/wallets/wallet.dat')
@@ -475,7 +468,14 @@ def convert(args):
 
 
 def stop(_):
-    bitcoin_cli.checkcall("stop")
+    if bitcoin_cli.call('stop') == 0:
+        # in case already running, wait a bit for it to exit
+        time.sleep(1)
+
+    try:
+        shutil.rmtree('bitcoin-online-data')
+    except FileNotFoundError:
+        pass  # we don't care if it wasn't already there
 
 
 if __name__ == "__main__":
@@ -543,7 +543,8 @@ if __name__ == "__main__":
         help="Stop the regtest server",
         description=textwrap.dedent("""\
         Stop the bitcoind regtest server started previously by the
-        `start` subcommand.
+        `start` subcommand, and delete the bitcoin-online-data dir
+        that it was using as its data directory.
 
         Glacier's Makefile runs this command once after all tests
         pass.
