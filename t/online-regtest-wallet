@@ -46,12 +46,12 @@ def start(_):
     # and make sure we catch that the transactions have changed.
     adrs = bitcoin_cli.checkoutput("getnewaddress", '', 'p2sh-segwit').strip()
     mine_block(101)  # 101 so we have some coinbase outputs that are spendable
-    # Start with create-withdrawal-data.p2sh-segwit.run. This raw transaction
-    # came from testnet originally, created by some wallet software:
+    # Load all transactions in tx.json and reconstruct those in our blockchain
     txfile = TxFile()
     for txdata in txfile:
         for hex in txdata['txs']:
             tx = build_input_xact(txdata['address'], hex)
+            # TODO: Make sure tx matches hex, freak out if not
         # TODO: ensure the input txs all match the *.run file (unless obsolete), die if not
         print("Created this for p2sh-segwit:", tx)
         print("Signature is", glacierscript.hash_md5(tx.encode("ascii")))
@@ -503,6 +503,7 @@ def convert_one_file(filename):
     Convert one *.run file from testnet to regtest.
     """
     runfile = ParsedRunfile(filename)
+    # TODO: convert txs, save them in TxFile
     #for intx in runfile.input_txs:
     #    print("Found input tx: {}".format(intx))
     runfile.save()
