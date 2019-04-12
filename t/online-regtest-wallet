@@ -247,7 +247,15 @@ def build_input_xact(cold_address, like_this):
     like_tx = bitcoin_cli.json("decoderawtransaction", like_this)
     inputs = build_inputs2(like_tx)
     outputs = build_inp_outputs(cold_address, like_tx)
-    return create_and_mine(inputs, outputs)
+    hex = create_and_mine(inputs, outputs)
+    handmade_tx_json = [{
+        'file': 'create-withdrawal-data.p2sh-segwit.run',
+        'obsolete': False,
+        'address': cold_address,
+        'txs': [ hex ],
+    }]
+    print("================ handmade tx.json\n", json.dumps(handmade_tx_json, indent=2, sort_keys=True))
+    return hex
 
 
 def create_and_mine(inputs, outputs):
