@@ -437,10 +437,14 @@ class ParsedRunfile():
         if testmode == 'testnet':
             testmode = 'regtest'
             self.modified = True
-        cmdline_storage_and_dest = parser.send(r"""
+        cmdline_and_confirm = parser.send(r"""
                             =\$1 \s create-withdrawal-data \s \<\< \s INPUT \n  # rest of cmdline
                             (y\n){6}       # safety confirmations
+                        """)
+        self.cold_storage_address = parser.send(r"""
                             2[0-9a-zA-Z]+ \n  # cold storage address
+                        """)
+        script_and_dest = parser.send(r"""
                             [0-9a-fA-F]+ \n   # redeem script
                             [0-9a-zA-Z]+ \n   # destination address
                         """)
@@ -458,7 +462,9 @@ class ParsedRunfile():
                         """)
         self.front_matter = front_matter \
                             + testmode \
-                            + cmdline_storage_and_dest \
+                            + cmdline_and_confirm \
+                            + self.cold_storage_address \
+                            + script_and_dest \
                             + str(input_tx_count) \
                             + "\n"
         self.back_matter = back_matter
