@@ -48,6 +48,7 @@ def start(_):
     mine_block(101)  # 101 so we have some coinbase outputs that are spendable
     # Start with create-withdrawal-data.p2sh-segwit.run. This raw transaction
     # came from testnet originally, created by some wallet software:
+    txfile = TxFile()
     tx = build_input_xact("2N93du8YobdgsHyu3qgBvSyhGUT52utMNeA", "0200000001a907b456e7dbfb35f45b229aef8da1ff03a2fe63af6ee118c61324b5d9cc6741000000006a47304402207d2fb9182111fdc889085ace7949f5e6ff1316842b621f866b6af7366ca1330d022034c72197a944353fd68d89b00248e4f33fc4f44da9611c19f0395addbf9eaca50121024c1eec1e8c61c41240027f30c334a808cb12e8513b7b83c95ad71adc99f794a9ffffffff02d3f55b05000000001976a9146efec32d8acafcf62f8aa1dacd69a7b703d72fba88ac809698000000000017a914ad50fb2489353008e75b0193011ff1f4b76f798c8700000000")
     print("Created this for p2sh-segwit:", tx)
     print("Signature is", glacierscript.hash_md5(tx.encode("ascii")))
@@ -374,7 +375,15 @@ class TxFile():
 
     def __init__(self):
         """Load tx.json and populate our database."""
-        raise NotImplementedError()
+        with open(self._filename(), 'rt') as infile:
+            infile.readline()  # first line is comment, throw away
+            struct = infile.read()
+            self.txlist = json.loads(struct)
+
+    @staticmethod
+    def _filename():
+        """Return filename including path of our tx.json."""
+        return os.path.join(os.path.dirname(__file__), 'tx.json')
 
     def get(self, filename):
         """Return a list of TX structures for the specified *.run file."""
