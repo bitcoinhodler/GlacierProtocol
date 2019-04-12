@@ -354,9 +354,12 @@ class TxFile():
     This file keeps track of all the transactions we need to create
     which will be used as inputs to our test withdrawals.
 
-    If a developer changes a test, it's important for test stability
-    that that test's new transactions get created after all the
-    previous ones, including the ones previously used by that test.
+    Why keep such a file?
+
+    If a developer changes or adds a test, it's important for test
+    stability that that test's new transactions get created after all
+    the previous ones, including the ones previously used by that
+    test.
 
     Otherwise, touching one test could change all the inputs used by
     all of the tests.
