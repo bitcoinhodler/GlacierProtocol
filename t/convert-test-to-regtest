@@ -24,4 +24,6 @@ cp t/create-withdrawal-data.$1.{out,golden}
 
 make t/create-withdrawal-data.$1.test
 
+make clean
+
 git commit -am "Convert $1 to regtest"
