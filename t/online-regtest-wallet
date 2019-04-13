@@ -42,9 +42,6 @@ def start(args):
                     'bitcoin-online-data/regtest/wallets/wallet.dat')
 
     glacierscript.ensure_bitcoind_running()
-    # TODO: remove this mistaken line, which will change the transactions created,
-    # and make sure we catch that the transactions have changed.
-    adrs = bitcoin_cli.checkoutput("getnewaddress", '', 'p2sh-segwit').strip()
     mine_block(101)  # 101 so we have some coinbase outputs that are spendable
     # Load all transactions in tx.json and reconstruct those in our blockchain
     txfile = TxFile()
