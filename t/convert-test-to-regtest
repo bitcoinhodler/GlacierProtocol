@@ -18,6 +18,8 @@ t/online-regtest-wallet convert t/create-withdrawal-data.$1.run
 
 make t/create-withdrawal-data.$1.test || /bin/true
 
+killall bitcoind
+
 cp t/create-withdrawal-data.$1.{out,golden}
 
 make t/create-withdrawal-data.$1.test
