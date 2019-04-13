@@ -465,6 +465,7 @@ class ParsedRunfile():
                            .*?    # match as few as possible
                            ^      # beginning of line
                            \$GLACIERSCRIPT  # Run script
+                           [^\n]* # any extra cmdline options (like -v)
                            \s+ -- # beginning of --testnet or --regtest
                         """)
         testmode = parser.send(r"""
