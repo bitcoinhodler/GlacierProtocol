@@ -59,8 +59,6 @@ def start(args):
             # If we're running `convert` then we allow runfile to differ, since
             # otherwise we wouldn't be able to change it and then re-convert it
             confirm_txs_in_runfile(txdata)
-        print("Created this for p2sh-segwit:", tx)
-        print("Signature is", glacierscript.hash_md5(tx.encode("ascii")))
 
 
 def confirm_txs_in_runfile(txdata):
