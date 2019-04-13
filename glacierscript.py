@@ -996,4 +996,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except subprocess.CalledProcessError as e:
+        if hasattr(e, 'output'):
+            print("Output from subprocess:", e.output, file=sys.stderr)
+        raise
