@@ -25,6 +25,7 @@ import textwrap
 import time
 
 from atomic_write import atomic_write
+import segwit_addr
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import glacierscript
 import bitcoin_cli
@@ -488,10 +489,11 @@ class ParsedRunfile():
                             [0-9a-zA-Z]+ \n    # destination address
                         """).strip()
         if dest_address.startswith('tb1'):
-            raise NotImplementedError("Destination address is a testnet bech32 address "
-                                      "({}); must be converted manually to a regtest "
-                                      "address (bcrt1*). Note: it's not as simple as "
-                                      "changing the prefix.".format(dest_address))
+            # Convert bech32 address from testnet to regtest
+            # (Old-style non-segwit addresses are identical on testnet vs regtest.)
+            witver, witprog = segwit_addr.decode('tb', dest_address)
+            dest_address = segwit_addr.encode('bcrt', witver, witprog)
+            self.modified = True
 
         input_tx_count = int(parser.send(r"""
                             \d+ \n
