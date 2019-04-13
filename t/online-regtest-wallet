@@ -487,6 +487,11 @@ class ParsedRunfile():
         dest_address = parser.send(r"""
                             [0-9a-zA-Z]+ \n    # destination address
                         """).strip()
+        if dest_address.startswith('tb1'):
+            raise NotImplementedError("Destination address is a testnet bech32 address "
+                                      "({}); must be converted manually to a regtest "
+                                      "address (bcrt1*). Note: it's not as simple as "
+                                      "changing the prefix.".format(dest_address))
 
         input_tx_count = int(parser.send(r"""
                             \d+ \n
