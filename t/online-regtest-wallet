@@ -654,4 +654,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    with glacierscript.subprocess_catcher():
+        main()
