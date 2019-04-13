@@ -558,6 +558,12 @@ def convert_one_file(filename):
 
     """
     Convert one *.run file from testnet to regtest.
+
+    It's important that our updates of tx.json happen before the *.run
+    script is rewritten.  That way, if we get interrupted between
+    those two, the next time we run, we'll find our transactions in
+    tx.json and everything will just work. If we did it in the
+    opposite order, we'd leave things in a broken state.
     """
     runfile = ParsedRunfile(filename)
     txjson = TxFile()
@@ -580,11 +586,6 @@ def convert(args):
 
     We must run start() first, to be sure the current blockchain is in a known state,
     before we start creating additional transactions.
-
-    TODO: It's important that our updates of tx.json happen before the *.run script is rewritten.
-    That way, if we get interrupted between those two, the next time we run, we'll find our
-    transactions in tx.json and everything will just work. If we did it in the opposite order,
-    we'd leave things in a broken state.
     """
     start(args)
     for runfile in args.runfile:
