@@ -479,13 +479,15 @@ class ParsedRunfile():
                             (y\n){6}       # safety confirmations
                         """)
         self.cold_storage_address = parser.send(r"""
-                            2[0-9a-zA-Z]+ # cold storage address
-                        """)
-        script_and_dest = parser.send(r"""
-                            \n                # end of cold storage address line
+                            2[0-9a-zA-Z]+ \n # cold storage address
+                        """).strip()
+        script = parser.send(r"""
                             [0-9a-fA-F]+ \n   # redeem script
-                            [0-9a-zA-Z]+ \n   # destination address
                         """)
+        dest_address = parser.send(r"""
+                            [0-9a-zA-Z]+ \n    # destination address
+                        """).strip()
+
         input_tx_count = int(parser.send(r"""
                             \d+ \n
                         """))
@@ -501,8 +503,9 @@ class ParsedRunfile():
         self.front_matter = front_matter \
                             + testmode \
                             + cmdline_and_confirm \
-                            + self.cold_storage_address \
-                            + script_and_dest \
+                            + self.cold_storage_address + "\n" \
+                            + script \
+                            + dest_address + "\n" \
                             + str(input_tx_count) \
                             + "\n"
         self.back_matter = back_matter
