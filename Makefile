@@ -17,7 +17,7 @@ SHELL := /bin/bash
 
 all-tests := $(sort $(addsuffix .test, $(basename $(wildcard t/*.run))))
 
-.PHONY : prereqs test all %.test
+.PHONY : prereqs test all %.test clean
 
 # Force parallel even when user was too lazy to type -j4
 MAKEFLAGS += --jobs=4
@@ -76,10 +76,13 @@ ifdef COVERAGE
 	@echo HTML coverage report generated in coverage-report/index.html
 	#@rm -rf coverage
 endif
+	$(MAKE) clean
+	@echo "Success, all tests passed."
+
+clean:
 	@(cd testrun && ../t/online-regtest-wallet stop)
 	@rmdir testrun/bitcoin-data
 	@rmdir testrun
-	@echo "Success, all tests passed."
 
 OUTPUT = $(addsuffix .out, $(basename $<))
 RUNDIR = testrun/$(notdir $@)
