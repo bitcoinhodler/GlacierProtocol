@@ -33,7 +33,7 @@ glacierscript.wif_prefix = "EF"
 
 MIN_FEE = Decimal("0.00010000")
 
-def start(_):
+def start(args):
     # We start with a pre-created wallet.dat so that our addresses
     # will be the same every time we run.
     stop(None)
@@ -55,7 +55,10 @@ def start(_):
             # with a seeded wallet and tx.json is append-only.
             if tx != hex:
                 raise RuntimeError("Did not create expected transaction")
-        confirm_txs_in_runfile(txdata)
+        if args.program == start:
+            # If we're running `convert` then we allow runfile to differ, since
+            # otherwise we wouldn't be able to change it and then re-convert it
+            confirm_txs_in_runfile(txdata)
         print("Created this for p2sh-segwit:", tx)
         print("Signature is", glacierscript.hash_md5(tx.encode("ascii")))
 
@@ -405,18 +408,43 @@ class TxFile():
         return os.path.join(os.path.dirname(__file__), 'tx.json')
 
     def get(self, filename):
-        """Return a list of TX structures for the specified *.run file."""
-        raise NotImplementedError()
+        """Return the tx.json structure for the specified *.run file.
 
-    def put(self, filename, txs):
+        Returns None if this file is not in tx.json.
+        """
+        basefilename = os.path.basename(filename)
+        try:
+            return next(clump
+                        for clump in self.txlist
+                        if clump['file'] == basefilename and not clump['obsolete'])
+        except StopIteration:
+            return None
+
+    def put(self, filename, cold_storage_address, txs):
         """Replace the TX structures for the specified filename with txs.
 
-        If txs matches the previous TXs for that filename, do nothing.
-
-        If txs is different, mark the old txs as obsolete, append the
+        Mark any old txs as obsolete, append the
         new txs to the list, and write the list back to tx.json.
         """
-        raise NotImplementedError()
+        basefilename = os.path.basename(filename)
+        new = {
+            'address' : cold_storage_address,
+            'file': basefilename,
+            'obsolete': False,
+            'txs' : txs,
+        }
+        old = self.get(filename)
+        if old:
+            old['obsolete'] = True
+        self.txlist.append(new)
+        self.save()
+
+    def save(self):
+        with atomic_write(self._filename()) as outfile:
+            outfile.write("// This file created and used by online-regtest-wallet\n")
+            outfile.write(json.dumps(self.txlist, indent=2, sort_keys=True))
+            outfile.write("\n")
+
 
 
 class ParseError(RuntimeError):
@@ -440,6 +468,15 @@ class ParsedRunfile():
         with open(filename, 'rt') as infile:
             contents = infile.read()
         self.parse_lines(contents)
+
+    @property
+    def input_txs(self):
+        return self._input_txs
+
+    @input_txs.setter
+    def input_txs(self, value):
+        self.modified = True
+        self._input_txs = value
 
     @staticmethod
     def parser_coroutine(contents):
@@ -481,21 +518,22 @@ class ParsedRunfile():
                             (y\n){6}       # safety confirmations
                         """)
         self.cold_storage_address = parser.send(r"""
-                            2[0-9a-zA-Z]+ \n  # cold storage address
+                            2[0-9a-zA-Z]+ # cold storage address
                         """)
         script_and_dest = parser.send(r"""
+                            \n                # end of cold storage address line
                             [0-9a-fA-F]+ \n   # redeem script
                             [0-9a-zA-Z]+ \n   # destination address
                         """)
         input_tx_count = int(parser.send(r"""
                             \d+ \n
                         """))
-        self.input_txs = []
+        self._input_txs = []
         for idx in range(input_tx_count):
             tx = parser.send(r"""
                             [0-9a-fA-F]+ \n   # input tx
                         """).rstrip()
-            self.input_txs.append(tx)
+            self._input_txs.append(tx)
         back_matter = parser.send(r"""
                             .* \Z  # everything up to the end
                         """)
@@ -524,9 +562,15 @@ def convert_one_file(filename):
     Convert one *.run file from testnet to regtest.
     """
     runfile = ParsedRunfile(filename)
-    # TODO: convert txs, save them in TxFile
-    #for intx in runfile.input_txs:
-    #    print("Found input tx: {}".format(intx))
+    txjson = TxFile()
+    tx_from_json = txjson.get(filename)
+    if not tx_from_json \
+       or tx_from_json['address'] != runfile.cold_storage_address \
+       or tx_from_json['txs'] != runfile.input_txs:
+        newtx = [ build_input_xact(runfile.cold_storage_address, hex)
+                  for hex in runfile.input_txs ]
+        runfile.input_txs = newtx
+        txjson.put(filename, runfile.cold_storage_address, newtx)
     runfile.save()
 
 
@@ -613,10 +657,11 @@ if __name__ == "__main__":
         description=textwrap.dedent("""\
         Parse one or more *.run files, which must be withdrawal tests,
         and look for transactions used as inputs. Convert each from
-        testnet to regtest (if needed), save the generated
-        input transactions in file tx.json (TODO), and write out new
-        *.run files with all input transactions replaced with regtest
-        versions (TODO).
+        testnet to regtest (if needed), save the generated input
+        transactions in file tx.json, and write out new *.run files
+        with all input transactions replaced with regtest versions.
+
+        Running convert on an already-converted file has no effect.
 
         Test developers are expected to run this once after
         hand-creating any new tests via testnet.
