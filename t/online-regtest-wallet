@@ -43,7 +43,7 @@ def start(args):
     shutil.copyfile(os.path.join(os.path.dirname(__file__), 'regtest-initial-wallet.dat'),
                     'bitcoin-online-data/regtest/wallets/wallet.dat')
 
-    glacierscript.ensure_bitcoind_running()
+    glacierscript.ensure_bitcoind_running('-txindex')
     mine_block(101)  # 101 so we have some coinbase outputs that are spendable
     # Load all transactions in tx.json and reconstruct those in our blockchain
     txfile = TxFile()
@@ -81,11 +81,9 @@ def confirm_txs_in_runfile(txdata):
 def mine_block(count=1):
     """
     Mine one or more blocks in our regtest blockchain.
-    Returns the block hash of the most recent block.
     """
     adrs = bitcoin_cli.checkoutput("getnewaddress", '', 'p2sh-segwit').strip()
-    block_hashes = bitcoin_cli.json("generatetoaddress", "{}".format(count), adrs)
-    return block_hashes[-1]
+    bitcoin_cli.json("generatetoaddress", "{}".format(count), adrs)
 
 
 def create_input2(addresstype, amount):
@@ -265,10 +263,10 @@ def confirm_raw_tx(tx):
 
     """
     txid = bitcoin_cli.checkoutput("sendrawtransaction", tx).strip()
-    block_hash = mine_block()
+    mine_block()
     # Ensure that transaction was mined successfully
-    tx = bitcoin_cli.json("getrawtransaction", txid, 'true', block_hash)
-    if tx["confirmations"] != 1:
+    tx = bitcoin_cli.json("getrawtransaction", txid, 'true')
+    if tx["confirmations"] == 0:
         raise ValueError("somehow my xact did not get mined?")
 
 
