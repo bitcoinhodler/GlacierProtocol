@@ -147,9 +147,10 @@ def build_one_input2(vin, amount_btc):
         'legacy': r'[0-9a-f]{140}\[ALL\] [0-9a-f]{66}',
     }
     vin_sig = vin["scriptSig"]["asm"]
-    form = next(f for f in scriptsigs.keys() if re.fullmatch(scriptsigs[f], vin_sig))
-    if not form:
-        raise NotImplementedError("unrecognized scriptsig in vin: {}".format(vin))
+    try:
+        form = next(f for f in scriptsigs.keys() if re.fullmatch(scriptsigs[f], vin_sig))
+    except StopIteration as e:
+        raise NotImplementedError("unrecognized scriptsig in vin: {}".format(vin)) from e
     return create_input2(form, amount_btc)
 
 
