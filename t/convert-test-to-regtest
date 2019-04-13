@@ -1,0 +1,25 @@
+#!/bin/bash
+
+if [[ -z $1 ]]; then
+
+    echo "Usage: t/convert-test-to-regtest <name>"
+    echo ""
+    echo "This will convert create-withdrawal-data.<name>.run from testnet"
+    echo "to regtest, recreate its golden file to match, and git commit the change."
+    echo ""
+    echo "Run this from the git root, i.e. same directory as glacierscript.py."
+    exit 1
+fi
+
+
+set -e
+
+t/online-regtest-wallet convert t/create-withdrawal-data.$1.run
+
+make t/create-withdrawal-data.$1.test || /bin/true
+
+cp t/create-withdrawal-data.$1.{out,golden}
+
+make t/create-withdrawal-data.$1.test
+
+git commit -am "Convert $1 to regtest"
