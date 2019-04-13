@@ -144,9 +144,10 @@ def build_one_input2(vin, amount_btc):
     scriptsigs = {
         # Standard P2PKH: sig pubkey
         # TODO: the sig might not always be precisely 140 chars
-        'legacy': r'[0-9a-f]{140}\[ALL\] [0-9a-f]{66}',
+        'legacy': r'sig: [0-9a-f]{140}\[ALL\] [0-9a-f]{66} witness: None',
     }
-    vin_sig = vin["scriptSig"]["asm"]
+    witness = " ".join(vin["txinwitness"]) if "txinwitness" in vin else "None"
+    vin_sig = "sig: {} witness: {}".format(vin["scriptSig"]["asm"], witness)
     try:
         form = next(f for f in scriptsigs.keys() if re.fullmatch(scriptsigs[f], vin_sig))
     except StopIteration as e:
