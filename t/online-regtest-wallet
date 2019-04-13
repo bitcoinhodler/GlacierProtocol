@@ -571,7 +571,7 @@ def stop(_):
         pass  # we don't care if it wasn't already there
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="""
         This tool is used to control an "online" Bitcoin node for testing Glacier.
     """, epilog="Run <subcommand> --help for more about that subcommand.")
@@ -651,3 +651,7 @@ if __name__ == "__main__":
     bitcoin_cli.verbose_mode = args.verbose
 
     args.program(args)
+
+
+if __name__ == "__main__":
+    main()
