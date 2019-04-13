@@ -8,6 +8,9 @@ if [[ -z $1 ]]; then
     echo "to regtest, recreate its golden file to match, and git commit the change."
     echo ""
     echo "Run this from the git root, i.e. same directory as glacierscript.py."
+    echo ""
+    echo "This assumes a clean, successful withdrawal transaction. If the test"
+    echo "is covering error conditions, etc., you might need to convert by hand."
     exit 1
 fi
 
