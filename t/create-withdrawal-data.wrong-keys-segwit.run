@@ -4,7 +4,7 @@ set -e
 # Test validation of extra keys. 3rd key does not belong to this address.
 
 
-$GLACIERSCRIPT --testnet=$1 create-withdrawal-data << INPUT
+$GLACIERSCRIPT --regtest=$1 create-withdrawal-data << INPUT
 y
 y
 y
