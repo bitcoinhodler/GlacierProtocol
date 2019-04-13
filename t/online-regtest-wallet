@@ -55,9 +55,27 @@ def start(_):
             # with a seeded wallet and tx.json is append-only.
             if tx != hex:
                 raise RuntimeError("Did not create expected transaction")
-        # TODO: ensure the input txs all match the *.run file (unless obsolete), die if not
+        confirm_txs_in_runfile(txdata)
         print("Created this for p2sh-segwit:", tx)
         print("Signature is", glacierscript.hash_md5(tx.encode("ascii")))
+
+
+def confirm_txs_in_runfile(txdata):
+    """
+    Confirm the input txs in *.run file match tx.json.
+    """
+    if txdata['obsolete']:
+        # This is an old transaction that we created only to keep
+        # other tests' transactions from changing. Doesn't match any
+        # *.run file anymore.
+        return
+    # Find *.run in t/ directory, same directory as this script
+    runfile = os.path.join(os.path.dirname(__file__), txdata['file'])
+    rf = ParsedRunfile(runfile)
+    if txdata['txs'] != rf.input_txs:
+        print("In file {}, found unexpected input transactions.".format(runfile))
+        print("If this file has deliberately changed, run `{} convert {}`".format(__file__, runfile))
+        raise SystemExit("Error: Unexpected transaction in *.run file")
 
 
 def mine_block(count=1):
@@ -564,7 +582,7 @@ if __name__ == "__main__":
         This will read tx.json to find the list of transactions to
         create, and will parse all the *.run files to ensure that the
         transactions constructed match what the run files use as
-        inputs. (TODO)
+        inputs.
 
         Glacier's Makefile runs this command once before running any
         tests.
