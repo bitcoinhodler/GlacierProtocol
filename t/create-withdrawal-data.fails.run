@@ -3,7 +3,7 @@
 # Illegal value entered for dest address, bitcoin-cli should fail and cause script abort
 
 
-$GLACIERSCRIPT --testnet=$1 create-withdrawal-data << INPUT 2>&1
+$GLACIERSCRIPT --regtest=$1 create-withdrawal-data << INPUT 2>&1
 y
 y
 y
