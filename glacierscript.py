@@ -34,6 +34,7 @@ GlacierScript depends on the following command-line applications:
 # standard Python libraries
 import argparse
 from collections import OrderedDict
+import contextlib
 from decimal import Decimal
 import glob
 from hashlib import sha256, md5
@@ -1050,10 +1051,16 @@ def main():
         withdraw_interactive()
 
 
-if __name__ == "__main__":
+@contextlib.contextmanager
+def subprocess_catcher():
     try:
-        main()
+        yield
     except subprocess.CalledProcessError as e:
         if hasattr(e, 'output'):
             print("Output from subprocess:", e.output, file=sys.stderr)
         raise
+
+
+if __name__ == "__main__":
+    with subprocess_catcher():
+        main()
