@@ -91,17 +91,6 @@ def satoshi_to_btc(satoshi):
     return value.quantize(SATOSHI_PLACES)
 
 
-def btc_to_satoshi(btc):
-    """
-    Converts a value in BTC to satoshi
-    outputs => <int>
-
-    btc: <Decimal> or <Float>
-    """
-    value = btc * 100000000
-    return int(value)
-
-
 ################################################################################################
 #
 # Subprocess helper functions
