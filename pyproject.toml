@@ -5,6 +5,14 @@
 # This file doesn't belong to us
 exclude = [ "base58.py" ]
 
+[tool.tidypy.pydocstyle]
+disabled = [
+    # D212 and D213 have to do with multi-line docstrings: should they
+    # start on the same line or next? I chose next line to be
+    # consistent with what most of GlacierScript uses.
+    "D212",
+]
+
 [tool.tidypy.secrets]
 disabled = [
     # We have lots of high-entropy strings. They are not secrets.
