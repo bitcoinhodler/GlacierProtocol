@@ -616,8 +616,8 @@ def main():
         document the constructed transaction in the git history.
 
         Glacier's Makefile runs this command after running any test
-        with a filename of "*withdrawal*". Temp TODO: the *.run file
-        must also have --regtest for the Makefile to run this.
+        with a filename of "*withdrawal*", if the *.run file
+        has --regtest in it.
         """),
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser_submit.set_defaults(program=submit)
