@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""GlacierScript: Part of the Glacier Protocol for Bitcoin storage.
+"""
+GlacierScript: Part of the Glacier Protocol for Bitcoin storage.
 
 https://glacierprotocol.org
 
@@ -352,8 +353,13 @@ def require_minimum_bitcoind_version(min_version):
         sys.exit()
 
 def get_pubkey_for_wif_privkey(privkey):
-    """A method for retrieving the pubkey associated with a private key from bitcoin core
-       <privkey> - a bitcoin private key in WIF format"""
+    """
+    Returns pubkey associated with a private key.
+
+    Runs Bitcoin Core to do the necessary calculations.
+
+    <privkey> - a bitcoin private key in WIF format
+    """
 
     # Bitcoin Core doesn't have an RPC for "get the addresses associated w/this private key"
     # just "get the addresses associated with this label"
