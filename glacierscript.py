@@ -57,14 +57,24 @@ verbose_mode = 0
 ################################################################################################
 
 def hash_sha256(s):
-    """A thin wrapper around the hashlib SHA256 library to provide a more functional interface"""
+    """
+    Return the SHA256 hash of the provided string.
+
+    This is just a thin wrapper around the hashlib SHA256 library to
+    provide a more functional interface.
+    """
     m = sha256()
     m.update(s.encode('ascii'))
     return m.hexdigest()
 
 
 def hash_md5(s):
-    """A thin wrapper around the hashlib md5 library to provide a more functional interface"""
+    """
+    Return the MD5 hash of the provided string.
+
+    This is just a thin wrapper around the hashlib md5 library to
+    provide a more functional interface.
+    """
     m = md5()
     m.update(s.encode('ascii'))
     return m.hexdigest()
