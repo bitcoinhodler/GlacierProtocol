@@ -461,6 +461,7 @@ class WithdrawalXact:
         self._validate_address()
         self._teach_address_to_wallet()
         self._pubkeys = self._find_pubkeys()
+        self.fee_basis_satoshis_per_byte = None
 
     def add_key(self, key):
         self.keys.append(key)
