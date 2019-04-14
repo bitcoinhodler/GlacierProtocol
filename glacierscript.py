@@ -599,7 +599,6 @@ class WithdrawalXact:
                 # In Bitcoin Core versions older than v0.16, native segwit outputs have no address decoded
                 continue
             out_addresses = output["scriptPubKey"]["addresses"]
-            amount_btc = output["value"]
             if self.source_address in out_addresses:
                 utxos.append(output)
 
