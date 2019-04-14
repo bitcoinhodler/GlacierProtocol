@@ -512,7 +512,7 @@ class WithdrawalXact:
         self._seen_txhashes.add(tx['hash'])
 
         utxos = self._get_utxos(tx)
-        if len(utxos) == 0:
+        if not utxos:
             print("\nTransaction data not found for source address: {}".format(self.source_address))
             sys.exit()
 
