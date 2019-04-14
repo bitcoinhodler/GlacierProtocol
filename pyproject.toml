@@ -1,0 +1,13 @@
+# TidyPy is a Python lint tool. https://pypi.org/project/tidypy/
+# This file controls what checks to apply to our code.
+
+[tool.tidypy]
+# This file doesn't belong to us
+exclude = [ "base58.py" ]
+
+[tool.tidypy.secrets]
+disabled = [
+    # We have lots of high-entropy strings. They are not secrets.
+    "HexHighEntropyString",
+    "Base64HighEntropyString",
+]
