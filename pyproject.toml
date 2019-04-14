@@ -5,6 +5,14 @@
 # This file doesn't belong to us
 exclude = [ "base58.py" ]
 
+[tool.tidypy.pycodestyle]
+disabled = [
+    # E501 is 79-char max line length. GlacierScript has way too many
+    # long lines to make this cleanup cost-effective. Maybe we revisit
+    # this later when the rest is clean. See also line-too-long below.
+    "E501",
+]
+
 [tool.tidypy.pydocstyle]
 disabled = [
     # D212 and D213 have to do with multi-line docstrings: should they
@@ -12,6 +20,15 @@ disabled = [
     # consistent with what most of GlacierScript uses.
     "D212",
 ]
+
+[tool.tidypy.pylint]
+disabled = [
+    # 100-char max line length. GlacierScript has way too many long
+    # lines to make this cleanup cost-effective. Maybe we revisit this
+    # later when the rest is clean. See also E501 above.
+    "line-too-long",
+]
+
 
 [tool.tidypy.secrets]
 disabled = [
