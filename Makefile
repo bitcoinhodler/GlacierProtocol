@@ -22,7 +22,13 @@ all-tests := $(sort $(addsuffix .test, $(basename $(wildcard t/*.run))))
 # Force parallel even when user was too lazy to type -j4
 MAKEFLAGS += --jobs=4
 
+# Run `make COVERAGE=1` to enable coverage.py coverage collection.
+# Only works when running all tests.
+ifdef COVERAGE
+export GLACIERSCRIPT=env COVERAGE_FILE=$(strip $(compteur)).cov coverage run ../../glacierscript.py
+else
 export GLACIERSCRIPT=../../glacierscript.py
+endif
 
 # I need a unique port number for each bitcoind launched. Start with
 # one higher than standard testnet port 18332, in case user already
