@@ -25,7 +25,7 @@ MAKEFLAGS += --jobs=4
 # Run `make COVERAGE=1` to enable coverage.py coverage collection.
 # Only works when running all tests.
 ifdef COVERAGE
-export GLACIERSCRIPT=env COVERAGE_FILE=$(strip $(compteur)).cov coverage run ../../glacierscript.py
+export GLACIERSCRIPT=env COVERAGE_FILE=../../coverage/$(strip $(compteur)).cov coverage run ../../glacierscript.py
 else
 export GLACIERSCRIPT=../../glacierscript.py
 endif
@@ -89,3 +89,7 @@ prereqs:
 	@which bitcoind > /dev/null || (echo 'Error: unable to find bitcoind'; exit 1)
 	@which zbarimg > /dev/null || (echo 'Error: unable to find zbarimg (from package zbar-tools)'; exit 1)
 	@which qrencode > /dev/null || (echo 'Error: unable to find qrencode'; exit 1)
+ifdef COVERAGE
+	@rm -rf coverage
+	@mkdir -p coverage
+endif
