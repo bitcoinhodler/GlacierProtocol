@@ -22,6 +22,8 @@ all-tests := $(sort $(addsuffix .test, $(basename $(wildcard t/*.run))))
 # Force parallel even when user was too lazy to type -j4
 MAKEFLAGS += --jobs=4
 
+export GLACIERSCRIPT=../../glacierscript.py
+
 # I need a unique port number for each bitcoind launched. Start with
 # one higher than standard testnet port 18332, in case user already
 # has a testnet daemon running.

@@ -3,7 +3,7 @@ set -e
 
 # Also tests excessive fee correction
 
-../../glacierscript.py --testnet=$1 create-withdrawal-data << INPUT
+$GLACIERSCRIPT --testnet=$1 create-withdrawal-data << INPUT
 y
 y
 y
