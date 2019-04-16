@@ -5,7 +5,7 @@ set -e
 # Test erroneously passes even before my segwit changes
 # Key 3 was: cNYaH3onqrdMffpznhMMmrHn34fuTU59w5j8LM3H42VPcUsLeXy5
 
-../../glacierscript.py --testnet=$1 create-withdrawal-data << INPUT
+$GLACIERSCRIPT --testnet=$1 create-withdrawal-data << INPUT
 y
 y
 y
