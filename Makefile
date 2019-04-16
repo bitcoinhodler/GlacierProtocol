@@ -25,7 +25,8 @@ MAKEFLAGS += --jobs=4
 # Run `make COVERAGE=1` to enable coverage.py coverage collection.
 # Only works when running all tests.
 ifdef COVERAGE
-export GLACIERSCRIPT=env COVERAGE_FILE=../../coverage/$(strip $(compteur)).cov coverage run ../../glacierscript.py
+coverfile = $(addsuffix .cov, $(notdir $(basename $<)))
+export GLACIERSCRIPT=env COVERAGE_FILE=../../coverage/$(coverfile) coverage run ../../glacierscript.py
 else
 export GLACIERSCRIPT=../../glacierscript.py
 endif
