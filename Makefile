@@ -61,6 +61,15 @@ define cleanup_bitcoind =
 endef
 
 test : $(all-tests)
+ifdef COVERAGE
+	@cd coverage && \
+	   coverage combine *.cov && \
+	   coverage html \
+	      --directory=../coverage-report \
+	      "--omit=**/base58.py"
+	@echo HTML coverage report generated in coverage-report/index.html
+	#@rm -rf coverage
+endif
 	@rmdir testrun
 	@echo "Success, all tests passed."
 
