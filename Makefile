@@ -91,6 +91,7 @@ prereqs:
 	@which zbarimg > /dev/null || (echo 'Error: unable to find zbarimg (from package zbar-tools)'; exit 1)
 	@which qrencode > /dev/null || (echo 'Error: unable to find qrencode'; exit 1)
 ifdef COVERAGE
+	@which coverage > /dev/null || (echo 'Error: unable to find coverage (Maybe "pip3 install coverage"?)'; exit 1)
 	@rm -rf coverage
 	@mkdir -p coverage
 endif
