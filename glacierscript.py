@@ -1000,7 +1000,7 @@ def withdraw_interactive():
 #
 ################################################################################################
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('program', choices=[
                         'entropy', 'create-deposit-data', 'create-withdrawal-data'])
@@ -1036,3 +1036,7 @@ if __name__ == "__main__":
 
     if args.program == "create-withdrawal-data":
         withdraw_interactive()
+
+
+if __name__ == "__main__":
+    main()
