@@ -29,6 +29,10 @@ disabled = [
     # start on the same line or next? I chose next line to be
     # consistent with what most of GlacierScript uses.
     "D212",
+    # D200 says "One-line docstring should fit on one line with quotes"
+    # but that's not how glacierscript does it, and disabling this makes
+    # the code more consistent with D213 for multi-line docstrings.
+    "D200",
 ]
 
 [tool.tidypy.pylint]
