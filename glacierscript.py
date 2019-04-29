@@ -575,9 +575,9 @@ class WithdrawalXact:
         decoded_script = bitcoin_cli_json("decodescript", self.redeem_script)
 
         import_this = {
-            "scriptPubKey": { "address": self.source_address },
+            "scriptPubKey": {"address": self.source_address},
             "timestamp": "now",
-            "watchonly": True # to avoid warning about "Some private keys are missing[...]"
+            "watchonly": True  # to avoid warning about "Some private keys are missing[...]"
         }
         if decoded_script["p2sh"] == self.source_address:
             import_this["redeemscript"] = self.redeem_script
@@ -599,9 +599,9 @@ class WithdrawalXact:
         """
         out = bitcoin_cli_json("getaddressinfo", self.source_address)
         if "pubkeys" in out:
-            return out["pubkeys"] # for non-segwit addresses
+            return out["pubkeys"]  # for non-segwit addresses
         else:
-            return out["embedded"]["pubkeys"] # for segwit addresses
+            return out["embedded"]["pubkeys"]  # for segwit addresses
 
     def _validate_address(self):
         """
@@ -752,7 +752,7 @@ def chunk_string(string, length):
 
     Source: https://stackoverflow.com/a/18854817
     """
-    return (string[0+i:length+i] for i in range(0, len(string), length))
+    return (string[0 + i:length + i] for i in range(0, len(string), length))
 
 
 def entropy(n, length):
@@ -833,7 +833,7 @@ def deposit_interactive(m, n, dice_seed_length=62, rng_seed_length=20, p2wsh=Fal
 
     write_and_verify_qr_code("cold storage address", "address.png", results["address"])
     write_and_verify_qr_code("redemption script", "redemption.png",
-                       results["redeemScript"])
+                             results["redeemScript"])
 
 
 ################################################################################################
@@ -926,7 +926,7 @@ def withdraw_interactive():
             addresses[xact.source_address] = change_amount
         else:
             del addresses[xact.source_address]
-            fee = xact.calculate_fee(addresses) # Recompute fee with no change output
+            fee = xact.calculate_fee(addresses)  # Recompute fee with no change output
             withdrawal_amount = input_amount - fee
             print("With no change output, the transaction fee is reduced, and {0} BTC will be sent to your destination.".format(withdrawal_amount))
 
@@ -986,7 +986,7 @@ def main():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('program', choices=[
-                        'entropy', 'create-deposit-data', 'create-withdrawal-data'])
+        'entropy', 'create-deposit-data', 'create-withdrawal-data'])
 
     parser.add_argument("--num-keys", type=int,
                         help="The number of keys to create random entropy for", default=1)
