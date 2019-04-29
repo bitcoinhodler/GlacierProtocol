@@ -966,6 +966,7 @@ if __name__ == "__main__":
     parser.add_argument('-v', '--verbose', action='store_true', help='increase output verbosity')
     args = parser.parse_args()
 
+    global verbose_mode
     verbose_mode = args.verbose
 
     global cli_args, wif_prefix
