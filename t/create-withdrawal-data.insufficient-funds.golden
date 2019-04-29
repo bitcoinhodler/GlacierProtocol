@@ -1,0 +1,40 @@
+Are you running this on a computer WITHOUT a network connection of any kind? (y/n)?Have the wireless cards in this computer been physically removed? (y/n)?Are you running on battery power? (y/n)?Are you running on an operating system booted from a USB drive? (y/n)?Is your screen hidden from view of windows, cameras, and other people? (y/n)?Are smartphones and all other nearby devices turned off and in a Faraday bag? (y/n)?
+You will need to enter several pieces of information to create a withdrawal transaction.
+
+
+*** PLEASE BE SURE TO ENTER THE CORRECT DESTINATION ADDRESS ***
+
+
+Source cold storage address: 
+Redemption script for source cold storage address: 
+Destination address: 
+How many unspent transactions will you be using for this withdrawal? 
+Please paste raw transaction #1 (hexadecimal format) with unspent outputs at the source address
+OR
+input a filename located in the current directory which contains the raw transaction data
+(If the transaction data is over ~4000 characters long, you _must_ use a file.):
+
+Transaction data found for source address.
+TOTAL unspent amount for this raw transaction: 0.00005000 BTC
+
+How many private keys will you be signing this transaction with? 
+#: Key #1: Key #2: 
+Enter fee rate.
+Satoshis per vbyte: 
+Based on the provided rate, the fee will be 0.00000405 bitcoin.
+Confirm? (y/n): 
+Fee calculation aborted. Starting over...
+
+Enter fee rate.
+Satoshis per vbyte: 
+Based on the provided rate, the fee will be 0.00004050 bitcoin.
+Confirm? (y/n): 
+Please enter the decimal amount (in bitcoin) to withdraw to the destination address.
+
+Example: For 2.3 bitcoins, enter "2.3".
+
+After a fee of 0.00004050, you have 0.00000950 bitcoins available to withdraw.
+
+*** Technical note for experienced Bitcoin users:  If the withdrawal amount & fee are cumulatively less than the total amount of the unspent transactions, the remainder will be sent back to the same cold storage address as change. ***
+
+Amount to send to mp1KQzUoDf9div7jjgon3UuqLThMSo3tmF (leave blank to withdraw all funds stored in these unspent transactions): Error: fee + withdrawal amount greater than total amount available from unspent transactions

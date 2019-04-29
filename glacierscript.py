@@ -873,7 +873,7 @@ def withdraw_interactive():
 
         if fee + withdrawal_amount > input_amount:
             print("Error: fee + withdrawal amount greater than total amount available from unspent transactions")
-            raise Exception("Output values greater than input value")
+            sys.exit()
 
         change_amount = input_amount - withdrawal_amount - fee
 
