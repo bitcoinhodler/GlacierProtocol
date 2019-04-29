@@ -57,6 +57,7 @@ verbose_mode = 0
 #
 ################################################################################################
 
+
 def hash_sha256(s):
     """
     Return the SHA256 hash of the provided string.
@@ -83,7 +84,8 @@ def hash_md5(s):
 
 def satoshi_to_btc(satoshi):
     """
-    Converts a value in satoshi to a value in BTC
+    Convert a value in satoshi to a value in BTC.
+
     outputs => Decimal
 
     satoshi: <int>
@@ -99,12 +101,16 @@ def satoshi_to_btc(satoshi):
 ################################################################################################
 
 def verbose(content):
+    """
+    Print content iff verbose_mode is enabled.
+    """
     if verbose_mode: print(content)
 
 
 def run_subprocess(exe, *args):
     """
-    Run a subprocess (bitcoind or bitcoin-cli)
+    Run a subprocess (bitcoind or bitcoin-cli).
+
     Returns => (command, return code, output)
 
     exe: executable file name (e.g. bitcoin-cli)
@@ -122,7 +128,7 @@ def run_subprocess(exe, *args):
 
 def bitcoin_cli_call(*args):
     """
-    Run `bitcoin-cli`, return OS return code
+    Run `bitcoin-cli`, return OS return code.
     """
     _, retcode, _ = run_subprocess("bitcoin-cli", *args)
     return retcode
