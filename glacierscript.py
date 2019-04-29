@@ -104,7 +104,8 @@ def verbose(content):
     """
     Print content iff verbose_mode is enabled.
     """
-    if verbose_mode: print(content)
+    if verbose_mode:
+        print(content)
 
 
 def run_subprocess(exe, *args):
@@ -138,7 +139,8 @@ def bitcoin_cli_checkcall(*args):
     Run `bitcoin-cli`, ensure no error
     """
     cmd_list, retcode, output = run_subprocess("bitcoin-cli", *args)
-    if retcode != 0: raise subprocess.CalledProcessError(retcode, cmd_list, output=output)
+    if retcode != 0:
+        raise subprocess.CalledProcessError(retcode, cmd_list, output=output)
 
 
 def bitcoin_cli_checkoutput(*args):
@@ -146,7 +148,8 @@ def bitcoin_cli_checkoutput(*args):
     Run `bitcoin-cli`, fail if OS return code nonzero, return output
     """
     cmd_list, retcode, output = run_subprocess("bitcoin-cli", *args)
-    if retcode != 0: raise subprocess.CalledProcessError(retcode, cmd_list, output=output)
+    if retcode != 0:
+        raise subprocess.CalledProcessError(retcode, cmd_list, output=output)
     return output
 
 
