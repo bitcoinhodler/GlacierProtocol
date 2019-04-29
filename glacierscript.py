@@ -133,9 +133,10 @@ def bitcoin_cli_call(*args):
     _, retcode, _ = run_subprocess("bitcoin-cli", *args)
     return retcode
 
+
 def bitcoin_cli_checkcall(*args):
     """
-    Run `bitcoin-cli`, ensure no error
+    Run `bitcoin-cli`, ensure no error.
     """
     cmd_list, retcode, output = run_subprocess("bitcoin-cli", *args)
     if retcode != 0:
@@ -144,7 +145,7 @@ def bitcoin_cli_checkcall(*args):
 
 def bitcoin_cli_checkoutput(*args):
     """
-    Run `bitcoin-cli`, fail if OS return code nonzero, return output
+    Run `bitcoin-cli`, fail if OS return code nonzero, return output.
     """
     cmd_list, retcode, output = run_subprocess("bitcoin-cli", *args)
     if retcode != 0:
@@ -154,14 +155,14 @@ def bitcoin_cli_checkoutput(*args):
 
 def bitcoin_cli_json(*args):
     """
-    Run `bitcoin-cli`, parse output as JSON
+    Run `bitcoin-cli`, parse output as JSON.
     """
     return json.loads(bitcoin_cli_checkoutput(*args), parse_float=Decimal)
 
 
 def bitcoind_call(*args):
     """
-    Run `bitcoind`, return OS return code
+    Run `bitcoind`, return OS return code.
     """
     _, retcode, _ = run_subprocess("bitcoind", *args)
     return retcode
@@ -175,13 +176,13 @@ def bitcoind_call(*args):
 
 def validate_rng_seed(seed, min_length):
     """
-    Validates random hexadecimal seed
+    Validate random hexadecimal seed.
+
     returns => <boolean>
 
     seed: <string> hex string to be validated
     min_length: <int> number of characters required.  > 0
     """
-
     if len(seed) < min_length:
         print("Error: Computer entropy must be at least {0} characters long".format(min_length))
         return False
@@ -201,12 +202,12 @@ def validate_rng_seed(seed, min_length):
 
 def read_rng_seed_interactive(min_length):
     """
-    Reads random seed (of at least min_length hexadecimal characters) from standard input
+    Read random seed (of at least min_length hexadecimal characters) from standard input.
+
     returns => string
 
     min_length: <int> minimum number of bytes in the seed.
     """
-
     char_length = min_length * 2
 
     def ask_for_rng_seed(length):
@@ -226,12 +227,12 @@ def read_rng_seed_interactive(min_length):
 
 def validate_dice_seed(dice, min_length):
     """
-    Validates dice data (i.e. ensures all digits are between 1 and 6).
+    Validate dice data (i.e. ensures all digits are between 1 and 6).
+
     returns => <boolean>
 
     dice: <string> representing list of dice rolls (e.g. "5261435236...")
     """
-
     if len(dice) < min_length:
         print("Error: You must provide at least {0} dice rolls".format(min_length))
         return False
@@ -251,7 +252,8 @@ def validate_dice_seed(dice, min_length):
 
 def read_dice_seed_interactive(min_length):
     """
-    Reads min_length dice rolls from standard input, as a string of consecutive integers
+    Read min_length dice rolls from standard input, as a string of consecutive integers.
+
     Returns a string representing the dice rolls
     returns => <string>
 
@@ -282,6 +284,7 @@ def read_dice_seed_interactive(min_length):
 def xor_hex_strings(str1, str2):
     """
     Return xor of two hex strings.
+
     An XOR of two pieces of data will be as random as the input with the most randomness.
     We can thus combine two entropy sources in this way as a safeguard against one source being
     compromised in some way.
@@ -301,7 +304,8 @@ def xor_hex_strings(str1, str2):
 
 def hex_private_key_to_WIF_private_key(hex_key):
     """
-    Converts a raw 256-bit hex private key to WIF format
+    Convert a raw 256-bit hex private key to WIF format.
+
     returns => <string> in hex format
     """
     hex_key_with_prefix = wif_prefix + hex_key + "01"
@@ -309,12 +313,12 @@ def hex_private_key_to_WIF_private_key(hex_key):
     return wif_key.decode('ascii')
 
 
-
 ################################################################################################
 #
 # Local exception classes
 #
 ################################################################################################
+
 
 class GlacierExcessiveFee(Exception):
     """
@@ -327,9 +331,10 @@ class GlacierExcessiveFee(Exception):
 #
 ################################################################################################
 
+
 def ensure_bitcoind_running():
     """
-    Start bitcoind (if it's not already running) and ensure it's functioning properly
+    Start bitcoind (if it's not already running) and ensure it's functioning properly.
     """
     # start bitcoind.  If another bitcoind process is already running, this will just print an error
     # message (to /dev/null) and exit.
@@ -349,9 +354,11 @@ def ensure_bitcoind_running():
 
     raise Exception("Timeout while starting bitcoin server")  # pragma: no cover
 
+
 def require_minimum_bitcoind_version(min_version):
     """
-    Fail if the bitcoind version in use is older than required
+    Fail if the bitcoind version in use is older than required.
+
     <min_version> - required minimum version in format of getnetworkinfo, i.e. 150100 for v0.15.1
     """
     networkinfo = bitcoin_cli_json("getnetworkinfo")
@@ -360,15 +367,15 @@ def require_minimum_bitcoind_version(min_version):
         print("ERROR: Your bitcoind version is too old. You have {}, I need {} or newer. Exiting...".format(networkinfo["version"], min_version))  # pragma: no cover
         sys.exit()  # pragma: no cover
 
+
 def get_pubkey_for_wif_privkey(privkey):
     """
-    Returns pubkey associated with a private key.
+    Return pubkey associated with a private key.
 
     Runs Bitcoin Core to do the necessary calculations.
 
     <privkey> - a bitcoin private key in WIF format
     """
-
     # Bitcoin Core doesn't have an RPC for "get the addresses associated w/this private key"
     # just "get the addresses associated with this label"
     # where "label" corresponds to an arbitrary tag we can associate with each private key
@@ -393,7 +400,8 @@ def get_pubkey_for_wif_privkey(privkey):
 
 def addmultisigaddress(m, pubkeys, address_type='p2sh-segwit'):
     """
-    Call `bitcoin-cli addmultisigaddress`
+    Call `bitcoin-cli addmultisigaddress`.
+
     returns => JSON response from bitcoin-cli
 
     m: <int> number of multisig keys required for withdrawal
@@ -405,16 +413,15 @@ def addmultisigaddress(m, pubkeys, address_type='p2sh-segwit'):
 
 def get_fee_interactive(xact, destinations):
     """
-    Returns a recommended transaction fee, given market fee data provided by the user interactively
+    Return a recommended transaction fee, given market fee data provided by the user interactively.
+
     Because fees tend to be a function of transaction size, we build the transaction in order to
-    recomend a fee.
+    recommend a fee.
     return => <Decimal> fee value
 
-    Parameters:
-      xact: WithdrawalXact object
-      destinations: {address <string>: amount<string>} dictionary mapping destination addresses to amount in BTC
+    xact: WithdrawalXact object
+    destinations: {address <string>: amount<string>} dictionary mapping destination addresses to amount in BTC
     """
-
     ensure_bitcoind_running()
 
     approve = False
@@ -445,23 +452,36 @@ def get_fee_interactive(xact, destinations):
 
 # From https://stackoverflow.com/a/3885198 modified to dump as string, so no floats ever involved
 class DecimalEncoder(json.JSONEncoder):
+    """
+    Encoder class for json.dumps() that dumps Decimal as a string.
+    """
+
     def default(self, o):
+        """
+        Convert anything that's not one of the built-in JSON types.
+        """
         if isinstance(o, Decimal):
             return str(o)
         return super().default(o)  # pragma: no cover
 
+
 class WithdrawalXact:
     """
-    Class for constructing a withdrawal transaction
+    Class for constructing a withdrawal transaction.
 
-    Attributes:
+    Attributes
+    ----------
     source_address: <string> input_txs will be filtered for utxos to this source address
     redeem_script: <string>
+
     """
 
     MAX_FEE = .005  # in btc.  hardcoded limit to protect against user typos
 
     def __init__(self, source_address, redeem_script):
+        """
+        Construct a new withdrawal from the specified source address.
+        """
         self.source_address = source_address
         self.redeem_script = redeem_script
         self._seen_txhashes = set()  # only for detecting duplicates
@@ -473,6 +493,9 @@ class WithdrawalXact:
         self.fee_basis_satoshis_per_byte = None
 
     def add_key(self, key):
+        """
+        Use the (WIF format) private key for signing this withdrawal.
+        """
         self.keys.append(key)
         # Teach the wallet about this key
         pubkey = get_pubkey_for_wif_privkey(key)
@@ -482,7 +505,8 @@ class WithdrawalXact:
 
     def create_signed_transaction(self, destinations):
         """
-        Returns a hex string representing a signed bitcoin transaction
+        Return a hex string representing a signed bitcoin transaction.
+
         returns => <string>
 
         destinations: {address <string>: amount<string>} dictionary mapping destination addresses to amount in BTC
@@ -502,12 +526,14 @@ class WithdrawalXact:
 
     def unspent_total(self):
         """
-        Return the total amount of BTC available to spend from the input UTXOs
+        Return the total amount of BTC available to spend from the input UTXOs.
         """
         return sum(utxo["amount"] for utxo in self._inputs).quantize(SATOSHI_PLACES)
 
     def add_input_xact(self, hex_tx):
         """
+        Use the raw hex transaction provided as an input for this withdrawal.
+
         Look for outputs in the supplied transaction which match our cold storage address.
         Save them for later use in constructing the withdrawal.
 
@@ -538,10 +564,10 @@ class WithdrawalXact:
 
     def _teach_address_to_wallet(self):
         """
-        Teaches the bitcoind wallet about our multisig address, so it can
-        use that knowledge to sign the transaction we're about to create.
-        """
+        Teach the bitcoind wallet about our multisig address.
 
+        So it can use that knowledge to sign the transaction we're about to create.
+        """
         # If address is p2wsh-in-p2sh, then the user-provided
         # redeem_script is actually witnessScript, and I need to get the
         # redeemScript from `decodescript`.
@@ -579,6 +605,8 @@ class WithdrawalXact:
 
     def _validate_address(self):
         """
+        Validate the supplied cold storage address and redemption script.
+
         Given our source cold storage address and redemption script,
         make sure the redeem script is valid and matches the address.
         """
@@ -596,7 +624,8 @@ class WithdrawalXact:
 
     def _get_utxos(self, tx):
         """
-        Given a transaction, find all the outputs that were sent to an address
+        Given a transaction, find all the outputs that were sent to an address.
+
         returns => List<Dictionary> list of UTXOs in bitcoin core format
 
         tx - <Dictionary> in bitcoind core format
@@ -615,8 +644,9 @@ class WithdrawalXact:
 
     def calculate_fee(self, destinations):
         """
-        Given a list of destinations, calculate the total fee in BTC at the given basis
-        returbs => Decimal total fee in BTC
+        Given a list of destinations, calculate the total fee in BTC at the given basis.
+
+        returns => Decimal total fee in BTC
 
         destinations - <Dictionary> pairs of {addresss:amount} to send
         """
@@ -631,12 +661,12 @@ class WithdrawalXact:
         return fee
 
 
-
 ################################################################################################
 #
 # QR code helper functions
 #
 ################################################################################################
+
 
 def write_and_verify_qr_code(name, filename, data):
     """
@@ -646,7 +676,6 @@ def write_and_verify_qr_code(name, filename, data):
     filename: <string> filename for storing the QR code
     data: <string> the data to be encoded
     """
-
     subprocess.call("qrencode -o {0} {1}".format(filename, data), shell=True)
     check = subprocess.check_output(
         "zbarimg --set '*.enable=0' --set 'qr.enable=1' --quiet --raw {}".format(filename), shell=True)
@@ -666,6 +695,9 @@ def write_and_verify_qr_code(name, filename, data):
 ################################################################################################
 
 def yes_no_interactive():
+    """
+    Prompt user for a yes/no confirmation and repeat until valid answer is received.
+    """
     def confirm_prompt():
         return input("Confirm? (y/n): ")
 
@@ -680,8 +712,11 @@ def yes_no_interactive():
             print("You must enter y (for yes) or n (for no).")
             confirm = confirm_prompt()
 
-def safety_checklist():
 
+def safety_checklist():
+    """
+    Prompt user with annoying safety checks and make sure they answer yes to all.
+    """
     checks = [
         "Are you running this on a computer WITHOUT a network connection of any kind?",
         "Have the wireless cards in this computer been physically removed?",
@@ -706,22 +741,23 @@ def safety_checklist():
 
 def unchunk(string):
     """
-    Remove spaces in string
+    Remove spaces in string.
     """
     return string.replace(" ", "")
 
 
 def chunk_string(string, length):
     """
-    Splits a string into chunks of [length] characters, for easy human readability
-    Source: https://stackoverflow.com/a/18854817/11031317
+    Split a string into chunks of [length] characters, for easy human readability.
+
+    Source: https://stackoverflow.com/a/18854817
     """
     return (string[0+i:length+i] for i in range(0, len(string), length))
 
 
 def entropy(n, length):
     """
-    Generate n random strings for the user from /dev/random
+    Generate n random strings for the user from /dev/random.
     """
     safety_checklist()
 
@@ -746,14 +782,14 @@ def entropy(n, length):
 
 def deposit_interactive(m, n, dice_seed_length=62, rng_seed_length=20, p2wsh=False):
     """
-    Generate data for a new cold storage address (private keys, address, redemption script)
+    Generate data for a new cold storage address (private keys, address, redemption script).
+
     m: <int> number of multisig keys required for withdrawal
     n: <int> total number of multisig keys
     dice_seed_length: <int> minimum number of dice rolls required
     rng_seed_length: <int> minimum length of random seed required
     p2wsh: if True, generate p2wsh instead of p2wsh-in-p2sh
     """
-
     safety_checklist()
     ensure_bitcoind_running()
 
@@ -808,10 +844,10 @@ def deposit_interactive(m, n, dice_seed_length=62, rng_seed_length=20, p2wsh=Fal
 
 def withdraw_interactive():
     """
-    Construct and sign a transaction to withdaw funds from cold storage
+    Construct and sign a transaction to withdraw funds from cold storage.
+
     All data required for transaction construction is input at the terminal
     """
-
     safety_checklist()
     ensure_bitcoind_running()
 
@@ -833,7 +869,6 @@ def withdraw_interactive():
         addresses[dest_address] = 0
 
         num_tx = int(input("\nHow many unspent transactions will you be using for this withdrawal? "))
-
 
         for txcount in range(num_tx):
             print("\nPlease paste raw transaction #{} (hexadecimal format) with unspent outputs at the source address".format(txcount + 1))
@@ -946,6 +981,9 @@ def withdraw_interactive():
 ################################################################################################
 
 def main():
+    """
+    Execute main interactive script.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('program', choices=[
                         'entropy', 'create-deposit-data', 'create-withdrawal-data'])
