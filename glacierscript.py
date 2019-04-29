@@ -259,7 +259,6 @@ def read_dice_seed_interactive(min_length):
 
     min_length: <int> number of dice rolls required.  > 0.
     """
-
     def ask_for_dice_seed(x):
         print("Enter {0} dice rolls (example: 62543 16325 21341...) Spaces are OK, and will be ignored:".format(x))
 
