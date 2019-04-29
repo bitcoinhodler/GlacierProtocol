@@ -282,7 +282,7 @@ def xor_hex_strings(str1, str2):
     returns => <string> in hex format
     """
     if len(str1) != len(str2):
-        raise Exception("tried to xor strings of unequal length")
+        raise Exception("tried to xor strings of unequal length")  # pragma: no cover
     str1_dec = int(str1, 16)
     str2_dec = int(str2, 16)
 
@@ -339,7 +339,7 @@ def ensure_bitcoind_running():
             return
         time.sleep(0.5)
 
-    raise Exception("Timeout while starting bitcoin server")
+    raise Exception("Timeout while starting bitcoin server")  # pragma: no cover
 
 def require_minimum_bitcoind_version(min_version):
     """
@@ -349,8 +349,8 @@ def require_minimum_bitcoind_version(min_version):
     networkinfo = bitcoin_cli_json("getnetworkinfo")
 
     if int(networkinfo["version"]) < min_version:
-        print("ERROR: Your bitcoind version is too old. You have {}, I need {} or newer. Exiting...".format(networkinfo["version"], min_version))
-        sys.exit()
+        print("ERROR: Your bitcoind version is too old. You have {}, I need {} or newer. Exiting...".format(networkinfo["version"], min_version))  # pragma: no cover
+        sys.exit()  # pragma: no cover
 
 def get_pubkey_for_wif_privkey(privkey):
     """
@@ -440,7 +440,7 @@ class DecimalEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, Decimal):
             return str(o)
-        return super().default(o)
+        return super().default(o)  # pragma: no cover
 
 class WithdrawalXact:
     """
@@ -555,7 +555,7 @@ class WithdrawalXact:
         results = bitcoin_cli_json("importmulti", json.dumps([import_this]))
         if not all(result["success"] for result in results) or \
            any("warnings" in result for result in results):
-            raise Exception("Problem importing address to wallet")
+            raise Exception("Problem importing address to wallet")  # pragma: no cover
 
     def _find_pubkeys(self):
         """
@@ -598,7 +598,7 @@ class WithdrawalXact:
         for output in tx["vout"]:
             if "addresses" not in output["scriptPubKey"]:
                 # In Bitcoin Core versions older than v0.16, native segwit outputs have no address decoded
-                continue
+                continue  # pragma: no cover
             out_addresses = output["scriptPubKey"]["addresses"]
             if self.source_address in out_addresses:
                 utxos.append(output)
@@ -698,9 +698,9 @@ def write_and_verify_qr_code(name, filename, data):
 
     qrdata = decode_qr(filenames)
     if qrdata != data:
-        print("********************************************************************")
-        print("WARNING: {} QR code could not be verified properly. This could be a sign of a security breach.".format(name))
-        print("********************************************************************")
+        print("********************************************************************")  # pragma: no cover
+        print("WARNING: {} QR code could not be verified properly. This could be a sign of a security breach.".format(name))  # pragma: no cover
+        print("********************************************************************")  # pragma: no cover
 
     print("QR code for {0} written to {1}".format(name, ','.join(filenames)))
 
