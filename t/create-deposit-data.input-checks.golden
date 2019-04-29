@@ -19,6 +19,12 @@ Enter at least 40 characters of computer entropy. Spaces are OK, and will be ign
 
 Creating private key #3
 Enter 62 dice rolls (example: 62543 16325 21341...) Spaces are OK, and will be ignored:
+Error: You must provide at least 62 dice rolls
+Enter 62 dice rolls (example: 62543 16325 21341...) Spaces are OK, and will be ignored:
+Error: Dice rolls must be between 1 and 6.
+Enter 62 dice rolls (example: 62543 16325 21341...) Spaces are OK, and will be ignored:
+Error: Dice rolls must be numbers between 1 and 6
+Enter 62 dice rolls (example: 62543 16325 21341...) Spaces are OK, and will be ignored:
 Enter at least 40 characters of computer entropy. Spaces are OK, and will be ignored:
 
 Creating private key #4
