@@ -599,8 +599,7 @@ class WithdrawalXact:
         out = bitcoin_cli_json("getaddressinfo", self.source_address)
         if "pubkeys" in out:
             return out["pubkeys"]  # for non-segwit addresses
-        else:
-            return out["embedded"]["pubkeys"]  # for segwit addresses
+        return out["embedded"]["pubkeys"]  # for segwit addresses
 
     def _validate_address(self):
         """
