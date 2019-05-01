@@ -455,7 +455,7 @@ class DecimalEncoder(json.JSONEncoder):
     Encoder class for json.dumps() that dumps Decimal as a string.
     """
 
-    def default(self, o):
+    def default(self, o):  # noqa:pylint:method-hidden
         """
         Convert anything that's not one of the built-in JSON types.
         """
