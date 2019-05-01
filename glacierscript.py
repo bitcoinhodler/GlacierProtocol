@@ -762,9 +762,8 @@ def yes_no_interactive():
             return True
         if confirm.upper() == "N":
             return False
-        else:
-            print("You must enter y (for yes) or n (for no).")
-            confirm = confirm_prompt()
+        print("You must enter y (for yes) or n (for no).")
+        confirm = confirm_prompt()
 
 
 def safety_checklist():
