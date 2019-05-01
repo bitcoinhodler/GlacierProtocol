@@ -892,7 +892,7 @@ def withdraw_interactive():
             key = input("Key #{0}: ".format(key_idx + 1))
             xact.add_key(key)
 
-        ###### fees, amount, and change #######
+        # fees, amount, and change
 
         input_amount = utxo_sum
         fee = get_fee_interactive(xact, addresses)
@@ -952,7 +952,7 @@ def withdraw_interactive():
         else:
             print("\nProcess aborted. Starting over....")
 
-    #### Calculate Transaction ####
+    # Calculate Transaction
     print("\nCalculating transaction...\n")
 
     signed_tx = xact.create_signed_transaction(addresses)
