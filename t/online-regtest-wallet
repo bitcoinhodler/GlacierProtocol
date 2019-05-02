@@ -660,7 +660,10 @@ def main():
 
     bitcoin_cli.verbose_mode = args.verbose
 
-    args.program(args)
+    if hasattr(args, 'program'):
+        args.program(args)
+    else:
+        parser.print_usage()
 
 
 if __name__ == "__main__":
