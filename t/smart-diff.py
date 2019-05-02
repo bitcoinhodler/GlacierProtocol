@@ -2,7 +2,7 @@
 
 ################################################################################################
 #
-# smart-diff:
+# smart-diff.py:
 #
 # Diff two test files ("golden" or expected output vs "out" or actual output),
 # where the golden file may have embedded regexps using <> syntax, e.g.:
