@@ -402,7 +402,7 @@ class TxFile():
 
     def save(self):
         with atomic_write(self._filename()) as outfile:
-            outfile.write("// This file created and used by online-regtest-wallet\n")
+            outfile.write("// This file created and used by online-regtest-wallet.py\n")
             outfile.write(json.dumps(self.txlist, indent=2, sort_keys=True))
             outfile.write("\n")
 
