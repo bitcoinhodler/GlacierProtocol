@@ -80,7 +80,7 @@ endif
 	@echo "Success, all tests passed."
 
 clean:
-	@(cd testrun && ../t/online-regtest-wallet stop)
+	@(cd testrun && ../t/online-regtest-wallet.py stop)
 	@rmdir testrun/bitcoin-data
 	@rmdir testrun
 
@@ -98,7 +98,7 @@ define test_recipe =
 	  (echo "Test $@ failed" && exit 1)
 	@if [[ "$@" == *"withdrawal"* ]]; then \
 	  if grep --word-regexp --quiet -- -regtest $<; then \
-	    (cd testrun && ../t/online-regtest-wallet submit ../$(GOLDEN_FILE)); \
+	    (cd testrun && ../t/online-regtest-wallet.py submit ../$(GOLDEN_FILE)); \
 	  fi; \
 	fi
 	$(cleanup_bitcoind)
@@ -123,4 +123,4 @@ ifdef COVERAGE
 	@mkdir -p coverage
 endif
 	@mkdir -p testrun
-	@(cd testrun && ../t/online-regtest-wallet start)
+	@(cd testrun && ../t/online-regtest-wallet.py start)
