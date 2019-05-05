@@ -76,9 +76,9 @@ def hash_md5(val):
     This is just a thin wrapper around the hashlib md5 library to
     provide a more functional interface.
     """
-    m = md5()
-    m.update(val.encode('ascii'))
-    return m.hexdigest()
+    hasher = md5()
+    hasher.update(val.encode('ascii'))
+    return hasher.hexdigest()
 
 
 def satoshi_to_btc(satoshi):
