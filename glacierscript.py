@@ -301,7 +301,7 @@ def xor_hex_strings(str1, str2):
     return "{:0{}x}".format(xored, len(str1))
 
 
-def hex_private_key_to_WIF_private_key(hex_key):
+def hex_private_key_to_wif_private_key(hex_key):
     """
     Convert a raw 256-bit hex private key to WIF format.
 
@@ -807,7 +807,7 @@ def deposit_interactive(m, n, dice_seed_length=62, rng_seed_length=20, p2wsh=Fal
 
         # back to hex string
         hex_private_key = xor_hex_strings(dice_seed_hash, rng_seed_hash)
-        WIF_private_key = hex_private_key_to_WIF_private_key(hex_private_key)
+        WIF_private_key = hex_private_key_to_wif_private_key(hex_private_key)
         keys.append(WIF_private_key)
 
     print("Private keys created.")
