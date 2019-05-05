@@ -70,7 +70,7 @@ def hash_sha256(val):
     return hasher.hexdigest()
 
 
-def hash_md5(s):
+def hash_md5(val):
     """
     Return the MD5 hash of the provided string.
 
@@ -78,7 +78,7 @@ def hash_md5(s):
     provide a more functional interface.
     """
     m = md5()
-    m.update(s.encode('ascii'))
+    m.update(val.encode('ascii'))
     return m.hexdigest()
 
 
