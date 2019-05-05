@@ -64,9 +64,9 @@ def hash_sha256(val):
     This is just a thin wrapper around the hashlib SHA256 library to
     provide a more functional interface.
     """
-    m = sha256()
-    m.update(val.encode('ascii'))
-    return m.hexdigest()
+    hasher = sha256()
+    hasher.update(val.encode('ascii'))
+    return hasher.hexdigest()
 
 
 def hash_md5(s):
