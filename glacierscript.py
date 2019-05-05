@@ -58,7 +58,7 @@ verbose_mode = 0
 ################################################################################################
 
 
-def hash_sha256(s):
+def hash_sha256(val):
     """
     Return the SHA256 hash of the provided string.
 
@@ -66,7 +66,7 @@ def hash_sha256(s):
     provide a more functional interface.
     """
     m = sha256()
-    m.update(s.encode('ascii'))
+    m.update(val.encode('ascii'))
     return m.hexdigest()
 
 
