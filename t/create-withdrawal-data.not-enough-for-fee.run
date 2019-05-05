@@ -1,7 +1,11 @@
 #!/bin/bash
 set -e
 
-$GLACIERSCRIPT --testnet=$1 create-withdrawal-data << INPUT
+# Note: the unspent tx used here doesn't actually exist in our regtest
+# blockchain, but it doesn't need to because we never actually spend
+# it.
+
+$GLACIERSCRIPT --regtest=$1 create-withdrawal-data << INPUT
 y
 y
 y
