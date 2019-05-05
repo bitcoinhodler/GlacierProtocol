@@ -499,11 +499,18 @@ class ParsedRunfile():
                             \d+ \n
                         """))
         self._input_txs = []
+        self._input_tx_files = []
         for idx in range(input_tx_count):
+            filename = None
             tx = parser.send(r"""
-                            [0-9a-fA-F]+ \n   # input tx
+                            [^\n]+ \n   # input tx or filename with same
                         """).rstrip()
+            if os.path.isfile(tx):
+                filename = tx
+                tx = open(tx).read().strip()
             self._input_txs.append(tx)
+            self._input_tx_files.append(filename)
+
         back_matter = parser.send(r"""
                             .* \Z  # everything up to the end
                         """)
@@ -522,8 +529,14 @@ class ParsedRunfile():
             return
         with atomic_write(self.filename) as outfile:
             outfile.write(self.front_matter)
-            outfile.write("\n".join(self.input_txs))
-            outfile.write("\n")  # one more after last input tx
+            for idx, tx in enumerate(self._input_txs):
+                if self._input_tx_files[idx]:
+                    outfile.write(self._input_tx_files[idx] + "\n")
+                    with open(self._input_tx_files[idx], 'wt') as txfile:
+                        txfile.write(tx + "\n")
+                else:
+                    outfile.write(tx + "\n")
+
             outfile.write(self.back_matter)
 
 
