@@ -17,7 +17,8 @@ fi
 
 set -e
 
-t/online-regtest-wallet.py convert t/create-withdrawal-data.$1.run
+mkdir -p testrun/online
+(cd testrun/online && ../../t/online-regtest-wallet.py convert ../../t/create-withdrawal-data.$1.run)
 
 make t/create-withdrawal-data.$1.test || /bin/true
 
