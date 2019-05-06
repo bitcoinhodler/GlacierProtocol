@@ -72,7 +72,11 @@ def test_make_regexp(line, expected):
     if pat != expected:
         raise RuntimeError("Expected {}, got {}".format(expected, pat))
 
+
 def self_test():
+    """
+    Run some self-checking tests of make_regexp().
+    """
     # Simple line with no regexps
     test_make_regexp("This is just a normal line with * and stuff",
                      r"This\ is\ just\ a\ normal\ line\ with\ \*\ and\ stuff")
