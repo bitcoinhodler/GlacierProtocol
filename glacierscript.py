@@ -885,9 +885,9 @@ def construct_withdrawal_interactive():
 
     print("\nTransaction data found for source address.")
 
-    utxo_sum = xact.unspent_total()
+    input_amount = xact.unspent_total()
 
-    print("TOTAL unspent amount for this raw transaction: {} BTC".format(utxo_sum))
+    print("TOTAL unspent amount for this raw transaction: {} BTC".format(input_amount))
 
     print("\nHow many private keys will you be signing this transaction with? ")
     key_count = int(input("#: "))
@@ -898,7 +898,6 @@ def construct_withdrawal_interactive():
 
     # fees, amount, and change
 
-    input_amount = utxo_sum
     fee = get_fee_interactive(xact, addresses)
     # Got this far
     if fee > input_amount:
