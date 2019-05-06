@@ -64,6 +64,7 @@ def make_regexp(line):
 def test_make_regexp(line, expected):
     """
     Given a line from golden and an expected pattern, make sure make_regexp does the right thing.
+
     This is only for testing this one function in this script.
     """
     print("Testing", line)
