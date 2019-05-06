@@ -47,7 +47,7 @@ def call(*args):
     return retcode
 
 
-def bitcoin_cli_checkcall(*args):
+def checkcall(*args):
     """
     Run `bitcoin-cli`, ensure no error.
     """
