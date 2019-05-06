@@ -49,6 +49,7 @@ import bitcoin_cli
 from bitcoin_cli import bitcoin_cli_call, bitcoin_cli_checkcall, bitcoin_cli_checkoutput, bitcoin_cli_json, bitcoind_call
 
 SATOSHI_PLACES = Decimal("0.00000001")
+wif_prefix = None
 
 
 ################################################################################################
