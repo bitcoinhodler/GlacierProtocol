@@ -610,17 +610,17 @@ class WithdrawalXact:
             print("ERROR: Redemption script does not match cold storage address. Doublecheck for typos. Exiting...")
             sys.exit()
 
-    def _get_utxos(self, tx):
+    def _get_utxos(self, xact):
         """
         Given a transaction, find all the outputs that were sent to an address.
 
         returns => List<Dictionary> list of UTXOs in bitcoin core format
 
-        tx - <Dictionary> in bitcoin core format
+        xact - <Dictionary> in bitcoin core format
         """
         utxos = []
 
-        for output in tx["vout"]:
+        for output in xact["vout"]:
             if "addresses" not in output["scriptPubKey"]:
                 # In Bitcoin Core versions older than v0.16, native segwit outputs have no address decoded
                 continue  # pragma: no cover
