@@ -20,7 +20,12 @@ all-tests := $(sort $(addsuffix .test, $(basename $(wildcard t/*.run))))
 .PHONY : prereqs test all %.test
 
 # Force parallel even when user was too lazy to type -j4
-MAKEFLAGS += --jobs=4
+# with --jobs=4: real 0m30.574s
+# with --jobs=8: real 0m20.733s
+# with --jobs=12: real 0m19.104s
+# with --jobs=16: real 0m18.530s
+# with --jobs=100: real 0m18.327s but could exhaust system resources if we get enough tests
+MAKEFLAGS += --jobs=16
 
 # Run `make COVERAGE=1` to enable coverage.py coverage collection.
 # Only works when running all tests.
