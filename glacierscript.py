@@ -766,11 +766,11 @@ def entropy(count, length):
 #
 ################################################################################################
 
-def deposit_interactive(m, n, dice_seed_length=62, rng_seed_length=20, p2wsh=False):
+def deposit_interactive(nrequired, n, dice_seed_length=62, rng_seed_length=20, p2wsh=False):
     """
     Generate data for a new cold storage address (private keys, address, redemption script).
 
-    m: <int> number of multisig keys required for withdrawal
+    nrequired: <int> number of multisig keys required for withdrawal
     n: <int> total number of multisig keys
     dice_seed_length: <int> minimum number of dice rolls required
     rng_seed_length: <int> minimum length of random seed required
@@ -780,7 +780,7 @@ def deposit_interactive(m, n, dice_seed_length=62, rng_seed_length=20, p2wsh=Fal
     ensure_bitcoind_running()
 
     print("\n")
-    print("Creating {0}-of-{1} cold storage address.\n".format(m, n))
+    print("Creating {0}-of-{1} cold storage address.\n".format(nrequired, n))
 
     keys = []
 
@@ -800,11 +800,11 @@ def deposit_interactive(m, n, dice_seed_length=62, rng_seed_length=20, p2wsh=Fal
         keys.append(WIF_private_key)
 
     print("Private keys created.")
-    print("Generating {0}-of-{1} cold storage address...\n".format(m, n))
+    print("Generating {0}-of-{1} cold storage address...\n".format(nrequired, n))
 
     pubkeys = [get_pubkey_for_wif_privkey(key) for key in keys]
     address_type = 'bech32' if p2wsh else 'p2sh-segwit'
-    results = addmultisigaddress(m, pubkeys, address_type)
+    results = addmultisigaddress(nrequired, pubkeys, address_type)
 
     print("Private keys:")
     for idx, key in enumerate(keys):
