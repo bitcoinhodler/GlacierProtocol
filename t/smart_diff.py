@@ -74,25 +74,25 @@ def test_make_regexp(line, expected):
 def self_test():
     # Simple line with no regexps
     test_make_regexp("This is just a normal line with * and stuff",
-                    r"This\ is\ just\ a\ normal\ line\ with\ \*\ and\ stuff")
+                     r"This\ is\ just\ a\ normal\ line\ with\ \*\ and\ stuff")
     # One regexp in middle
     test_make_regexp("Beginning <[0-9a-f]{4}> end",
-                    r"Beginning\ [0-9a-f]{4}\ end")
+                     r"Beginning\ [0-9a-f]{4}\ end")
     # One regexp at end
     test_make_regexp("Beginning <[0-9a-f]{4}>",
-                    r"Beginning\ [0-9a-f]{4}")
+                     r"Beginning\ [0-9a-f]{4}")
     # Two regexp in middle
     test_make_regexp("Beginning <[0-9a-f]{4}> + foo + <[abc]?> * end",
-                    r"Beginning\ [0-9a-f]{4}\ \+\ foo\ \+\ [abc]?\ \*\ end")
+                     r"Beginning\ [0-9a-f]{4}\ \+\ foo\ \+\ [abc]?\ \*\ end")
     # Two regexp, one at end
     test_make_regexp("Beginning <[0-9a-f]{4}> + foo + <[abc]?>",
-                    r"Beginning\ [0-9a-f]{4}\ \+\ foo\ \+\ [abc]?")
+                     r"Beginning\ [0-9a-f]{4}\ \+\ foo\ \+\ [abc]?")
     # One regexp at beginning
     test_make_regexp("<[0-9a-f]{4}> end",
-                    r"[0-9a-f]{4}\ end")
+                     r"[0-9a-f]{4}\ end")
     # Entire line is a regexp
     test_make_regexp("<[0-9a-f]{4}>",
-                    r"[0-9a-f]{4}")
+                     r"[0-9a-f]{4}")
 
 
 def get_cmdline_args():
