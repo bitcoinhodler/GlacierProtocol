@@ -211,12 +211,9 @@ def read_rng_seed_interactive(min_length):
     """
     char_length = min_length * 2
 
-    def ask_for_rng_seed(length):
-        print("Enter at least {0} characters of computer entropy. Spaces are OK, and will be ignored:".format(length))
-
     done = False
     while not done:
-        ask_for_rng_seed(char_length)
+        print("Enter at least {0} characters of computer entropy. Spaces are OK, and will be ignored:".format(char_length))
         seed = input()
         seed = unchunk(seed)
         done = validate_rng_seed(seed, char_length)
