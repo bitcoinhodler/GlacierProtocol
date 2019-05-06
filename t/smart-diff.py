@@ -1,30 +1,27 @@
 #!/usr/bin/env python3
+r"""
+Smart diff of test's actual vs golden (expected) output.
 
-################################################################################################
-#
-# smart-diff.py:
-#
-# Diff two test files ("golden" or expected output vs "out" or actual output),
-# where the golden file may have embedded regexps using <> syntax, e.g.:
-#     bitcoin-cli -rpcport=<\d+> -datadir=bitcoin-test-data getnetworkinfo
-#
-# We take each line of the golden.re file and turn it into a regexp,
-# then attempt to match the remainder of the outfile. We do it this way
-# so that in case of no match, we can report which line number of the
-# golden failed to match. (If we try to make the entire file into one
-# big regexp, we get only boolean: match or no match, which makes it
-# very difficult to diagnose mismatches.)
-#
-# This makes it dangerous to end a line with a regexp: because regexps
-# are greedy, ending a line in .* will match the remainder of the
-# outfile, and the next line of the golden will mismatch.
-#
-# Perhaps there's a better way to do this? What if we treated every
-# line of the golden as an optional group like "(line)?" Then check
-# that every group was a match. The first one not matching is the line
-# number of the mismatch.
-#
-################################################################################################
+Diff two test files ("golden" or expected output vs "out" or actual output),
+where the golden file may have embedded regexps using <> syntax, e.g.:
+    bitcoin-cli -rpcport=<\d+> -datadir=bitcoin-test-data getnetworkinfo
+
+We take each line of the golden.re file and turn it into a regexp,
+then attempt to match the remainder of the outfile. We do it this way
+so that in case of no match, we can report which line number of the
+golden failed to match. (If we try to make the entire file into one
+big regexp, we get only boolean: match or no match, which makes it
+very difficult to diagnose mismatches.)
+
+This makes it dangerous to end a line with a regexp: because regexps
+are greedy, ending a line in .* will match the remainder of the
+outfile, and the next line of the golden will mismatch.
+
+Perhaps there's a better way to do this? What if we treated every
+line of the golden as an optional group like "(line)?" Then check
+that every group was a match. The first one not matching is the line
+number of the mismatch.
+"""
 
 import argparse
 import re
