@@ -931,21 +931,6 @@ def construct_withdrawal_interactive():
         print("With no change output, the transaction fee is reduced, and {0} BTC will be sent to your destination.".format(withdrawal_amount))
 
     addresses[dest_address] = withdrawal_amount
-
-    # check data
-    print("\nIs this data correct?")
-    print("*** WARNING: Incorrect data may lead to loss of funds ***\n")
-
-    print("{0} BTC in unspent supplied transactions".format(input_amount))
-    for address, value in addresses.items():
-        if address == xact.source_address:
-            print("{0} BTC going back to cold storage address {1}".format(value, address))
-        else:
-            print("{0} BTC going to destination address {1}".format(value, address))
-    print("Fee amount: {0}".format(fee))
-    print("\nSigning with private keys: ")
-    for key in xact.keys:
-        print("{}".format(key))
     return (xact, addresses)
 
 
@@ -963,6 +948,20 @@ def withdraw_interactive():
     while not approve:
         xact, addresses = construct_withdrawal_interactive()
 
+        # check data
+        print("\nIs this data correct?")
+        print("*** WARNING: Incorrect data may lead to loss of funds ***\n")
+
+        print("{0} BTC in unspent supplied transactions".format(xact.unspent_total()))
+        for address, value in addresses.items():
+            if address == xact.source_address:
+                print("{0} BTC going back to cold storage address {1}".format(value, address))
+            else:
+                print("{0} BTC going to destination address {1}".format(value, address))
+        print("Fee amount: {0}".format(xact.unspent_total() - sum(addresses[a] for a in addresses)))
+        print("\nSigning with private keys: ")
+        for key in xact.keys:
+            print("{}".format(key))
         print("\n")
         confirm = yes_no_interactive()
 
