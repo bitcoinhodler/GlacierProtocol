@@ -796,8 +796,8 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
 
         # back to hex string
         hex_private_key = xor_hex_strings(dice_seed_hash, rng_seed_hash)
-        WIF_private_key = hex_private_key_to_wif_private_key(hex_private_key)
-        keys.append(WIF_private_key)
+        wif_private_key = hex_private_key_to_wif_private_key(hex_private_key)
+        keys.append(wif_private_key)
 
     print("Private keys created.")
     print("Generating {0}-of-{1} cold storage address...\n".format(nrequired, nkeys))
