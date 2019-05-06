@@ -58,7 +58,7 @@ def make_regexp(line):
         if match.group("bracketed"):
             output += match.group("regexp")
         startpos = match.end()
-    return re.compile(output, flags=re.MULTILINE|re.DOTALL)
+    return re.compile(output, flags=re.MULTILINE | re.DOTALL)
 
 
 def test_make_regexp(line, expected):
