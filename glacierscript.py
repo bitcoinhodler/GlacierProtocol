@@ -46,7 +46,7 @@ import time
 # Taken from https://github.com/keis/base58
 from base58 import b58encode_check
 import bitcoin_cli
-from bitcoin_cli import bitcoin_cli_json, bitcoind_call
+from bitcoin_cli import bitcoind_call
 
 SATOSHI_PLACES = Decimal("0.00000001")
 wif_prefix = None
@@ -276,7 +276,7 @@ def require_minimum_bitcoind_version(min_version):
 
     <min_version> - required minimum version in format of getnetworkinfo, i.e. 150100 for v0.15.1
     """
-    networkinfo = bitcoin_cli_json("getnetworkinfo")
+    networkinfo = bitcoin_cli.json("getnetworkinfo")
 
     if int(networkinfo["version"]) < min_version:
         print("ERROR: Your bitcoind version is too old. You have {}, I need {} or newer. Exiting...".format(networkinfo["version"], min_version))  # pragma: no cover
@@ -300,7 +300,7 @@ def get_pubkey_for_wif_privkey(privkey):
 
     ensure_bitcoind_running()
     bitcoin_cli.checkcall("importprivkey", privkey, label)
-    addresses = bitcoin_cli_json("getaddressesbylabel", label)
+    addresses = bitcoin_cli.json("getaddressesbylabel", label)
 
     # getaddressesbylabel returns multiple addresses associated with
     # this one privkey; since we use it only for communicating the
@@ -309,7 +309,7 @@ def get_pubkey_for_wif_privkey(privkey):
 
     address = next(iter(addresses))
 
-    validate_output = bitcoin_cli_json("getaddressinfo", address)
+    validate_output = bitcoin_cli.json("getaddressinfo", address)
     return validate_output["pubkey"]
 
 
@@ -323,7 +323,7 @@ def addmultisigaddress(nrequired, pubkeys, address_type='p2sh-segwit'):
     pubkeys: List<string> hex pubkeys for each of the N keys
     """
     pubkey_string = json.dumps(pubkeys)
-    return bitcoin_cli_json("addmultisigaddress", str(nrequired), pubkey_string, "", address_type)
+    return bitcoin_cli.json("addmultisigaddress", str(nrequired), pubkey_string, "", address_type)
 
 
 def get_fee_interactive(xact, destinations):
@@ -434,7 +434,7 @@ class WithdrawalXact:
             prev_txs,
             json.dumps(destinations, cls=DecimalEncoder)).strip()
 
-        signed_tx = bitcoin_cli_json(
+        signed_tx = bitcoin_cli.json(
             "signrawtransactionwithwallet",
             tx_unsigned_hex, prev_txs)
         return signed_tx
@@ -456,7 +456,7 @@ class WithdrawalXact:
         """
         # For each UTXO used as input, we need the txid, vout index, scriptPubKey, amount, and redeemScript
         # to generate a signature
-        xact = bitcoin_cli_json("decoderawtransaction", hex_tx)
+        xact = bitcoin_cli.json("decoderawtransaction", hex_tx)
         if xact['hash'] in self._seen_txhashes:
             print("ERROR: duplicated input transactions, exiting...")
             sys.exit()
@@ -487,7 +487,7 @@ class WithdrawalXact:
         # redeem_script is actually witnessScript, and I need to get the
         # redeemScript from `decodescript`.
 
-        decoded_script = bitcoin_cli_json("decodescript", self.redeem_script)
+        decoded_script = bitcoin_cli.json("decodescript", self.redeem_script)
 
         import_this = {
             "scriptPubKey": {"address": self.source_address},
@@ -501,7 +501,7 @@ class WithdrawalXact:
             import_this["witnessscript"] = self.redeem_script
             if self.source_address == decoded_script["segwit"]["p2sh-segwit"]:
                 import_this["redeemscript"] = decoded_script["segwit"]["hex"]
-        results = bitcoin_cli_json("importmulti", json.dumps([import_this]))
+        results = bitcoin_cli.json("importmulti", json.dumps([import_this]))
         if not all(result["success"] for result in results) or \
            any("warnings" in result for result in results):
             raise Exception("Problem importing address to wallet")  # pragma: no cover
@@ -512,7 +512,7 @@ class WithdrawalXact:
 
         Assumes that source_address has already been imported to the wallet using `importmulti`
         """
-        out = bitcoin_cli_json("getaddressinfo", self.source_address)
+        out = bitcoin_cli.json("getaddressinfo", self.source_address)
         if "pubkeys" in out:
             return out["pubkeys"]  # for non-segwit addresses
         return out["embedded"]["pubkeys"]  # for segwit addresses
@@ -524,7 +524,7 @@ class WithdrawalXact:
         Given our source cold storage address and redemption script,
         make sure the redeem script is valid and matches the address.
         """
-        decoded_script = bitcoin_cli_json("decodescript", self.redeem_script)
+        decoded_script = bitcoin_cli.json("decodescript", self.redeem_script)
         if decoded_script["type"] != "multisig":
             print("ERROR: Unrecognized redemption script. Doublecheck for typos. Exiting...")
             sys.exit()
@@ -566,7 +566,7 @@ class WithdrawalXact:
         """
         signed_tx = self.create_signed_transaction(destinations)
 
-        decoded_tx = bitcoin_cli_json("decoderawtransaction", signed_tx["hex"])
+        decoded_tx = bitcoin_cli.json("decoderawtransaction", signed_tx["hex"])
         size = decoded_tx["vsize"]
 
         fee = satoshi_to_btc(size * self.fee_basis_satoshis_per_byte)

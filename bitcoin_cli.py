@@ -66,7 +66,7 @@ def checkoutput(*args):
     return output
 
 
-def bitcoin_cli_json(*args):
+def json(*args):
     """
     Run `bitcoin-cli`, parse output as JSON.
     """
