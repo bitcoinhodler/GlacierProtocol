@@ -20,7 +20,7 @@ def _verbose(content):
         print(content)
 
 
-def run_subprocess(exe, *args):
+def _run_subprocess(exe, *args):
     """
     Run a subprocess (bitcoind or bitcoin-cli).
 
@@ -43,7 +43,7 @@ def bitcoin_cli_call(*args):
     """
     Run `bitcoin-cli`, return OS return code.
     """
-    _, retcode, _ = run_subprocess("bitcoin-cli", *args)
+    _, retcode, _ = _run_subprocess("bitcoin-cli", *args)
     return retcode
 
 
@@ -51,7 +51,7 @@ def bitcoin_cli_checkcall(*args):
     """
     Run `bitcoin-cli`, ensure no error.
     """
-    cmd_list, retcode, output = run_subprocess("bitcoin-cli", *args)
+    cmd_list, retcode, output = _run_subprocess("bitcoin-cli", *args)
     if retcode != 0:
         raise subprocess.CalledProcessError(retcode, cmd_list, output=output)
 
@@ -60,7 +60,7 @@ def bitcoin_cli_checkoutput(*args):
     """
     Run `bitcoin-cli`, fail if OS return code nonzero, return output.
     """
-    cmd_list, retcode, output = run_subprocess("bitcoin-cli", *args)
+    cmd_list, retcode, output = _run_subprocess("bitcoin-cli", *args)
     if retcode != 0:
         raise subprocess.CalledProcessError(retcode, cmd_list, output=output)
     return output
@@ -77,5 +77,5 @@ def bitcoind_call(*args):
     """
     Run `bitcoind`, return OS return code.
     """
-    _, retcode, _ = run_subprocess("bitcoind", *args)
+    _, retcode, _ = _run_subprocess("bitcoind", *args)
     return retcode
