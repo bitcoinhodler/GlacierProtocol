@@ -3,7 +3,7 @@ Helpers for running bitcoin-cli subprocesses.
 """
 
 from decimal import Decimal
-import json
+import json as systemjson
 import shlex
 import subprocess
 
@@ -70,7 +70,7 @@ def bitcoin_cli_json(*args):
     """
     Run `bitcoin-cli`, parse output as JSON.
     """
-    return json.loads(checkoutput(*args), parse_float=Decimal)
+    return systemjson.loads(checkoutput(*args), parse_float=Decimal)
 
 
 def bitcoind_call(*args):
