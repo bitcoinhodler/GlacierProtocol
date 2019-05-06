@@ -1053,6 +1053,9 @@ def main():
 
 @contextlib.contextmanager
 def subprocess_catcher():
+    """
+    Catch any subprocess errors and show process output before re-raising.
+    """
     try:
         yield
     except subprocess.CalledProcessError as exc:
