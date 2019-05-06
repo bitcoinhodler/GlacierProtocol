@@ -373,10 +373,10 @@ class DecimalEncoder(json.JSONEncoder):
         return super().default(o)  # pragma: no cover
 
 
-
 def jsonstr(thing):
     """
     Return a JSON string representation of thing.
+
     Decimal values are encoded as strings to avoid any floating point imprecision.
     """
     return json.dumps(thing, cls=DecimalEncoder)
