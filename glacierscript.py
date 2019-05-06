@@ -766,12 +766,12 @@ def entropy(count, length):
 #
 ################################################################################################
 
-def deposit_interactive(nrequired, n, dice_seed_length=62, rng_seed_length=20, p2wsh=False):
+def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=20, p2wsh=False):
     """
     Generate data for a new cold storage address (private keys, address, redemption script).
 
     nrequired: <int> number of multisig keys required for withdrawal
-    n: <int> total number of multisig keys
+    nkeys: <int> total number of multisig keys
     dice_seed_length: <int> minimum number of dice rolls required
     rng_seed_length: <int> minimum length of random seed required
     p2wsh: if True, generate p2wsh instead of p2wsh-in-p2sh
@@ -780,11 +780,11 @@ def deposit_interactive(nrequired, n, dice_seed_length=62, rng_seed_length=20, p
     ensure_bitcoind_running()
 
     print("\n")
-    print("Creating {0}-of-{1} cold storage address.\n".format(nrequired, n))
+    print("Creating {0}-of-{1} cold storage address.\n".format(nrequired, nkeys))
 
     keys = []
 
-    while len(keys) < n:
+    while len(keys) < nkeys:
         index = len(keys) + 1
         print("\nCreating private key #{}".format(index))
 
@@ -800,7 +800,7 @@ def deposit_interactive(nrequired, n, dice_seed_length=62, rng_seed_length=20, p
         keys.append(WIF_private_key)
 
     print("Private keys created.")
-    print("Generating {0}-of-{1} cold storage address...\n".format(nrequired, n))
+    print("Generating {0}-of-{1} cold storage address...\n".format(nrequired, nkeys))
 
     pubkeys = [get_pubkey_for_wif_privkey(key) for key in keys]
     address_type = 'bech32' if p2wsh else 'p2sh-segwit'
