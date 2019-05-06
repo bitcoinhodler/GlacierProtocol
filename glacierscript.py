@@ -46,7 +46,7 @@ import time
 # Taken from https://github.com/keis/base58
 from base58 import b58encode_check
 import bitcoin_cli
-from bitcoin_cli import bitcoin_cli_call, bitcoin_cli_checkcall, bitcoin_cli_checkoutput, bitcoin_cli_json, bitcoind_call
+from bitcoin_cli import bitcoin_cli_checkcall, bitcoin_cli_checkoutput, bitcoin_cli_json, bitcoind_call
 
 SATOSHI_PLACES = Decimal("0.00000001")
 wif_prefix = None
@@ -261,7 +261,7 @@ def ensure_bitcoind_running():
     times = 0
     while times <= 20:
         times += 1
-        if bitcoin_cli_call("getnetworkinfo") == 0:
+        if bitcoin_cli.call("getnetworkinfo") == 0:
             # getaddressinfo API changed in v0.18.0
             require_minimum_bitcoind_version(180000)
             return

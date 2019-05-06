@@ -39,7 +39,7 @@ def _run_subprocess(exe, *args):
     return (cmd_list, retcode, output)
 
 
-def bitcoin_cli_call(*args):
+def call(*args):
     """
     Run `bitcoin-cli`, return OS return code.
     """
