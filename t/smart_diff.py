@@ -95,12 +95,18 @@ def self_test():
                     r"[0-9a-f]{4}")
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('golden_filename', help="input1: expected output")
-parser.add_argument('out_filename', help="input2: actual output")
-parser.add_argument('--selftest', action='store_true', help="run this program's self-test")
-args = parser.parse_args()
+def get_cmdline_args():
+    """
+    Return args from parsing command line.
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('golden_filename', help="input1: expected output")
+    parser.add_argument('out_filename', help="input2: actual output")
+    parser.add_argument('--selftest', action='store_true', help="run this program's self-test")
+    return parser.parse_args()
 
+
+args = get_cmdline_args()
 if args.selftest:
     self_test()
     print("All tests passed.")
