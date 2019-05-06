@@ -893,6 +893,108 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
 #
 ################################################################################################
 
+def construct_withdrawal_interactive():
+    """
+    Get details from user input and construct WithdrawalXact object.
+
+    Returns => (xact, addresses) where xact is WithdrawalXact, and
+    addresses is a dict of {address: amount} of destinations.
+    """
+    addresses = OrderedDict()
+
+    print("\nYou will need to enter several pieces of information to create a withdrawal transaction.")
+    print("\n\n*** PLEASE BE SURE TO ENTER THE CORRECT DESTINATION ADDRESS ***\n")
+
+    source_address = input("\nSource cold storage address: ")
+    addresses[source_address] = 0
+
+    redeem_script = input("\nRedemption script for source cold storage address: ")
+    xact = WithdrawalXact(source_address, redeem_script)
+
+    dest_address = input("\nDestination address: ")
+    addresses[dest_address] = 0
+
+    num_tx = int(input("\nHow many unspent transactions will you be using for this withdrawal? "))
+
+    for txcount in range(num_tx):
+        print("\nPlease paste raw transaction #{} (hexadecimal format) with unspent outputs at the source address".format(txcount + 1))
+        print("OR")
+        print("input a filename located in the current directory which contains the raw transaction data")
+        print("(If the transaction data is over ~4000 characters long, you _must_ use a file.):")
+
+        hex_tx = input()
+        if os.path.isfile(hex_tx):
+            hex_tx = open(hex_tx).read().strip()
+
+        xact.add_input_xact(hex_tx)
+
+    print("\nTransaction data found for source address.")
+
+    utxo_sum = xact.unspent_total()
+
+    print("TOTAL unspent amount for this raw transaction: {} BTC".format(utxo_sum))
+
+    print("\nHow many private keys will you be signing this transaction with? ")
+    key_count = int(input("#: "))
+
+    for key_idx in range(key_count):
+        key = input("Key #{0}: ".format(key_idx + 1))
+        xact.add_key(key)
+
+    # fees, amount, and change
+
+    input_amount = utxo_sum
+    fee = get_fee_interactive(xact, addresses)
+    # Got this far
+    if fee > input_amount:
+        print("ERROR: Your fee is greater than the sum of your unspent transactions.  Try using larger unspent transactions. Exiting...")
+        sys.exit()
+
+    print("\nPlease enter the decimal amount (in bitcoin) to withdraw to the destination address.")
+    print("\nExample: For 2.3 bitcoins, enter \"2.3\".")
+    print("\nAfter a fee of {0}, you have {1} bitcoins available to withdraw.".format(fee, input_amount - fee))
+    print("\n*** Technical note for experienced Bitcoin users:  If the withdrawal amount & fee are cumulatively less than the total amount of the unspent transactions, the remainder will be sent back to the same cold storage address as change. ***\n")
+    withdrawal_amount = input(
+        "Amount to send to {0} (leave blank to withdraw all funds stored in these unspent transactions): ".format(dest_address))
+    if withdrawal_amount == "":
+        withdrawal_amount = input_amount - fee
+    else:
+        withdrawal_amount = Decimal(withdrawal_amount).quantize(SATOSHI_PLACES)
+
+    if fee + withdrawal_amount > input_amount:
+        print("Error: fee + withdrawal amount greater than total amount available from unspent transactions")
+        sys.exit()
+
+    change_amount = input_amount - withdrawal_amount - fee
+
+    if change_amount > 0:
+        print("{0} being returned to cold storage address address {1}.".format(change_amount, xact.source_address))
+        addresses[xact.source_address] = change_amount
+    else:
+        del addresses[xact.source_address]
+        fee = xact.calculate_fee(addresses)  # Recompute fee with no change output
+        withdrawal_amount = input_amount - fee
+        print("With no change output, the transaction fee is reduced, and {0} BTC will be sent to your destination.".format(withdrawal_amount))
+
+    addresses[dest_address] = withdrawal_amount
+
+    # check data
+    print("\nIs this data correct?")
+    print("*** WARNING: Incorrect data may lead to loss of funds ***\n")
+
+    print("{0} BTC in unspent supplied transactions".format(input_amount))
+    for address, value in addresses.items():
+        if address == xact.source_address:
+            print("{0} BTC going back to cold storage address {1}".format(value, address))
+        else:
+            print("{0} BTC going to destination address {1}".format(value, address))
+    print("Fee amount: {0}".format(fee))
+    print("\nSigning with private keys: ")
+    for key in xact.keys:
+        print("{}".format(key))
+    return (xact, addresses)
+
+
 def withdraw_interactive():
     """
     Construct and sign a transaction to withdraw funds from cold storage.
@@ -905,98 +1007,7 @@ def withdraw_interactive():
     approve = False
 
     while not approve:
-        addresses = OrderedDict()
-
-        print("\nYou will need to enter several pieces of information to create a withdrawal transaction.")
-        print("\n\n*** PLEASE BE SURE TO ENTER THE CORRECT DESTINATION ADDRESS ***\n")
-
-        source_address = input("\nSource cold storage address: ")
-        addresses[source_address] = 0
-
-        redeem_script = input("\nRedemption script for source cold storage address: ")
-        xact = WithdrawalXact(source_address, redeem_script)
-
-        dest_address = input("\nDestination address: ")
-        addresses[dest_address] = 0
-
-        num_tx = int(input("\nHow many unspent transactions will you be using for this withdrawal? "))
-
-        for txcount in range(num_tx):
-            print("\nPlease paste raw transaction #{} (hexadecimal format) with unspent outputs at the source address".format(txcount + 1))
-            print("OR")
-            print("input a filename located in the current directory which contains the raw transaction data")
-            print("(If the transaction data is over ~4000 characters long, you _must_ use a file.):")
-
-            hex_tx = input()
-            if os.path.isfile(hex_tx):
-                hex_tx = open(hex_tx).read().strip()
-
-            xact.add_input_xact(hex_tx)
-
-        print("\nTransaction data found for source address.")
-
-        utxo_sum = xact.unspent_total()
-
-        print("TOTAL unspent amount for this raw transaction: {} BTC".format(utxo_sum))
-
-        print("\nHow many private keys will you be signing this transaction with? ")
-        key_count = int(input("#: "))
-
-        for key_idx in range(key_count):
-            key = input("Key #{0}: ".format(key_idx + 1))
-            xact.add_key(key)
-
-        # fees, amount, and change
-
-        input_amount = utxo_sum
-        fee = get_fee_interactive(xact, addresses)
-        # Got this far
-        if fee > input_amount:
-            print("ERROR: Your fee is greater than the sum of your unspent transactions.  Try using larger unspent transactions. Exiting...")
-            sys.exit()
-
-        print("\nPlease enter the decimal amount (in bitcoin) to withdraw to the destination address.")
-        print("\nExample: For 2.3 bitcoins, enter \"2.3\".")
-        print("\nAfter a fee of {0}, you have {1} bitcoins available to withdraw.".format(fee, input_amount - fee))
-        print("\n*** Technical note for experienced Bitcoin users:  If the withdrawal amount & fee are cumulatively less than the total amount of the unspent transactions, the remainder will be sent back to the same cold storage address as change. ***\n")
-        withdrawal_amount = input(
-            "Amount to send to {0} (leave blank to withdraw all funds stored in these unspent transactions): ".format(dest_address))
-        if withdrawal_amount == "":
-            withdrawal_amount = input_amount - fee
-        else:
-            withdrawal_amount = Decimal(withdrawal_amount).quantize(SATOSHI_PLACES)
-
-        if fee + withdrawal_amount > input_amount:
-            print("Error: fee + withdrawal amount greater than total amount available from unspent transactions")
-            sys.exit()
-
-        change_amount = input_amount - withdrawal_amount - fee
-
-        if change_amount > 0:
-            print("{0} being returned to cold storage address address {1}.".format(change_amount, xact.source_address))
-            addresses[xact.source_address] = change_amount
-        else:
-            del addresses[xact.source_address]
-            fee = xact.calculate_fee(addresses)  # Recompute fee with no change output
-            withdrawal_amount = input_amount - fee
-            print("With no change output, the transaction fee is reduced, and {0} BTC will be sent to your destination.".format(withdrawal_amount))
-
-        addresses[dest_address] = withdrawal_amount
-
-        # check data
-        print("\nIs this data correct?")
-        print("*** WARNING: Incorrect data may lead to loss of funds ***\n")
-
-        print("{0} BTC in unspent supplied transactions".format(input_amount))
-        for address, value in addresses.items():
-            if address == xact.source_address:
-                print("{0} BTC going back to cold storage address {1}".format(value, address))
-            else:
-                print("{0} BTC going to destination address {1}".format(value, address))
-        print("Fee amount: {0}".format(fee))
-        print("\nSigning with private keys: ")
-        for key in xact.keys:
-            print("{}".format(key))
+        xact, addresses = construct_withdrawal_interactive()
 
         print("\n")
         confirm = yes_no_interactive()
