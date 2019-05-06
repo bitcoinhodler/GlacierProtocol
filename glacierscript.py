@@ -796,18 +796,18 @@ def chunk_string(string, length):
     return (string[0 + i:length + i] for i in range(0, len(string), length))
 
 
-def entropy(n, length):
+def entropy(count, length):
     """
     Generate n random strings for the user from /dev/random.
     """
     safety_checklist()
 
     print("\n\n")
-    print("Making {} random data strings....".format(n))
+    print("Making {} random data strings....".format(count))
     print("If strings don't appear right away, please continually move your mouse cursor. These movements generate entropy which is used to create random data.\n")
 
     idx = 0
-    while idx < n:
+    while idx < count:
         seed = subprocess.check_output(
             "xxd -l {} -p /dev/random".format(length), shell=True)
         idx += 1
