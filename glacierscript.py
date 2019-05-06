@@ -214,15 +214,12 @@ def read_rng_seed_interactive(min_length):
     def ask_for_rng_seed(length):
         print("Enter at least {0} characters of computer entropy. Spaces are OK, and will be ignored:".format(length))
 
-    ask_for_rng_seed(char_length)
-    seed = input()
-    seed = unchunk(seed)
-
-    while not validate_rng_seed(seed, char_length):
+    done = False
+    while not done:
         ask_for_rng_seed(char_length)
         seed = input()
         seed = unchunk(seed)
-
+        done = validate_rng_seed(seed, char_length)
     return seed
 
 
