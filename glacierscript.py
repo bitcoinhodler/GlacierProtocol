@@ -529,18 +529,18 @@ class WithdrawalXact:
         """
         # For each UTXO used as input, we need the txid, vout index, scriptPubKey, amount, and redeemScript
         # to generate a signature
-        tx = bitcoin_cli_json("decoderawtransaction", hex_tx)
-        if tx['hash'] in self._seen_txhashes:
+        xact = bitcoin_cli_json("decoderawtransaction", hex_tx)
+        if xact['hash'] in self._seen_txhashes:
             print("ERROR: duplicated input transactions, exiting...")
             sys.exit()
-        self._seen_txhashes.add(tx['hash'])
+        self._seen_txhashes.add(xact['hash'])
 
-        utxos = self._get_utxos(tx)
+        utxos = self._get_utxos(xact)
         if not utxos:
             print("\nTransaction data not found for source address: {}".format(self.source_address))
             sys.exit()
 
-        txid = tx["txid"]
+        txid = xact["txid"]
         for utxo in utxos:
             self._inputs.append(OrderedDict([
                 ("txid", txid),
