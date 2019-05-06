@@ -838,6 +838,25 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
 #
 ################################################################################################
 
+def get_tx_interactive(num):
+    """
+    Prompt user for an unspent transaction to use as an input.
+
+    num: index of this input (used only for prompt)
+
+    Returns => string with hex transaction
+    """
+    print("\nPlease paste raw transaction #{} (hexadecimal format) with unspent outputs at the source address".format(num))
+    print("OR")
+    print("input a filename located in the current directory which contains the raw transaction data")
+    print("(If the transaction data is over ~4000 characters long, you _must_ use a file.):")
+
+    hex_tx = input()
+    if os.path.isfile(hex_tx):
+        hex_tx = open(hex_tx).read().strip()
+    return hex_tx
+
+
 def construct_withdrawal_interactive():
     """
     Get details from user input and construct WithdrawalXact object.
@@ -862,16 +881,7 @@ def construct_withdrawal_interactive():
     num_tx = int(input("\nHow many unspent transactions will you be using for this withdrawal? "))
 
     for txcount in range(num_tx):
-        print("\nPlease paste raw transaction #{} (hexadecimal format) with unspent outputs at the source address".format(txcount + 1))
-        print("OR")
-        print("input a filename located in the current directory which contains the raw transaction data")
-        print("(If the transaction data is over ~4000 characters long, you _must_ use a file.):")
-
-        hex_tx = input()
-        if os.path.isfile(hex_tx):
-            hex_tx = open(hex_tx).read().strip()
-
-        xact.add_input_xact(hex_tx)
+        xact.add_input_xact(get_tx_interactive(txcount + 1))
 
     print("\nTransaction data found for source address.")
 
