@@ -37,6 +37,7 @@ args = parser.parse_args()
 def make_regexp(line):
     """
     Convert line, possibly with <> embedded regexps, into one big regexp.
+
     Returns a compiled regular expression object.
     """
     exp = re.compile(r"""
