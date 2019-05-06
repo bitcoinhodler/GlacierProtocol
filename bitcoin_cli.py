@@ -56,7 +56,7 @@ def checkcall(*args):
         raise subprocess.CalledProcessError(retcode, cmd_list, output=output)
 
 
-def bitcoin_cli_checkoutput(*args):
+def checkoutput(*args):
     """
     Run `bitcoin-cli`, fail if OS return code nonzero, return output.
     """
@@ -70,7 +70,7 @@ def bitcoin_cli_json(*args):
     """
     Run `bitcoin-cli`, parse output as JSON.
     """
-    return json.loads(bitcoin_cli_checkoutput(*args), parse_float=Decimal)
+    return json.loads(checkoutput(*args), parse_float=Decimal)
 
 
 def bitcoind_call(*args):

@@ -45,7 +45,7 @@ import time
 # Taken from https://github.com/keis/base58
 from base58 import b58encode_check
 import bitcoin_cli
-from bitcoin_cli import bitcoin_cli_checkoutput, bitcoin_cli_json, bitcoind_call
+from bitcoin_cli import bitcoin_cli_json, bitcoind_call
 
 SATOSHI_PLACES = Decimal("0.00000001")
 wif_prefix = None
@@ -428,7 +428,7 @@ class WithdrawalXact:
         ensure_bitcoind_running()
 
         prev_txs = json.dumps(self._inputs, cls=DecimalEncoder)
-        tx_unsigned_hex = bitcoin_cli_checkoutput(
+        tx_unsigned_hex = bitcoin_cli.checkoutput(
             "createrawtransaction",
             prev_txs,
             json.dumps(destinations, cls=DecimalEncoder)).strip()
