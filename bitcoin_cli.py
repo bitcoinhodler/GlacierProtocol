@@ -12,7 +12,7 @@ verbose_mode = False
 cli_args = None
 
 
-def verbose(content):
+def _verbose(content):
     """
     Print content iff verbose_mode is enabled.
     """
@@ -30,12 +30,12 @@ def run_subprocess(exe, *args):
     args: arguments to exe
     """
     cmd_list = [exe] + cli_args + list(args)
-    verbose("bitcoin cli call:\n  {0}\n".format(" ".join(shlex.quote(x) for x in cmd_list)))
+    _verbose("bitcoin cli call:\n  {0}\n".format(" ".join(shlex.quote(x) for x in cmd_list)))
     with subprocess.Popen(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1) as pipe:
         output, _ = pipe.communicate()
     output = output.decode('ascii')
     retcode = pipe.returncode
-    verbose("bitcoin cli call return code: {0}  output:\n  {1}\n".format(retcode, output))
+    _verbose("bitcoin cli call return code: {0}  output:\n  {1}\n".format(retcode, output))
     return (cmd_list, retcode, output)
 
 
