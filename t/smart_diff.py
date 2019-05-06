@@ -106,29 +106,35 @@ def get_cmdline_args():
     return parser.parse_args()
 
 
-args = get_cmdline_args()
-if args.selftest:
-    self_test()
-    print("All tests passed.")
-    sys.exit(0)
+def main():
+    """
+    Run main program.
+    """
+    args = get_cmdline_args()
+    if args.selftest:
+        self_test()
+        print("All tests passed.")
+        sys.exit(0)
+
+    with open(args.out_filename, 'rt') as out:
+        out_contents = out.read()
+
+    with open(args.golden_filename, 'rt') as golden:
+        for golden_linenum, golden_line in enumerate(golden, start=1):
+            golden_regexp = make_regexp(golden_line)
+            match = golden_regexp.match(out_contents)
+            if match:
+                # Good! Chop off the part of out_contents that matched; continue on.
+                out_contents = out_contents[match.end():]
+            else:
+                # Bad! Print appropriate error message
+                sys.stderr.write("Line {} of {} failed to match {}\n".format(golden_linenum, args.golden_filename, args.out_filename))
+                sys.exit(1)
+
+    # Make sure out_contents has nothing extra!
+    if out_contents:
+        sys.stderr.write("{} has extra contents beyond the end of {}\n".format(args.out_filename, args.golden_filename))
+        sys.exit(1)
 
 
-with open(args.out_filename, 'rt') as out:
-    out_contents = out.read()
-
-with open(args.golden_filename, 'rt') as golden:
-    for golden_linenum, golden_line in enumerate(golden, start=1):
-        golden_regexp = make_regexp(golden_line)
-        match = golden_regexp.match(out_contents)
-        if match:
-            # Good! Chop off the part of out_contents that matched; continue on.
-            out_contents = out_contents[match.end():]
-        else:
-            # Bad! Print appropriate error message
-            sys.stderr.write("Line {} of {} failed to match {}\n".format(golden_linenum, args.golden_filename, args.out_filename))
-            sys.exit(1)
-
-# Make sure out_contents has nothing extra!
-if out_contents:
-    sys.stderr.write("{} has extra contents beyond the end of {}\n".format(args.out_filename, args.golden_filename))
-    sys.exit(1)
+main()
