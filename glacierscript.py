@@ -45,7 +45,6 @@ import time
 # Taken from https://github.com/keis/base58
 from base58 import b58encode_check
 import bitcoin_cli
-from bitcoin_cli import bitcoind_call
 
 SATOSHI_PLACES = Decimal("0.00000001")
 wif_prefix = None
@@ -254,7 +253,7 @@ def ensure_bitcoind_running():
     # message (to /dev/null) and exit.
     #
     # -connect=0.0.0.0 because we're doing local operations only (and have no network connection anyway)
-    bitcoind_call("-daemon", "-connect=0.0.0.0")
+    bitcoin_cli.bitcoind_call("-daemon", "-connect=0.0.0.0")
 
     # verify bitcoind started up and is functioning correctly
     times = 0
