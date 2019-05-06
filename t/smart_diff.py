@@ -27,12 +27,6 @@ import argparse
 import re
 import sys
 
-parser = argparse.ArgumentParser()
-parser.add_argument('golden_filename', help="input1: expected output")
-parser.add_argument('out_filename', help="input2: actual output")
-parser.add_argument('--selftest', action='store_true', help="run this program's self-test")
-args = parser.parse_args()
-
 
 def make_regexp(line):
     """
@@ -100,6 +94,12 @@ def self_test():
     test_make_regexp("<[0-9a-f]{4}>",
                     r"[0-9a-f]{4}")
 
+
+parser = argparse.ArgumentParser()
+parser.add_argument('golden_filename', help="input1: expected output")
+parser.add_argument('out_filename', help="input2: actual output")
+parser.add_argument('--selftest', action='store_true', help="run this program's self-test")
+args = parser.parse_args()
 
 if args.selftest:
     self_test()
