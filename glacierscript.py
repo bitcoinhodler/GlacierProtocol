@@ -1055,9 +1055,9 @@ def main():
 def subprocess_catcher():
     try:
         yield
-    except subprocess.CalledProcessError as e:
-        if hasattr(e, 'output'):
-            print("Output from subprocess:", e.output, file=sys.stderr)
+    except subprocess.CalledProcessError as exc:
+        if hasattr(exc, 'output'):
+            print("Output from subprocess:", exc.output, file=sys.stderr)
         raise
 
 
