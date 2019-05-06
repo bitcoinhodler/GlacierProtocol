@@ -418,8 +418,8 @@ def get_fee_interactive(xact, destinations):
         xact.fee_basis_satoshis_per_byte = int(input("Satoshis per vbyte: "))
         try:
             fee = xact.calculate_fee(destinations)
-        except GlacierExcessiveFee as e:
-            print(e)
+        except GlacierExcessiveFee as exc:
+            print(exc)
         else:
             print("\nBased on the provided rate, the fee will be {} bitcoin.".format(fee))
             confirm = yes_no_interactive()
