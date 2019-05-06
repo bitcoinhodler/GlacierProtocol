@@ -46,7 +46,7 @@ import time
 # Taken from https://github.com/keis/base58
 from base58 import b58encode_check
 import bitcoin_cli
-from bitcoin_cli import bitcoin_cli_checkcall, bitcoin_cli_checkoutput, bitcoin_cli_json, bitcoind_call
+from bitcoin_cli import bitcoin_cli_checkoutput, bitcoin_cli_json, bitcoind_call
 
 SATOSHI_PLACES = Decimal("0.00000001")
 wif_prefix = None
@@ -299,7 +299,7 @@ def get_pubkey_for_wif_privkey(privkey):
     label = hash_sha256(privkey)
 
     ensure_bitcoind_running()
-    bitcoin_cli_checkcall("importprivkey", privkey, label)
+    bitcoin_cli.checkcall("importprivkey", privkey, label)
     addresses = bitcoin_cli_json("getaddressesbylabel", label)
 
     # getaddressesbylabel returns multiple addresses associated with
