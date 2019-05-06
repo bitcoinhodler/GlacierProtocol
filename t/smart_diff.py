@@ -52,7 +52,7 @@ def make_regexp(line):
         match = exp.match(line, startpos)
         if not match:
             raise RuntimeError("How did I not match anything here?")
-        if match.end() <= startpos: # catch runaways
+        if match.end() <= startpos:  # catch runaways
             raise RuntimeError("Did not expect 0-length match here; perhaps you have an unclosed <regexp>?")
         output += re.escape(match.group("front"))
         if match.group("bracketed"):
