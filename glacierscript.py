@@ -821,6 +821,26 @@ def entropy(count, length):
 #
 ################################################################################################
 
+def create_key_interactive(dice_seed_length, rng_seed_length):
+    """
+    Create one key based on dice & computer entropy entered by user.
+
+    dice_seed_length: <int> minimum number of dice rolls required
+    rng_seed_length: <int> minimum length of random seed required
+
+    Returns => WIF private key
+    """
+    dice_seed_string = read_dice_seed_interactive(dice_seed_length)
+    dice_seed_hash = hash_sha256(dice_seed_string)
+
+    rng_seed_string = read_rng_seed_interactive(rng_seed_length)
+    rng_seed_hash = hash_sha256(rng_seed_string)
+
+    # back to hex string
+    hex_private_key = xor_hex_strings(dice_seed_hash, rng_seed_hash)
+    return hex_private_key_to_wif_private_key(hex_private_key)
+
+
 def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=20, p2wsh=False):
     """
     Generate data for a new cold storage address (private keys, address, redemption script).
@@ -842,17 +862,7 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
     while len(keys) < nkeys:
         index = len(keys) + 1
         print("\nCreating private key #{}".format(index))
-
-        dice_seed_string = read_dice_seed_interactive(dice_seed_length)
-        dice_seed_hash = hash_sha256(dice_seed_string)
-
-        rng_seed_string = read_rng_seed_interactive(rng_seed_length)
-        rng_seed_hash = hash_sha256(rng_seed_string)
-
-        # back to hex string
-        hex_private_key = xor_hex_strings(dice_seed_hash, rng_seed_hash)
-        wif_private_key = hex_private_key_to_wif_private_key(hex_private_key)
-        keys.append(wif_private_key)
+        keys.append(create_key_interactive(dice_seed_length, rng_seed_length))
 
     print("Private keys created.")
     print("Generating {0}-of-{1} cold storage address...\n".format(nrequired, nkeys))
