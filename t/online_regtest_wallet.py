@@ -122,12 +122,12 @@ def create_input2(addresstype, amount):
 
     hextx = create_and_mine([inputtx], outputs)
 
-    tx = bitcoin_cli.json("decoderawtransaction", hextx)
+    txdec = bitcoin_cli.json("decoderawtransaction", hextx)
     # Find our vout. This is more flexible than necessary since we
     # fix the order of our two outputs above. It's always the last one.
-    vout = next(vout for vout in tx["vout"] if dest_adrs in vout["scriptPubKey"]["addresses"])
+    vout = next(vout for vout in txdec["vout"] if dest_adrs in vout["scriptPubKey"]["addresses"])
     return {
-        "txid": tx["txid"],
+        "txid": txdec["txid"],
         "vout": vout["n"]
     }
 
