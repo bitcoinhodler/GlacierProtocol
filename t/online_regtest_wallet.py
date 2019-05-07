@@ -58,7 +58,7 @@ def start(args):
             # with a seeded wallet and tx.json is append-only.
             if xact != hextx:
                 raise RuntimeError("Did not create expected transaction")
-        if args.program == start:
+        if args.program == start:  # noqa:pylint:comparison-with-callable
             # If we're running `convert` then we allow runfile to differ, since
             # otherwise we wouldn't be able to change it and then re-convert it
             confirm_txs_in_runfile(txdata)
