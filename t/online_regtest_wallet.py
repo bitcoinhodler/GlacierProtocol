@@ -337,8 +337,8 @@ def write_decoded_tx(infile, decoded_tx):
     decoded_file = re.sub(EXPECTED_SUFFIX, NEW_SUFFIX, infile)
     if not decoded_file.endswith(NEW_SUFFIX):
         raise ValueError("expected filename to end with " + EXPECTED_SUFFIX)
-    with open(decoded_file, 'wt') as f:
-        f.write(decoded_tx)
+    with open(decoded_file, 'wt') as outfh:
+        outfh.write(decoded_tx)
 
 
 class TxFile():
