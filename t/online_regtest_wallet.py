@@ -469,7 +469,7 @@ class ParsedRunfile():
         Exits once all the contents have been consumed.
         """
         match = None
-        while len(contents) > 0:
+        while contents:
             regexp = yield match.group() if match else None
             match = re.match(regexp, contents, re.DOTALL | re.MULTILINE | re.VERBOSE)
             if not match:
