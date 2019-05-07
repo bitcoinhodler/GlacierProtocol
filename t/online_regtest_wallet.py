@@ -270,7 +270,7 @@ def create_and_mine(inputs, outputs):
     return signedtx["hex"]
 
 
-def confirm_raw_tx(tx):
+def confirm_raw_tx(xact):
     """
     Given a raw transaction, submit that to bitcoind.
 
@@ -278,11 +278,11 @@ def confirm_raw_tx(tx):
 
     Bitcoind must already be running.
     """
-    txid = bitcoin_cli.checkoutput("sendrawtransaction", tx).strip()
+    txid = bitcoin_cli.checkoutput("sendrawtransaction", xact).strip()
     mine_block()
     # Ensure that transaction was mined successfully
-    tx = bitcoin_cli.json("getrawtransaction", txid, 'true')
-    if tx["confirmations"] == 0:
+    rawtx = bitcoin_cli.json("getrawtransaction", txid, 'true')
+    if rawtx["confirmations"] == 0:
         raise ValueError("somehow my xact did not get mined?")
 
 
