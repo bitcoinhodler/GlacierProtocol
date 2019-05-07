@@ -319,16 +319,15 @@ def find_withdrawal_tx(infile):
 
     Returns the rawtx as a string, or raises NoTransactionFound.
     """
-    with open(infile, 'rt') as f:
+    with open(infile, 'rt') as infh:
         # Find line following "Raw signed transaction (hex):"
         match = False
-        for line in f:
+        for line in infh:
             if match:
                 return line.strip()
             if line == "Raw signed transaction (hex):\n":
                 match = True
     raise NoTransactionFound()
-
 
 
 def write_decoded_tx(infile, decoded_tx):
