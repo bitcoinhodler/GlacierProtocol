@@ -520,7 +520,7 @@ class ParsedRunfile():
                         """))
         self._input_txs = []
         self._input_tx_files = []
-        for idx in range(input_tx_count):
+        for _ in range(input_tx_count):
             filename = None
             tx = parser.send(r"""
                             [^\n]+ \n   # input tx or filename with same
