@@ -551,13 +551,13 @@ class ParsedRunfile():
             return
         with atomic_write(self.filename) as outfile:
             outfile.write(self.front_matter)
-            for idx, tx in enumerate(self._input_txs):
+            for idx, xact in enumerate(self._input_txs):
                 if self._input_tx_files[idx]:
                     outfile.write(self._input_tx_files[idx] + "\n")
                     with open(self._input_tx_files[idx], 'wt') as txfile:
-                        txfile.write(tx + "\n")
+                        txfile.write(xact + "\n")
                 else:
-                    outfile.write(tx + "\n")
+                    outfile.write(xact + "\n")
 
             outfile.write(self.back_matter)
 
