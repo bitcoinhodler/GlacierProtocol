@@ -536,13 +536,13 @@ class ParsedRunfile():
                             .* \Z  # everything up to the end
                         """)
         self.front_matter = front_matter \
-                            + testmode \
-                            + cmdline_and_confirm \
-                            + self.cold_storage_address + "\n" \
-                            + script \
-                            + dest_address + "\n" \
-                            + str(input_tx_count) \
-                            + "\n"
+            + testmode \
+            + cmdline_and_confirm \
+            + self.cold_storage_address + "\n" \
+            + script \
+            + dest_address + "\n" \
+            + str(input_tx_count) \
+            + "\n"
         self.back_matter = back_matter
 
     def save(self):
