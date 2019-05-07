@@ -144,8 +144,8 @@ def build_one_input2(vin, amount_btc):
     # We have to parse scriptSig's asm to figure out what form this is
     # in (legacy, p2sh-segwit, or bech32),
 
-    # TODO: the input could also be a multisig p2sh, or any other
-    # crazy thing. Do we need to be able to construct such things?
+    # The input could also be a multisig p2sh, or any other crazy
+    # thing, but I don't think we need to support that.
 
     scriptsigs = {
         # Standard P2PKH: sig pubkey
