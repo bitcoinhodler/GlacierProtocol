@@ -28,8 +28,8 @@ import time
 from atomic_write import atomic_write
 import segwit_addr
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-import glacierscript
-import bitcoin_cli
+import glacierscript  # noqa:pylint:wrong-import-position
+import bitcoin_cli    # noqa:pylint:wrong-import-position
 
 # Vars that glacierscript expects (ugh)
 bitcoin_cli.cli_args = ["-regtest", "-datadir=bitcoin-online-data"]
