@@ -210,7 +210,7 @@ def build_one_inp_output(cold_address, vout):
         raise NotImplementedError("unrecognized scriptPubKey type in vout: {}".format(vout))
     addr_type = type_conversion[vout["scriptPubKey"]["type"]]
     change_adrs = bitcoin_cli.checkoutput("getnewaddress", '', addr_type).strip()
-    return { change_adrs: vout["value"] }
+    return {change_adrs: vout["value"]}
 
 
 def build_inp_outputs(cold_address, like_tx):
@@ -224,7 +224,7 @@ def build_inp_outputs(cold_address, like_tx):
     can give directly to create_and_mine().
 
     """
-    return [ build_one_inp_output(cold_address, vout) for vout in like_tx["vout"] ]
+    return [build_one_inp_output(cold_address, vout) for vout in like_tx["vout"]]
 
 
 def build_input_xact(cold_address, like_this):
