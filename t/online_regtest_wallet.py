@@ -114,11 +114,11 @@ def create_input2(addresstype, amount):
     change_adrs = bitcoin_cli.checkoutput("getnewaddress", '', addresstype).strip()
     dest_adrs = bitcoin_cli.checkoutput("getnewaddress", '', addresstype).strip()
     outputs = [
-        { dest_adrs: amount }
+        {dest_adrs: amount}
     ]
     change_amount = inputtx["amount"] - amount - MIN_FEE
     if change_amount > 0:
-        outputs.insert(0, { change_adrs: change_amount })
+        outputs.insert(0, {change_adrs: change_amount})
 
     hextx = create_and_mine([inputtx], outputs)
 
