@@ -442,6 +442,8 @@ class ParsedRunfile():
         """Open file and parse it."""
         self.modified = False
         self.filename = filename
+        self._input_txs = []
+        self._input_tx_files = []
         with open(filename, 'rt') as infile:
             contents = infile.read()
         self.parse_lines(contents)
