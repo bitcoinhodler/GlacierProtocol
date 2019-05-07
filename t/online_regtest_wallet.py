@@ -75,8 +75,8 @@ def confirm_txs_in_runfile(txdata):
         return
     # Find *.run in t/ directory, same directory as this script
     runfile = os.path.join(os.path.dirname(__file__), txdata['file'])
-    rf = ParsedRunfile(runfile)
-    if txdata['txs'] != rf.input_txs:
+    prf = ParsedRunfile(runfile)
+    if txdata['txs'] != prf.input_txs:
         print("In file {}, found unexpected input transactions.".format(runfile))
         print("If this file has deliberately changed, run `{} convert {}`".format(__file__, runfile))
         raise SystemExit("Error: Unexpected transaction in *.run file")
