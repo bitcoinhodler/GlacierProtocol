@@ -424,7 +424,6 @@ class TxFile():
             outfile.write("\n")
 
 
-
 class ParseError(RuntimeError):
     """Exception class for errors encountered in parsing a *.run file."""
 
