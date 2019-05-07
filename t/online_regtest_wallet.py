@@ -53,10 +53,10 @@ def start(args):
     txfile = TxFile()
     for txdata in txfile:
         for hextx in txdata['txs']:
-            tx = build_input_xact(txdata['address'], hextx)
+            xact = build_input_xact(txdata['address'], hextx)
             # We should always create the same transactions, since we start
             # with a seeded wallet and tx.json is append-only.
-            if tx != hextx:
+            if xact != hextx:
                 raise RuntimeError("Did not create expected transaction")
         if args.program == start:
             # If we're running `convert` then we allow runfile to differ, since
