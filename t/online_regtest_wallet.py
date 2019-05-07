@@ -522,14 +522,14 @@ class ParsedRunfile():
         self._input_tx_files = []
         for _ in range(input_tx_count):
             filename = None
-            tx = parser.send(r"""
-                            [^\n]+ \n   # input tx or filename with same
-                        """).rstrip()
-            if not re.match(r"^[0-9a-fA-F]+$", tx):
+            xact = parser.send(r"""
+                               [^\n]+ \n   # input tx or filename with same
+                               """).rstrip()
+            if not re.match(r"^[0-9a-fA-F]+$", xact):
                 # If not hex, this must be a filename
-                filename = tx
-                tx = open(tx).read().strip()
-            self._input_txs.append(tx)
+                filename = xact
+                xact = open(filename).read().strip()
+            self._input_txs.append(xact)
             self._input_tx_files.append(filename)
 
         back_matter = parser.send(r"""
