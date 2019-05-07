@@ -374,6 +374,7 @@ class TxFile():
             self.txlist = json.loads(struct)
 
     def __iter__(self):
+        """Iterate over the transaction list."""
         return iter(self.txlist)
 
     @staticmethod
