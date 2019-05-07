@@ -52,11 +52,11 @@ def start(args):
     # Load all transactions in tx.json and reconstruct those in our blockchain
     txfile = TxFile()
     for txdata in txfile:
-        for hex in txdata['txs']:
-            tx = build_input_xact(txdata['address'], hex)
+        for hextx in txdata['txs']:
+            tx = build_input_xact(txdata['address'], hextx)
             # We should always create the same transactions, since we start
             # with a seeded wallet and tx.json is append-only.
-            if tx != hex:
+            if tx != hextx:
                 raise RuntimeError("Did not create expected transaction")
         if args.program == start:
             # If we're running `convert` then we allow runfile to differ, since
