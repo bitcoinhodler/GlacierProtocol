@@ -525,7 +525,8 @@ class ParsedRunfile():
             tx = parser.send(r"""
                             [^\n]+ \n   # input tx or filename with same
                         """).rstrip()
-            if os.path.isfile(tx):
+            if not re.match(r"^[0-9a-fA-F]+$", tx):
+                # If not hex, this must be a filename
                 filename = tx
                 tx = open(tx).read().strip()
             self._input_txs.append(tx)
