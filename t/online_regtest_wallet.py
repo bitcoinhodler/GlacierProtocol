@@ -448,10 +448,12 @@ class ParsedRunfile():
 
     @property
     def input_txs(self):
+        """Return the list of input transactions used by this runfile."""
         return self._input_txs
 
     @input_txs.setter
     def input_txs(self, value):
+        """Assign a new list of input transactions to replace the originals."""
         self.modified = True
         self._input_txs = value
 
@@ -541,6 +543,7 @@ class ParsedRunfile():
         self.back_matter = back_matter
 
     def save(self):
+        """Write out a new runfile with our modified input transactions."""
         if not self.modified:
             return
         with atomic_write(self.filename) as outfile:
@@ -557,7 +560,6 @@ class ParsedRunfile():
 
 
 def convert_one_file(filename):
-
     """
     Convert one *.run file from testnet to regtest.
 
