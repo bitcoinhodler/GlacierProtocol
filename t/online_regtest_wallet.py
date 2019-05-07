@@ -159,8 +159,8 @@ def build_one_input2(vin, amount_btc):
     vin_sig = "sig: {} witness: {}".format(vin["scriptSig"]["asm"], witness)
     try:
         form = next(f for f in scriptsigs if re.fullmatch(scriptsigs[f], vin_sig))
-    except StopIteration as e:
-        raise NotImplementedError("unrecognized scriptsig in vin: {}".format(vin)) from e
+    except StopIteration as exc:
+        raise NotImplementedError("unrecognized scriptsig in vin: {}".format(vin)) from exc
     return create_input2(form, amount_btc)
 
 
