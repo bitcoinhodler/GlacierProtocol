@@ -202,8 +202,8 @@ def build_one_inp_output(cold_address, vout):
 
     # Decipher scriptPubKey.asm to determine address type (legacy, p2sh-segwit, bech32)
     type_conversion = {  # convert from scriptPubKey.type to getnewaddress type
-        'pubkeyhash'        : 'legacy',
-        'scripthash'        : 'p2sh-segwit',  # not necessarily true, but Glacier can't tell the difference
+        'pubkeyhash': 'legacy',
+        'scripthash': 'p2sh-segwit',  # not necessarily true, but Glacier can't tell the difference
         'witness_v0_keyhash': 'bech32',
     }
     if vout["scriptPubKey"]["type"] not in type_conversion:
