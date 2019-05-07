@@ -405,10 +405,10 @@ class TxFile():
         """
         basefilename = os.path.basename(filename)
         new = {
-            'address' : cold_storage_address,
+            'address': cold_storage_address,
             'file': basefilename,
             'obsolete': False,
-            'txs' : txs,
+            'txs': txs,
         }
         old = self.get(filename)
         if old:
