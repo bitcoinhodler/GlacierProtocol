@@ -37,7 +37,9 @@ glacierscript.wif_prefix = "EF"
 
 MIN_FEE = Decimal("0.00010000")
 
+
 def start(args):
+    """Run the `start` subcommand to load bitcoind."""
     # We start with a pre-created wallet.dat so that our addresses
     # will be the same every time we run.
     stop(None)
