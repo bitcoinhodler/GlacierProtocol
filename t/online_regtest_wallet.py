@@ -264,9 +264,9 @@ def create_and_mine(inputs, outputs):
         raise ValueError("unable to sign transaction")
     try:
         confirm_raw_tx(signedtx["hex"])
-    except subprocess.CalledProcessError as e:
-        print("Failed to confirm tx:\n", e.output)
-        raise e
+    except subprocess.CalledProcessError as exc:
+        print("Failed to confirm tx:\n", exc.output)
+        raise exc
     return signedtx["hex"]
 
 
