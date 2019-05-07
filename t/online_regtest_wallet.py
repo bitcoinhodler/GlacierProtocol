@@ -181,7 +181,7 @@ def build_inputs2(like_tx):
     # so that rounding doesn't result in a less-than-min miner fee
     each_input_btc = each_input_btc.quantize(glacierscript.SATOSHI_PLACES) + glacierscript.SATOSHI_PLACES
 
-    return [ build_one_input2(vin, each_input_btc) for vin in like_tx["vin"] ]
+    return [build_one_input2(vin, each_input_btc) for vin in like_tx["vin"]]
 
 
 def build_one_inp_output(cold_address, vout):
@@ -198,7 +198,7 @@ def build_one_inp_output(cold_address, vout):
 
     """
     if cold_address in vout["scriptPubKey"]["addresses"]:
-        return { cold_address: vout["value"] }
+        return {cold_address: vout["value"]}
 
     # Decipher scriptPubKey.asm to determine address type (legacy, p2sh-segwit, bech32)
     type_conversion = {  # convert from scriptPubKey.type to getnewaddress type
