@@ -578,8 +578,8 @@ def convert_one_file(filename):
     if not tx_from_json \
        or tx_from_json['address'] != runfile.cold_storage_address \
        or tx_from_json['txs'] != runfile.input_txs:
-        newtx = [ build_input_xact(runfile.cold_storage_address, hex)
-                  for hex in runfile.input_txs ]
+        newtx = [build_input_xact(runfile.cold_storage_address, hex)
+                 for hex in runfile.input_txs]
         runfile.input_txs = newtx
         txjson.put(filename, runfile.cold_storage_address, newtx)
     runfile.save()
