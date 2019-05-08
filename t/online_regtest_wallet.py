@@ -587,8 +587,9 @@ def convert_one_file(filename):
 
 def convert(args):
     """
-    Parse a *.run test input, convert it from testnet to regtest (if needed),
-    save the generated input transactions in file tx.json,
+    Parse a *.run test input, convert it from testnet to regtest (if needed).
+
+    Save the generated input transactions in file tx.json,
     write out new *.run file with its input transactions replaced with regtest versions.
 
     We must run start() first, to be sure the current blockchain is in a known state,
@@ -605,6 +606,11 @@ def convert(args):
 
 
 def stop(_):
+    """
+    Stop the bitcoind server.
+
+    Does no harm if it's not running.
+    """
     if bitcoin_cli.call('stop') == 0:
         # in case already running, wait a bit for it to exit
         time.sleep(1)
@@ -616,6 +622,7 @@ def stop(_):
 
 
 def main():
+    """Launch main command-lint program."""
     parser = argparse.ArgumentParser(description="""
         This tool is used to control an "online" Bitcoin node for testing Glacier.
     """, epilog="Run <subcommand> --help for more about that subcommand.")
