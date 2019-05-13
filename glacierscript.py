@@ -678,8 +678,7 @@ def entropy(count, length):
 
     idx = 0
     while idx < count:
-        seed = subprocess.check_output(
-            "xxd -l {} -p /dev/random".format(length), shell=True)
+        seed = subprocess.check_output(["xxd", "-l", str(length), "-p", "/dev/random"])
         idx += 1
         seed = seed.decode('ascii').replace('\n', '')
         print("Computer entropy #{0}: {1}".format(idx, " ".join(chunk_string(seed, 4))))
