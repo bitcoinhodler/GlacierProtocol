@@ -622,7 +622,7 @@ def stop(_):
 
 
 def main():
-    """Launch main command-lint program."""
+    """Launch main command-line program."""
     parser = argparse.ArgumentParser(description="""
         This tool is used to control an "online" Bitcoin node for testing Glacier.
     """, epilog="Run <subcommand> --help for more about that subcommand.")
