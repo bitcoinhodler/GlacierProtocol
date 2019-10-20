@@ -18,6 +18,7 @@ import argparse
 from decimal import Decimal
 import json
 import os
+import pprint
 import re
 import shutil
 import subprocess
@@ -57,7 +58,13 @@ def start(args):
             # We should always create the same transactions, since we start
             # with a seeded wallet and tx.json is append-only.
             if xact != hextx:
-                raise RuntimeError("Did not create expected transaction")
+                actual = bitcoin_cli.json("decoderawtransaction", xact)
+                expected = bitcoin_cli.json("decoderawtransaction", hextx)
+                print("Expected transaction:", file=sys.stderr)
+                pprint.pprint(expected, stream=sys.stderr)
+                print("Actual transaction constructed:", file=sys.stderr)
+                pprint.pprint(actual, stream=sys.stderr)
+                raise RuntimeError("Did not create expected transaction for " + txdata['file'])
         if args.program == start:  # noqa:pylint:comparison-with-callable
             # If we're running `convert` then we allow runfile to differ, since
             # otherwise we wouldn't be able to change it and then re-convert it
