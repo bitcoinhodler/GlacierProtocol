@@ -850,6 +850,10 @@ def withdraw_interactive():
                 hex_tx = open(hex_tx).read().strip()
 
             tx = bitcoin_cli_json("decoderawtransaction", hex_tx)
+            if tx in txs:
+                print("ERROR: duplicated input transactions, exiting...")
+                sys.exit()
+
             txs.append(tx)
             utxos += get_utxos(tx, source_address)
 
