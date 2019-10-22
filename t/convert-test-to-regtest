@@ -24,7 +24,9 @@ make t/create-withdrawal-data.$1.test || /bin/true
 
 killall bitcoind
 
-cp t/create-withdrawal-data.$1.{out,golden}
+if [[ -e t/create-withdrawal-data.$1.out ]]; then
+    cp t/create-withdrawal-data.$1.{out,golden}
+fi
 
 make t/create-withdrawal-data.$1.test
 
