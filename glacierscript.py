@@ -434,7 +434,7 @@ class WithdrawalXact:
     def __init__(self, source_address, redeem_script):
         self.source_address = source_address
         self.redeem_script = redeem_script
-        self.seen_txhashes = set()  # only for detecting duplicates
+        self._seen_txhashes = set()  # only for detecting duplicates
         self._inputs = []
         self.keys = []
         self.validate_address()
@@ -492,10 +492,10 @@ class WithdrawalXact:
         # For each UTXO used as input, we need the txid, vout index, scriptPubKey, amount, and redeemScript
         # to generate a signature
         tx = bitcoin_cli_json("decoderawtransaction", hex_tx)
-        if tx['hash'] in self.seen_txhashes:
+        if tx['hash'] in self._seen_txhashes:
             print("ERROR: duplicated input transactions, exiting...")
             sys.exit()
-        self.seen_txhashes.add(tx['hash'])
+        self._seen_txhashes.add(tx['hash'])
 
         utxos = self.get_utxos(tx)
         if len(utxos) == 0:
