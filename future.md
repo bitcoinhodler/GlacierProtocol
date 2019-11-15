@@ -1,4 +1,4 @@
-# Future of Glacier
+# Future (fork?) of Glacier
 
 *Proposal by BitcoinHodler*
 
@@ -8,6 +8,49 @@ what's next?
 
 I'd like to solve the address reuse issue. There's a couple of ways to
 achieve this, with various tradeoffs in complexity and security.
+
+# Design
+
+## Goals
+
+* Hard-core high security personal bitcoin storage
+
+* Recovery possible with only M-of-N paper packets
+
+* Low-security withdrawal process documented for heirs
+
+* Recovery likely by heirs with only M-of-N paper packets and no
+  knowledge of the wallet system, assuming Bitcoin expert consultation
+
+
+### Non-goals
+
+* Institutional storage
+
+* Easy
+
+* Inexpensive
+
+* Friendly to Bitcoin newbies
+
+* Friendly to people who fear a command line
+
+* Shitcoins
+
+## Assumptions
+
+* Any online PC or printer may be compromised.
+
+* Any hardware used may die at any time. All hardware might die
+  simultaneously. (Seedless hardware wallets are out.)
+
+* User is technically proficient and can set up a Bitcoin Core full
+  node (or already has one).
+
+## Who is this for?
+
+* Nobody, today; it's a work-in-progress proposal for a future system.
+
 
 # Options
 
@@ -248,18 +291,11 @@ sign a transaction.
 
 ## Output script descriptor
 
-Interestingly, the official [descriptors.md
-doc](https://github.com/bitcoin/bitcoin/blob/master/doc/descriptors.md)
-says that order is significant inside multi(). That means we cannot
-sort the keys in each p2wsh script independently, as BIP45 and BIP67
-require. Also change addresses will come from a different descriptor,
-right?
-
-`wsh(multi(2, xpub1/0/*, xpub2/0/*, xpub3/0/*, xpub4/0/*))`
+`wsh(sortedmulti(2, xpub1/0/*, xpub2/0/*, xpub3/0/*, xpub4/0/*))`
 
 Describes our deposit addresses. Change will be in a similar descriptor:
 
-`wsh(multi(2, xpub1/1/*, xpub2/1/*, xpub3/1/*, xpub4/1/*))`
+`wsh(sortedmulti(2, xpub1/1/*, xpub2/1/*, xpub3/1/*, xpub4/1/*))`
 
 So is it safe to print out only the first descriptor in the QR code?
 I'll leave a note in the JSON about change.
