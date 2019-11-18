@@ -1023,11 +1023,15 @@ def main():
 
     subs = parser.add_subparsers(dest='program')
 
+    def add_rng(parser):
+        """Add the --rng option to the supplied parser."""
+        parser.add_argument(
+            "-r", "--rng", type=int, help="Minimum number of 8-bit bytes to use for computer entropy when generating private keys (default: 20)", default=20)
+
     parser_entropy = subs.add_parser('entropy')
     parser_entropy.add_argument(
         "--num-keys", type=int, help="The number of keys to create random entropy for", default=1)
-    parser_entropy.add_argument(
-        "-r", "--rng", type=int, help="Minimum number of 8-bit bytes to use for computer entropy when generating private keys (default: 20)", default=20)
+    add_rng(parser_entropy)
 
     parser_deposit = subs.add_parser('create-deposit-data')
     parser_deposit.add_argument(
@@ -1038,8 +1042,7 @@ def main():
         "-d", "--dice", type=int, help="The minimum number of dice rolls to use for entropy when generating private keys (default: 62)", default=62)
     parser_deposit.add_argument(
         "--p2wsh", action="store_true", help="Generate p2wsh (native segwit) deposit address, instead of p2wsh-in-p2sh")
-    parser_deposit.add_argument(
-        "-r", "--rng", type=int, help="Minimum number of 8-bit bytes to use for computer entropy when generating private keys (default: 20)", default=20)
+    add_rng(parser_deposit)
 
     subs.add_parser('create-withdrawal-data')
 
