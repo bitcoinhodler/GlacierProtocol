@@ -1,0 +1,21 @@
+usage: glacierscript.py [-h] [--num-keys NUM_KEYS] [-d DICE] [-r RNG] [-m M]
+                        [-n N] [--p2wsh] [-v]
+                        {entropy,create-deposit-data,create-withdrawal-data}
+
+positional arguments:
+  {entropy,create-deposit-data,create-withdrawal-data}
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --num-keys NUM_KEYS   The number of keys to create random entropy for
+  -d DICE, --dice DICE  The minimum number of dice rolls to use for entropy
+                        when generating private keys (default: 62)
+  -r RNG, --rng RNG     Minimum number of 8-bit bytes to use for computer
+                        entropy when generating private keys (default: 20)
+  -m M                  Number of signing keys required in an m-of-n multisig
+                        address creation (default m-of-n = 1-of-2)
+  -n N                  Number of total keys required in an m-of-n multisig
+                        address creation (default m-of-n = 1-of-2)
+  --p2wsh               Generate p2wsh (native segwit) deposit address,
+                        instead of p2wsh-in-p2sh
+  -v, --verbose         increase output verbosity
