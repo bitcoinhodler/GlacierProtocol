@@ -961,30 +961,38 @@ def main():
     """
     Execute main interactive script.
     """
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(epilog="For more help, include a subcommand, e.g. `./glacierscript.py entropy --help`")
     parser.add_argument('--testnet', type=int, help=argparse.SUPPRESS)
     parser.add_argument('--regtest', type=int, help=argparse.SUPPRESS)
     parser.add_argument('-v', '--verbose', action='store_true', help='increase output verbosity')
 
-    parser.add_argument('program', choices=[
-        'entropy', 'create-deposit-data', 'create-withdrawal-data'])
+    subs = parser.add_subparsers(dest='program')
 
-    # Options for entropy:
-    parser.add_argument("--num-keys", type=int,
-                        help="The number of keys to create random entropy for", default=1)
-    parser.add_argument("-r", "--rng", type=int,
-                        help="Minimum number of 8-bit bytes to use for computer entropy when generating private keys (default: 20)", default=20)
+    parser_entropy = subs.add_parser('entropy')
+    parser_entropy.add_argument(
+        "--num-keys", type=int, help="The number of keys to create random entropy for", default=1)
+    parser_entropy.add_argument(
+        "-r", "--rng", type=int, help="Minimum number of 8-bit bytes to use for computer entropy when generating private keys (default: 20)", default=20)
 
-    # Options for create-deposit-data:
-    parser.add_argument(
+    parser_deposit = subs.add_parser('create-deposit-data')
+    parser_deposit.add_argument(
         "-m", type=int, help="Number of signing keys required in an m-of-n multisig address creation (default m-of-n = 1-of-2)", default=1)
-    parser.add_argument(
+    parser_deposit.add_argument(
         "-n", type=int, help="Number of total keys required in an m-of-n multisig address creation (default m-of-n = 1-of-2)", default=2)
-    parser.add_argument("-d", "--dice", type=int,
-                        help="The minimum number of dice rolls to use for entropy when generating private keys (default: 62)", default=62)
-    parser.add_argument(
+    parser_deposit.add_argument(
+        "-d", "--dice", type=int, help="The minimum number of dice rolls to use for entropy when generating private keys (default: 62)", default=62)
+    parser_deposit.add_argument(
         "--p2wsh", action="store_true", help="Generate p2wsh (native segwit) deposit address, instead of p2wsh-in-p2sh")
+    parser_deposit.add_argument(
+        "-r", "--rng", type=int, help="Minimum number of 8-bit bytes to use for computer entropy when generating private keys (default: 20)", default=20)
+
+    subs.add_parser('create-withdrawal-data')
+
     args = parser.parse_args()
+    if not args.program:
+        parser.print_usage()
+        print("ERROR: you must specify a subcommand")
+        sys.exit()
 
     bitcoin_cli.verbose_mode = args.verbose
 
