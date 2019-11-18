@@ -2,3 +2,6 @@
 set -e
 
 $GLACIERSCRIPT --help
+$GLACIERSCRIPT entropy --help
+$GLACIERSCRIPT create-deposit-data --help
+$GLACIERSCRIPT create-withdrawal-data --help
