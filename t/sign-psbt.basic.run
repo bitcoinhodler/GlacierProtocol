@@ -1,0 +1,5 @@
+#!/bin/bash
+set -e
+
+$GLACIERSCRIPT --regtest=$1 sign-psbt << INPUT
+INPUT
