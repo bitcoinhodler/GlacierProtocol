@@ -412,7 +412,11 @@ def jsonstr(thing):
 #
 ################################################################################################
 
-class WithdrawalXact:
+class BaseWithdrawalXact:
+    """Class representing withdrawal transaction, either via input TXs or PSBT."""
+
+
+class WithdrawalXact(BaseWithdrawalXact):
     """
     Class for constructing a withdrawal transaction.
 
