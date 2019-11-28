@@ -416,7 +416,7 @@ class BaseWithdrawalXact:
     """Class representing withdrawal transaction, either via input TXs or PSBT."""
 
 
-class WithdrawalXact(BaseWithdrawalXact):
+class ManualWithdrawalXact(BaseWithdrawalXact):
     """
     Class for constructing a withdrawal transaction.
 
@@ -942,9 +942,9 @@ class ManualWithdrawalBuilder(BaseWithdrawalBuilder):
 
     def construct_withdrawal_interactive(self):
         """
-        Get details from user input and construct WithdrawalXact object.
+        Get details from user input and construct ManualWithdrawalXact object.
 
-        Returns => (xact, addresses) where xact is WithdrawalXact, and
+        Returns => (xact, addresses) where xact is ManualWithdrawalXact, and
         addresses is a dict of {address: amount} of destinations.
         """
         addresses = OrderedDict()
@@ -956,7 +956,7 @@ class ManualWithdrawalBuilder(BaseWithdrawalBuilder):
         addresses[source_address] = 0
 
         redeem_script = input("\nRedemption script for source cold storage address: ")
-        xact = WithdrawalXact(source_address, redeem_script)
+        xact = ManualWithdrawalXact(source_address, redeem_script)
 
         dest_address = input("\nDestination address: ")
         addresses[dest_address] = 0
