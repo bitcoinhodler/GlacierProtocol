@@ -509,12 +509,7 @@ class ParsedRunfile():
         self.cold_storage_address = parser.send(r"""
                             (2[0-9a-zA-Z]+|(tb1|bcrt1)[0-9a-z]+) \n # cold storage address
                         """).strip()
-        if self.cold_storage_address.startswith('tb1'):
-            # Convert bech32 address from testnet to regtest
-            # (Old-style non-segwit addresses are identical on testnet vs regtest.)
-            witver, witprog = segwit_addr.decode('tb', self.cold_storage_address)
-            self.cold_storage_address = segwit_addr.encode('bcrt', witver, witprog)
-            self.modified = True
+        self.cold_storage_address = self._convert_tb1_to_bcrt1(self.cold_storage_address)
 
         script = parser.send(r"""
                             [0-9a-fA-F]+ \n   # redeem script
@@ -522,12 +517,7 @@ class ParsedRunfile():
         dest_address = parser.send(r"""
                             [0-9a-zA-Z]+ \n    # destination address
                         """).strip()
-        if dest_address.startswith('tb1'):
-            # Convert bech32 address from testnet to regtest
-            # (Old-style non-segwit addresses are identical on testnet vs regtest.)
-            witver, witprog = segwit_addr.decode('tb', dest_address)
-            dest_address = segwit_addr.encode('bcrt', witver, witprog)
-            self.modified = True
+        dest_address = self._convert_tb1_to_bcrt1(dest_address)
 
         input_tx_count = int(parser.send(r"""
                             \d+ \n
@@ -558,6 +548,18 @@ class ParsedRunfile():
             + str(input_tx_count) \
             + "\n"
         self.back_matter = back_matter
+
+    def _convert_tb1_to_bcrt1(self, addr):
+        """
+        Convert given address, if bech32, from testnet to regtest.
+
+        (Old-style non-segwit addresses are identical on testnet vs regtest.)
+        """
+        if addr.startswith('tb1'):
+            self.modified = True
+            witver, witprog = segwit_addr.decode('tb', addr)
+            return segwit_addr.encode('bcrt', witver, witprog)
+        return addr
 
     def save(self):
         """Write out a new runfile with our modified input transactions."""
