@@ -1,5 +1,5 @@
 usage: glacierscript.py [-h] [-v]
-                        {entropy,create-deposit-data,create-withdrawal-data}
+                        {entropy,create-deposit-data,create-withdrawal-data,sign-psbt}
                         ...
 
 optional arguments:
@@ -7,12 +7,14 @@ optional arguments:
   -v, --verbose         increase output verbosity
 
 Subcommands:
-  {entropy,create-deposit-data,create-withdrawal-data}
+  {entropy,create-deposit-data,create-withdrawal-data,sign-psbt}
     entropy             Generate computer entropy
     create-deposit-data
                         Create cold storage address
     create-withdrawal-data
                         Construct withdrawal transaction
+    sign-psbt           Sign PSBT (Partially Signed Bitcoin Transaction, BIP
+                        174)
 
 For more help, include a subcommand, e.g. `./glacierscript.py entropy --help`
 usage: glacierscript.py entropy [-h] [--num-keys NUM_KEYS] [-r RNG]
