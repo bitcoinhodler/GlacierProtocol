@@ -775,6 +775,16 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
 class BaseWithdrawalBuilder:
     """Interactively construct a withdrawal transaction, either via input TXs or PSBT."""
 
+    @staticmethod
+    def get_keys(xact):
+        """Prompt user for private keys and add them to the withdrawal transaction."""
+        print("\nHow many private keys will you be signing this transaction with? ")
+        key_count = int(input("#: "))
+
+        for key_idx in range(key_count):
+            key = input("Key #{0}: ".format(key_idx + 1))
+            xact.add_key(key)
+
     def withdraw_interactive(self):
         """
         Construct and sign a transaction to withdraw funds from cold storage.
@@ -881,13 +891,7 @@ class ManualWithdrawalBuilder(BaseWithdrawalBuilder):
         input_amount = xact.unspent_total()
 
         print("TOTAL unspent amount for this raw transaction: {} BTC".format(input_amount))
-
-        print("\nHow many private keys will you be signing this transaction with? ")
-        key_count = int(input("#: "))
-
-        for key_idx in range(key_count):
-            key = input("Key #{0}: ".format(key_idx + 1))
-            xact.add_key(key)
+        self.get_keys(xact)
 
         # fees, amount, and change
 
