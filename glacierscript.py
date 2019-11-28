@@ -966,19 +966,19 @@ def main():
     parser.add_argument('--regtest', type=int, help=argparse.SUPPRESS)
     parser.add_argument('-v', '--verbose', action='store_true', help='increase output verbosity')
 
-    subs = parser.add_subparsers(dest='program')
+    subs = parser.add_subparsers(title='Subcommands', dest='program')
 
     def add_rng(parser):
         """Add the --rng option to the supplied parser."""
         parser.add_argument(
             "-r", "--rng", type=int, help="Minimum number of 8-bit bytes to use for computer entropy when generating private keys (default: 20)", default=20)
 
-    parser_entropy = subs.add_parser('entropy')
+    parser_entropy = subs.add_parser('entropy', help="Generate computer entropy")
     parser_entropy.add_argument(
         "--num-keys", type=int, help="The number of keys to create random entropy for", default=1)
     add_rng(parser_entropy)
 
-    parser_deposit = subs.add_parser('create-deposit-data')
+    parser_deposit = subs.add_parser('create-deposit-data', help="Create cold storage address")
     parser_deposit.add_argument(
         "-m", type=int, help="Number of signing keys required in an m-of-n multisig address creation (default m-of-n = 1-of-2)", default=1)
     parser_deposit.add_argument(
@@ -989,7 +989,7 @@ def main():
         "--p2wsh", action="store_true", help="Generate p2wsh (native segwit) deposit address, instead of p2wsh-in-p2sh")
     add_rng(parser_deposit)
 
-    subs.add_parser('create-withdrawal-data')
+    subs.add_parser('create-withdrawal-data', help="Construct withdrawal transaction")
 
     args = parser.parse_args()
     if not args.program:
