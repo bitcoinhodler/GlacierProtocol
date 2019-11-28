@@ -997,6 +997,11 @@ def withdraw_interactive():
     write_and_verify_qr_code("transaction", "transaction.png", signed_tx["hex"].upper())
 
 
+def signpsbt_interactive():
+    """Sign a provided PSBT using provided keys."""
+    print("Not implemented yet")
+
+
 def set_network_params(testnet, regtest):
     """
     Set global vars cli_args and wif_prefix based on which network we are targeting.
@@ -1067,6 +1072,8 @@ def main():
 
     subs.add_parser('create-withdrawal-data', help="Construct withdrawal transaction")
 
+    subs.add_parser('sign-psbt', help="Sign PSBT (Partially Signed Bitcoin Transaction, BIP 174)")
+
     args = parser.parse_args()
     if not args.program:
         parser.print_usage()
@@ -1085,6 +1092,9 @@ def main():
 
     if args.program == "create-withdrawal-data":
         withdraw_interactive()
+
+    if args.program == "sign-psbt":
+        signpsbt_interactive()
 
 
 @contextlib.contextmanager
