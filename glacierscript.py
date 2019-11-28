@@ -938,6 +938,16 @@ class ManualWithdrawalBuilder(BaseWithdrawalBuilder):
 class PsbtWithdrawalBuilder(BaseWithdrawalBuilder):
     """Interactively construct a withdrawal transaction via PSBT."""
 
+    def _load_psbt(self):
+        """
+        Prompt user for filename, load PSBT from that file.
+        """
+        print("Input a filename located in the current directory which contains the PSBT:")
+        psbt_filename = input()
+        with open(psbt_filename) as psbtfile:
+            psbt = psbtfile.read().strip()
+        return psbt
+
     def construct_withdrawal_interactive(self):
         """
         Get details from user input and construct WithdrawalXact object.
@@ -945,6 +955,8 @@ class PsbtWithdrawalBuilder(BaseWithdrawalBuilder):
         Returns => (xact, addresses) where xact is WithdrawalXact, and
         addresses is a dict of {address: amount} of destinations.
         """
+        psbt = self._load_psbt()
+        print("I found psbt of", psbt)
         raise SystemExit("Not implemented yet")
 
 
