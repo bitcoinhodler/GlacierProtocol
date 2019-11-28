@@ -1,6 +1,6 @@
 #!/bin/bash
 
-$GLACIERSCRIPT --regtest=$1 sign-psbt 2>&1 << INPUT
+$GLACIERSCRIPT --testnet=$1 sign-psbt 2>&1 << INPUT
 y
 y
 y
