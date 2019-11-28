@@ -851,6 +851,58 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
 class WithdrawalBuilder:
     """Interactively construct a withdrawal transaction."""
 
+    def withdraw_interactive(self):
+        """
+        Construct and sign a transaction to withdraw funds from cold storage.
+
+        All data required for transaction construction is input at the terminal
+        """
+        safety_checklist()
+        ensure_bitcoind_running()
+
+        approve = False
+
+        while not approve:
+            xact, addresses = self.construct_withdrawal_interactive()
+
+            # check data
+            print("\nIs this data correct?")
+            print("*** WARNING: Incorrect data may lead to loss of funds ***\n")
+
+            print("{0} BTC in unspent supplied transactions".format(xact.unspent_total()))
+            for address, value in addresses.items():
+                if address == xact.source_address:
+                    print("{0} BTC going back to cold storage address {1}".format(value, address))
+                else:
+                    print("{0} BTC going to destination address {1}".format(value, address))
+            print("Fee amount: {0}".format(xact.unspent_total() - sum(addresses.values())))
+            print("\nSigning with private keys: ")
+            for key in xact.keys:
+                print("{}".format(key))
+            print("\n")
+            confirm = yes_no_interactive()
+
+            if confirm:
+                approve = True
+            else:
+                print("\nProcess aborted. Starting over....")
+
+        # Calculate Transaction
+        print("\nCalculating transaction...\n")
+
+        signed_tx = xact.create_signed_transaction(addresses)
+
+        print("\nSufficient private keys to execute transaction?")
+        print(signed_tx["complete"])
+
+        print("\nRaw signed transaction (hex):")
+        print(signed_tx["hex"])
+
+        print("\nTransaction fingerprint (md5):")
+        print(hash_md5(signed_tx["hex"]))
+
+        write_and_verify_qr_code("transaction", "transaction.png", signed_tx["hex"].upper())
+
     @staticmethod
     def get_tx_interactive(num):
         """
@@ -945,58 +997,6 @@ class WithdrawalBuilder:
 
         addresses[dest_address] = withdrawal_amount
         return (xact, addresses)
-
-    def withdraw_interactive(self):
-        """
-        Construct and sign a transaction to withdraw funds from cold storage.
-
-        All data required for transaction construction is input at the terminal
-        """
-        safety_checklist()
-        ensure_bitcoind_running()
-
-        approve = False
-
-        while not approve:
-            xact, addresses = self.construct_withdrawal_interactive()
-
-            # check data
-            print("\nIs this data correct?")
-            print("*** WARNING: Incorrect data may lead to loss of funds ***\n")
-
-            print("{0} BTC in unspent supplied transactions".format(xact.unspent_total()))
-            for address, value in addresses.items():
-                if address == xact.source_address:
-                    print("{0} BTC going back to cold storage address {1}".format(value, address))
-                else:
-                    print("{0} BTC going to destination address {1}".format(value, address))
-            print("Fee amount: {0}".format(xact.unspent_total() - sum(addresses.values())))
-            print("\nSigning with private keys: ")
-            for key in xact.keys:
-                print("{}".format(key))
-            print("\n")
-            confirm = yes_no_interactive()
-
-            if confirm:
-                approve = True
-            else:
-                print("\nProcess aborted. Starting over....")
-
-        # Calculate Transaction
-        print("\nCalculating transaction...\n")
-
-        signed_tx = xact.create_signed_transaction(addresses)
-
-        print("\nSufficient private keys to execute transaction?")
-        print(signed_tx["complete"])
-
-        print("\nRaw signed transaction (hex):")
-        print(signed_tx["hex"])
-
-        print("\nTransaction fingerprint (md5):")
-        print(hash_md5(signed_tx["hex"]))
-
-        write_and_verify_qr_code("transaction", "transaction.png", signed_tx["hex"].upper())
 
 
 def signpsbt_interactive():
