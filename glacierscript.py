@@ -1011,9 +1011,17 @@ class ManualWithdrawalBuilder(BaseWithdrawalBuilder):
         return (xact, addresses)
 
 
-def signpsbt_interactive():
-    """Sign a provided PSBT using provided keys."""
-    print("Not implemented yet")
+class PsbtWithdrawalBuilder(BaseWithdrawalBuilder):
+    """Interactively construct a withdrawal transaction via PSBT."""
+
+    def construct_withdrawal_interactive(self):
+        """
+        Get details from user input and construct WithdrawalXact object.
+
+        Returns => (xact, addresses) where xact is WithdrawalXact, and
+        addresses is a dict of {address: amount} of destinations.
+        """
+        raise SystemExit("Not implemented yet")
 
 
 def set_network_params(testnet, regtest):
@@ -1109,7 +1117,8 @@ def main():
         builder.withdraw_interactive()
 
     if args.program == "sign-psbt":
-        signpsbt_interactive()
+        builder = PsbtWithdrawalBuilder()
+        builder.withdraw_interactive()
 
 
 @contextlib.contextmanager

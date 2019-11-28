@@ -1,5 +1,17 @@
 #!/bin/bash
-set -e
 
-$GLACIERSCRIPT --regtest=$1 sign-psbt << INPUT
+$GLACIERSCRIPT --regtest=$1 sign-psbt 2>&1 << INPUT
+y
+y
+y
+y
+y
+y
 INPUT
+
+
+retVal=$?
+if [ $retVal -eq 0 ]; then
+    echo "Error: expected glacierscript.py to fail"
+    exit 1
+fi
