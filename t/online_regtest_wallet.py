@@ -507,8 +507,15 @@ class ParsedRunfile():
                             (y\n){6}       # safety confirmations
                         """)
         self.cold_storage_address = parser.send(r"""
-                            2[0-9a-zA-Z]+ \n # cold storage address
+                            (2[0-9a-zA-Z]+|(tb1|bcrt1)[0-9a-z]+) \n # cold storage address
                         """).strip()
+        if self.cold_storage_address.startswith('tb1'):
+            # Convert bech32 address from testnet to regtest
+            # (Old-style non-segwit addresses are identical on testnet vs regtest.)
+            witver, witprog = segwit_addr.decode('tb', self.cold_storage_address)
+            self.cold_storage_address = segwit_addr.encode('bcrt', witver, witprog)
+            self.modified = True
+
         script = parser.send(r"""
                             [0-9a-fA-F]+ \n   # redeem script
                         """)
