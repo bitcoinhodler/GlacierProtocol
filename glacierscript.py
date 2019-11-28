@@ -848,153 +848,155 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
 #
 ################################################################################################
 
-def get_tx_interactive(num):
-    """
-    Prompt user for an unspent transaction to use as an input.
+class WithdrawalBuilder:
+    """Interactively construct a withdrawal transaction."""
 
-    num: index of this input (used only for prompt)
+    @staticmethod
+    def get_tx_interactive(num):
+        """
+        Prompt user for an unspent transaction to use as an input.
 
-    Returns => string with hex transaction
-    """
-    print("\nPlease paste raw transaction #{} (hexadecimal format) with unspent outputs at the source address".format(num))
-    print("OR")
-    print("input a filename located in the current directory which contains the raw transaction data")
-    print("(If the transaction data is over ~4000 characters long, you _must_ use a file.):")
+        num: index of this input (used only for prompt)
 
-    hex_tx = input()
-    if os.path.isfile(hex_tx):
-        hex_tx = open(hex_tx).read().strip()
-    return hex_tx
+        Returns => string with hex transaction
+        """
+        print("\nPlease paste raw transaction #{} (hexadecimal format) with unspent outputs at the source address".format(num))
+        print("OR")
+        print("input a filename located in the current directory which contains the raw transaction data")
+        print("(If the transaction data is over ~4000 characters long, you _must_ use a file.):")
 
+        hex_tx = input()
+        if os.path.isfile(hex_tx):
+            hex_tx = open(hex_tx).read().strip()
+        return hex_tx
 
-def construct_withdrawal_interactive():
-    """
-    Get details from user input and construct WithdrawalXact object.
+    def construct_withdrawal_interactive(self):
+        """
+        Get details from user input and construct WithdrawalXact object.
 
-    Returns => (xact, addresses) where xact is WithdrawalXact, and
-    addresses is a dict of {address: amount} of destinations.
-    """
-    addresses = OrderedDict()
+        Returns => (xact, addresses) where xact is WithdrawalXact, and
+        addresses is a dict of {address: amount} of destinations.
+        """
+        addresses = OrderedDict()
 
-    print("\nYou will need to enter several pieces of information to create a withdrawal transaction.")
-    print("\n\n*** PLEASE BE SURE TO ENTER THE CORRECT DESTINATION ADDRESS ***\n")
+        print("\nYou will need to enter several pieces of information to create a withdrawal transaction.")
+        print("\n\n*** PLEASE BE SURE TO ENTER THE CORRECT DESTINATION ADDRESS ***\n")
 
-    source_address = input("\nSource cold storage address: ")
-    addresses[source_address] = 0
+        source_address = input("\nSource cold storage address: ")
+        addresses[source_address] = 0
 
-    redeem_script = input("\nRedemption script for source cold storage address: ")
-    xact = WithdrawalXact(source_address, redeem_script)
+        redeem_script = input("\nRedemption script for source cold storage address: ")
+        xact = WithdrawalXact(source_address, redeem_script)
 
-    dest_address = input("\nDestination address: ")
-    addresses[dest_address] = 0
+        dest_address = input("\nDestination address: ")
+        addresses[dest_address] = 0
 
-    num_tx = int(input("\nHow many unspent transactions will you be using for this withdrawal? "))
+        num_tx = int(input("\nHow many unspent transactions will you be using for this withdrawal? "))
 
-    for txcount in range(num_tx):
-        xact.add_input_xact(get_tx_interactive(txcount + 1))
+        for txcount in range(num_tx):
+            xact.add_input_xact(self.get_tx_interactive(txcount + 1))
 
-    print("\nTransaction data found for source address.")
+        print("\nTransaction data found for source address.")
 
-    input_amount = xact.unspent_total()
+        input_amount = xact.unspent_total()
 
-    print("TOTAL unspent amount for this raw transaction: {} BTC".format(input_amount))
+        print("TOTAL unspent amount for this raw transaction: {} BTC".format(input_amount))
 
-    print("\nHow many private keys will you be signing this transaction with? ")
-    key_count = int(input("#: "))
+        print("\nHow many private keys will you be signing this transaction with? ")
+        key_count = int(input("#: "))
 
-    for key_idx in range(key_count):
-        key = input("Key #{0}: ".format(key_idx + 1))
-        xact.add_key(key)
+        for key_idx in range(key_count):
+            key = input("Key #{0}: ".format(key_idx + 1))
+            xact.add_key(key)
 
-    # fees, amount, and change
+        # fees, amount, and change
 
-    fee = get_fee_interactive(xact, addresses)
-    # Got this far
-    if fee > input_amount:
-        print("ERROR: Your fee is greater than the sum of your unspent transactions.  Try using larger unspent transactions. Exiting...")
-        sys.exit()
+        fee = get_fee_interactive(xact, addresses)
+        # Got this far
+        if fee > input_amount:
+            print("ERROR: Your fee is greater than the sum of your unspent transactions.  Try using larger unspent transactions. Exiting...")
+            sys.exit()
 
-    print("\nPlease enter the decimal amount (in bitcoin) to withdraw to the destination address.")
-    print("\nExample: For 2.3 bitcoins, enter \"2.3\".")
-    print("\nAfter a fee of {0}, you have {1} bitcoins available to withdraw.".format(fee, input_amount - fee))
-    print("\n*** Technical note for experienced Bitcoin users:  If the withdrawal amount & fee are cumulatively less than the total amount of the unspent transactions, the remainder will be sent back to the same cold storage address as change. ***\n")
-    withdrawal_amount = input(
-        "Amount to send to {0} (leave blank to withdraw all funds stored in these unspent transactions): ".format(dest_address))
-    if withdrawal_amount == "":
-        withdrawal_amount = input_amount - fee
-    else:
-        withdrawal_amount = Decimal(withdrawal_amount).quantize(SATOSHI_PLACES)
-
-    if fee + withdrawal_amount > input_amount:
-        print("Error: fee + withdrawal amount greater than total amount available from unspent transactions")
-        sys.exit()
-
-    change_amount = input_amount - withdrawal_amount - fee
-
-    if change_amount > 0:
-        print("{0} being returned to cold storage address address {1}.".format(change_amount, xact.source_address))
-        addresses[xact.source_address] = change_amount
-    else:
-        del addresses[xact.source_address]
-        fee = xact.calculate_fee(addresses)  # Recompute fee with no change output
-        withdrawal_amount = input_amount - fee
-        print("With no change output, the transaction fee is reduced, and {0} BTC will be sent to your destination.".format(withdrawal_amount))
-
-    addresses[dest_address] = withdrawal_amount
-    return (xact, addresses)
-
-
-def withdraw_interactive():
-    """
-    Construct and sign a transaction to withdraw funds from cold storage.
-
-    All data required for transaction construction is input at the terminal
-    """
-    safety_checklist()
-    ensure_bitcoind_running()
-
-    approve = False
-
-    while not approve:
-        xact, addresses = construct_withdrawal_interactive()
-
-        # check data
-        print("\nIs this data correct?")
-        print("*** WARNING: Incorrect data may lead to loss of funds ***\n")
-
-        print("{0} BTC in unspent supplied transactions".format(xact.unspent_total()))
-        for address, value in addresses.items():
-            if address == xact.source_address:
-                print("{0} BTC going back to cold storage address {1}".format(value, address))
-            else:
-                print("{0} BTC going to destination address {1}".format(value, address))
-        print("Fee amount: {0}".format(xact.unspent_total() - sum(addresses.values())))
-        print("\nSigning with private keys: ")
-        for key in xact.keys:
-            print("{}".format(key))
-        print("\n")
-        confirm = yes_no_interactive()
-
-        if confirm:
-            approve = True
+        print("\nPlease enter the decimal amount (in bitcoin) to withdraw to the destination address.")
+        print("\nExample: For 2.3 bitcoins, enter \"2.3\".")
+        print("\nAfter a fee of {0}, you have {1} bitcoins available to withdraw.".format(fee, input_amount - fee))
+        print("\n*** Technical note for experienced Bitcoin users:  If the withdrawal amount & fee are cumulatively less than the total amount of the unspent transactions, the remainder will be sent back to the same cold storage address as change. ***\n")
+        withdrawal_amount = input(
+            "Amount to send to {0} (leave blank to withdraw all funds stored in these unspent transactions): ".format(dest_address))
+        if withdrawal_amount == "":
+            withdrawal_amount = input_amount - fee
         else:
-            print("\nProcess aborted. Starting over....")
+            withdrawal_amount = Decimal(withdrawal_amount).quantize(SATOSHI_PLACES)
 
-    # Calculate Transaction
-    print("\nCalculating transaction...\n")
+        if fee + withdrawal_amount > input_amount:
+            print("Error: fee + withdrawal amount greater than total amount available from unspent transactions")
+            sys.exit()
 
-    signed_tx = xact.create_signed_transaction(addresses)
+        change_amount = input_amount - withdrawal_amount - fee
 
-    print("\nSufficient private keys to execute transaction?")
-    print(signed_tx["complete"])
+        if change_amount > 0:
+            print("{0} being returned to cold storage address address {1}.".format(change_amount, xact.source_address))
+            addresses[xact.source_address] = change_amount
+        else:
+            del addresses[xact.source_address]
+            fee = xact.calculate_fee(addresses)  # Recompute fee with no change output
+            withdrawal_amount = input_amount - fee
+            print("With no change output, the transaction fee is reduced, and {0} BTC will be sent to your destination.".format(withdrawal_amount))
 
-    print("\nRaw signed transaction (hex):")
-    print(signed_tx["hex"])
+        addresses[dest_address] = withdrawal_amount
+        return (xact, addresses)
 
-    print("\nTransaction fingerprint (md5):")
-    print(hash_md5(signed_tx["hex"]))
+    def withdraw_interactive(self):
+        """
+        Construct and sign a transaction to withdraw funds from cold storage.
 
-    write_and_verify_qr_code("transaction", "transaction.png", signed_tx["hex"].upper())
+        All data required for transaction construction is input at the terminal
+        """
+        safety_checklist()
+        ensure_bitcoind_running()
+
+        approve = False
+
+        while not approve:
+            xact, addresses = self.construct_withdrawal_interactive()
+
+            # check data
+            print("\nIs this data correct?")
+            print("*** WARNING: Incorrect data may lead to loss of funds ***\n")
+
+            print("{0} BTC in unspent supplied transactions".format(xact.unspent_total()))
+            for address, value in addresses.items():
+                if address == xact.source_address:
+                    print("{0} BTC going back to cold storage address {1}".format(value, address))
+                else:
+                    print("{0} BTC going to destination address {1}".format(value, address))
+            print("Fee amount: {0}".format(xact.unspent_total() - sum(addresses.values())))
+            print("\nSigning with private keys: ")
+            for key in xact.keys:
+                print("{}".format(key))
+            print("\n")
+            confirm = yes_no_interactive()
+
+            if confirm:
+                approve = True
+            else:
+                print("\nProcess aborted. Starting over....")
+
+        # Calculate Transaction
+        print("\nCalculating transaction...\n")
+
+        signed_tx = xact.create_signed_transaction(addresses)
+
+        print("\nSufficient private keys to execute transaction?")
+        print(signed_tx["complete"])
+
+        print("\nRaw signed transaction (hex):")
+        print(signed_tx["hex"])
+
+        print("\nTransaction fingerprint (md5):")
+        print(hash_md5(signed_tx["hex"]))
+
+        write_and_verify_qr_code("transaction", "transaction.png", signed_tx["hex"].upper())
 
 
 def signpsbt_interactive():
@@ -1091,7 +1093,8 @@ def main():
         deposit_interactive(args.m, args.n, args.dice, args.rng, args.p2wsh)
 
     if args.program == "create-withdrawal-data":
-        withdraw_interactive()
+        builder = WithdrawalBuilder()
+        builder.withdraw_interactive()
 
     if args.program == "sign-psbt":
         signpsbt_interactive()
