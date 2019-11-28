@@ -892,7 +892,7 @@ def withdraw_interactive():
                 print("{0} BTC going back to cold storage address {1}".format(value, address))
             else:
                 print("{0} BTC going to destination address {1}".format(value, address))
-        print("Fee amount: {0}".format(xact.unspent_total() - sum(addresses[a] for a in addresses)))
+        print("Fee amount: {0}".format(xact.unspent_total() - sum(addresses.values())))
         print("\nSigning with private keys: ")
         for key in xact.keys:
             print("{}".format(key))
