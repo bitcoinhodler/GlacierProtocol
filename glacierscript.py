@@ -904,7 +904,7 @@ class BaseWithdrawalBuilder:
         write_and_verify_qr_code("transaction", "transaction.png", signed_tx["hex"].upper())
 
 
-class WithdrawalBuilder(BaseWithdrawalBuilder):
+class ManualWithdrawalBuilder(BaseWithdrawalBuilder):
     """Interactively construct a withdrawal transaction via input TXs."""
 
     @staticmethod
@@ -1097,7 +1097,7 @@ def main():
         deposit_interactive(args.m, args.n, args.dice, args.rng, args.p2wsh)
 
     if args.program == "create-withdrawal-data":
-        builder = WithdrawalBuilder()
+        builder = ManualWithdrawalBuilder()
         builder.withdraw_interactive()
 
     if args.program == "sign-psbt":
