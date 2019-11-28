@@ -772,8 +772,8 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
 #
 ################################################################################################
 
-class WithdrawalBuilder:
-    """Interactively construct a withdrawal transaction."""
+class BaseWithdrawalBuilder:
+    """Interactively construct a withdrawal transaction, either via input TXs or PSBT."""
 
     def withdraw_interactive(self):
         """
@@ -826,6 +826,10 @@ class WithdrawalBuilder:
         print(hash_md5(signed_tx["hex"]))
 
         write_and_verify_qr_code("transaction", "transaction.png", signed_tx["hex"])
+
+
+class WithdrawalBuilder(BaseWithdrawalBuilder):
+    """Interactively construct a withdrawal transaction via input TXs."""
 
     @staticmethod
     def get_tx_interactive(num):
