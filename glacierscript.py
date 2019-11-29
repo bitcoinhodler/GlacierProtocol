@@ -670,6 +670,11 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         """
         Return the total amount of BTC available to spend from the input UTXOs.
         """
+        inamts = []
+        for index in range(len(self.psbt['inputs'])):
+            _, amount = self._input_addr_and_amount(index)
+            inamts.append(amount)
+        return sum(inamts)
 
     def create_signed_transaction(self, destinations):
         """
@@ -684,6 +689,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         The destinations param is a holdover from
         ManualWithdrawalXact, and should match self.destinations.
         """
+        return {'hex': 'fake tx hex', 'complete': True}
 
     def sanity_check_psbt(self):
         """
@@ -1099,7 +1105,7 @@ class PsbtWithdrawalBuilder(BaseWithdrawalBuilder):
         print("Found source address", xact.source_address)
         print("Found destinations", xact.destinations)
         self.get_keys(xact)
-        raise SystemExit("Not implemented yet")
+        return (xact, xact.destinations)
 
 
 def set_network_params(testnet, regtest):
