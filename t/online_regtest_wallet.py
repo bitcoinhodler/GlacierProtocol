@@ -504,7 +504,7 @@ class ParsedRunfile():
             testmode = 'regtest'
             self.modified = True
         cmdline_and_confirm = parser.send(r"""
-                            =\$1 \s create-withdrawal-data \s \<\< \s INPUT \n  # rest of cmdline
+                            =\$1 \s create-withdrawal-data \s \<\< \s INPUT .*\n  # rest of cmdline
                             (y\n){6}       # safety confirmations
                         """)
         self.cold_storage_address = parser.send(r"""

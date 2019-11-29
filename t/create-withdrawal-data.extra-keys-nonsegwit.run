@@ -4,7 +4,7 @@ set -e
 # Test validation of extra keys. Only need 2, providing 4 as I would in the test withdrawal process
 
 
-$GLACIERSCRIPT --regtest=$1 create-withdrawal-data << INPUT
+$GLACIERSCRIPT --regtest=$1 create-withdrawal-data << INPUT 2>&1
 y
 y
 y
