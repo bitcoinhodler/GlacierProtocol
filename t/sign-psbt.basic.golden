@@ -42,4 +42,6 @@ I found psbt of cHNidP8BAFMCAAAAASX9+/r5FLgd8fsd2thLtfeNA0Ou4+bIcigceMcydMqXAAAA
         'vsize': 83,
         'weight': 332},
  'unknown': {}}
+Found source address 2MzqiaZzpLT2SSBfsFqqo3FpZsP8g6WTvyC
+Found destinations OrderedDict([('2NCthaDAsJUJ2q5s1L4HhexUGMJ5t16vqer', Decimal('0.17399809'))])
 Not implemented yet
