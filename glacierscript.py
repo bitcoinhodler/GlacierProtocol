@@ -619,11 +619,21 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         """
         Analyze PSBT and return our detected address as string.
         """
+        inp0 = self.psbt['inputs'][0]
+        if 'witness_utxo' in inp0:
+            return inp0['witness_utxo']['scriptPubKey']['address']
+        inp0_n = self.psbt['tx']['vin'][0]['vout']
+        return inp0['non_witness_utxo']['vout'][inp0_n]['scriptPubKey']['addresses'][0]
 
     def _find_output_addresses(self):
         """
         Analyze PSBT and return OrderedDict of (address:amount) pairs.
         """
+        out = OrderedDict()
+        for vout in self.psbt['tx']['vout']:
+            addr = vout['scriptPubKey']['addresses'][0]
+            out[addr] = vout['value']
+        return out
 
     def unspent_total(self):
         """
@@ -1047,6 +1057,8 @@ class PsbtWithdrawalBuilder(BaseWithdrawalBuilder):
         """
         psbt_raw = self._load_psbt()
         xact = PsbtWithdrawalXact(psbt_raw)
+        print("Found source address", xact.source_address)
+        print("Found destinations", xact.addresses)
         raise SystemExit("Not implemented yet")
 
 
