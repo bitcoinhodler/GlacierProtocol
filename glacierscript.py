@@ -433,7 +433,7 @@ class BaseWithdrawalXact:
         # Teach the wallet about this key
         pubkey = get_pubkey_for_wif_privkey(key)
         if pubkey not in self._pubkeys:
-            print("ERROR: that key does not belong to this source address, exiting...")
+            print("ERROR: that key does not belong to this source address. Exiting...")
             sys.exit()
 
     def _teach_address_to_wallet(self):
@@ -547,13 +547,13 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
         # to generate a signature
         xact = bitcoin_cli.json("decoderawtransaction", hex_tx)
         if xact['hash'] in self._seen_txhashes:
-            print("ERROR: duplicated input transactions, exiting...")
+            print("ERROR: duplicated input transactions. Exiting...")
             sys.exit()
         self._seen_txhashes.add(xact['hash'])
 
         utxos = self._get_utxos(xact)
         if not utxos:
-            print("\nTransaction data not found for source address: {}".format(self.source_address))
+            print("ERROR: transaction data not found for source address: {}. Exiting...".format(self.source_address))
             sys.exit()
 
         txid = xact["txid"]
@@ -870,7 +870,7 @@ def safety_checklist():
     for check in checks:
         answer = input(check + " (y/n)?")
         if answer.upper() != "Y":
-            print("\n Safety check failed. Exiting.")
+            print("ERROR: safety check failed. Exiting...")
             sys.exit()
 
 
@@ -1143,7 +1143,7 @@ class ManualWithdrawalBuilder(BaseWithdrawalBuilder):
             withdrawal_amount = Decimal(withdrawal_amount).quantize(SATOSHI_PLACES)
 
         if fee + withdrawal_amount > input_amount:
-            print("Error: fee + withdrawal amount greater than total amount available from unspent transactions")
+            print("ERROR: fee + withdrawal amount greater than total amount available from unspent transactions. Exiting...")
             sys.exit()
 
         change_amount = input_amount - withdrawal_amount - fee
@@ -1265,7 +1265,7 @@ def main():
     args = parser.parse_args()
     if not args.program:
         parser.print_usage()
-        print("ERROR: you must specify a subcommand")
+        print("ERROR: you must specify a subcommand. Exiting...")
         sys.exit()
 
     bitcoin_cli.verbose_mode = args.verbose
