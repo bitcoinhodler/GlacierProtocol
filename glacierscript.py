@@ -596,7 +596,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
     ----------
     psbt_raw: <string> base64-encoded input PSBT from user
     psbt: <object> output of `decodepsbt`
-    addresses: <OrderedDict> address => amount for each output
+    destinations: <OrderedDict> address => amount for each output
     source_address: <string> our cold storage address
     keys: <list of strings>: private keys to sign with
     """
@@ -612,7 +612,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
 
         self.keys = []
         self.source_address = self._find_source_address()
-        self.addresses = self._find_output_addresses()
+        self.destinations = self._find_output_addresses()
         self.sanity_check_psbt()
 
     def _find_source_address(self):
@@ -650,7 +650,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         mapping destination addresses to amount in BTC
 
         The destinations param is a holdover from
-        ManualWithdrawalXact, and should match self.addresses.
+        ManualWithdrawalXact, and should match self.destinations.
         """
 
     def sanity_check_psbt(self):
@@ -1058,7 +1058,8 @@ class PsbtWithdrawalBuilder(BaseWithdrawalBuilder):
         psbt_raw = self._load_psbt()
         xact = PsbtWithdrawalXact(psbt_raw)
         print("Found source address", xact.source_address)
-        print("Found destinations", xact.addresses)
+        print("Found destinations", xact.destinations)
+        # Still need to ask user for keys.
         raise SystemExit("Not implemented yet")
 
 
