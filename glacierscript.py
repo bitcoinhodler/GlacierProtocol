@@ -436,7 +436,8 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
         """
         Return a hex string representing a signed bitcoin transaction.
 
-        returns => <string>
+        returns => <dict> from signrawtransactionwithwallet, with keys
+        'hex' and 'complete'
 
         destinations: {address <string>: amount<string>} dictionary mapping destination addresses to amount in BTC
         """
@@ -646,7 +647,8 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         """
         Return a hex string representing a signed bitcoin transaction.
 
-        returns => <string>
+        returns => <dict> from signrawtransactionwithwallet, with keys
+        'hex' and 'complete'
 
         destinations: {address <string>: amount<string>} dictionary
         mapping destination addresses to amount in BTC
