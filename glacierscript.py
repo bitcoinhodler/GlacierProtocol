@@ -242,6 +242,12 @@ class GlacierExcessiveFee(Exception):
     Raised when transaction fee is determined to be excessive.
     """
 
+
+class GlacierFatal(Exception):
+    """
+    Raised when fatal error is detected.
+    """
+
 ################################################################################################
 #
 # Bitcoin helper functions
@@ -307,8 +313,7 @@ def require_minimum_bitcoind_version(min_version):
     networkinfo = bitcoin_cli.json("getnetworkinfo")
 
     if int(networkinfo["version"]) < min_version:
-        print("ERROR: Your bitcoind version is too old. You have {}, I need {} or newer. Exiting...".format(networkinfo["version"], min_version))  # pragma: no cover
-        sys.exit()  # pragma: no cover
+        raise GlacierFatal("Your bitcoind version is too old. You have {}, I need {} or newer".format(networkinfo["version"], min_version))  # pragma: no cover
 
 
 def get_pubkey_for_wif_privkey(privkey):
@@ -433,8 +438,7 @@ class BaseWithdrawalXact:
         # Teach the wallet about this key
         pubkey = get_pubkey_for_wif_privkey(key)
         if pubkey not in self._pubkeys:
-            print("ERROR: that key does not belong to this source address. Exiting...")
-            sys.exit()
+            raise GlacierFatal("that key does not belong to this source address")
 
     def _teach_address_to_wallet(self):
         """
@@ -1291,6 +1295,8 @@ def main():
 def subprocess_catcher():
     """
     Catch any subprocess errors and show process output before re-raising.
+
+    Catch fatal errors and issue nice error message.
     """
     try:
         yield
@@ -1298,6 +1304,9 @@ def subprocess_catcher():
         if hasattr(exc, 'output'):
             print("Output from subprocess:", exc.output, file=sys.stderr)
         raise
+    except GlacierFatal as exc:
+        print("ERROR: {}. Exiting...".format(exc))
+        sys.exit()
 
 
 if __name__ == "__main__":
