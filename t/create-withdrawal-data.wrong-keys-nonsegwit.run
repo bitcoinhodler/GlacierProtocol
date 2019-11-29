@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 ##### Currently should fail! Since keys #3 and #4 are from a different wallet
 # Test erroneously passes even before my segwit changes
@@ -22,3 +21,9 @@ cSfvoUsWWZ81M4qGYciPHdNxHXQxPEsXBdGWjYdchpisPabtiKVQ
 cPWVKeCBjnv833Kayc6nczBbG4YqqbCucup3n5D68WPzBEfceBAQ
 cNYaH3onqrdMffpznhMMmrHn34fuTU59w5j8LM3H42VPcUsLeXy5
 INPUT
+
+retVal=$?
+if [ $retVal -eq 0 ]; then
+    echo "Error: expected glacierscript.py to fail"
+    exit 1
+fi

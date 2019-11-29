@@ -1219,8 +1219,7 @@ def subprocess_catcher():
             print("Output from subprocess:", exc.output, file=sys.stderr)
         raise
     except GlacierFatal as exc:
-        print("ERROR: {}. Exiting...".format(exc))
-        sys.exit()
+        raise SystemExit("ERROR: {}. Exiting...".format(exc))
 
 
 if __name__ == "__main__":

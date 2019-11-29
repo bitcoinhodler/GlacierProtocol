@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 # Note: the unspent tx used here doesn't actually exist in our regtest
 # blockchain, but it doesn't need to because we never actually spend
 # it.
@@ -27,3 +25,9 @@ n
 y
 0.00000999
 INPUT
+
+retVal=$?
+if [ $retVal -eq 0 ]; then
+    echo "Error: expected glacierscript.py to fail"
+    exit 1
+fi
