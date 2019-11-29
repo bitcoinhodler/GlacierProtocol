@@ -1,8 +1,13 @@
 #!/bin/bash
-set -e
 
 $GLACIERSCRIPT --regtest=$1 create-deposit-data -m 3 -n 5 << INPUT 2>&1
 y
 y
 n
 INPUT
+
+retVal=$?
+if [ $retVal -eq 0 ]; then
+    echo "Error: expected glacierscript.py to fail"
+    exit 1
+fi
