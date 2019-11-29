@@ -599,6 +599,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
     destinations: <OrderedDict> address => amount for each output
     source_address: <string> our cold storage address
     keys: <list of strings>: private keys to sign with
+
     """
 
     def __init__(self, psbt_raw):
@@ -683,8 +684,6 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         # Must have exactly one output whose value equals inputs plus
         # fee; or must have exactly two outputs, one of which is the
         # change back to same origin.
-
-
 
 
 ################################################################################################
