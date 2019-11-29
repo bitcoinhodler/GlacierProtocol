@@ -404,6 +404,46 @@ class BaseWithdrawalXact:
             print("ERROR: that key does not belong to this source address, exiting...")
             sys.exit()
 
+    def _teach_address_to_wallet(self):
+        """
+        Teach the bitcoind wallet about our multisig address.
+
+        So it can use that knowledge to sign the transaction we're about to create.
+        """
+        # If address is p2wsh-in-p2sh, then the user-provided
+        # redeem_script is actually witnessScript, and I need to get the
+        # redeemScript from `decodescript`.
+
+        decoded_script = bitcoin_cli.json("decodescript", self.redeem_script)
+
+        import_this = {
+            "scriptPubKey": {"address": self.source_address},
+            "timestamp": "now",
+            "watchonly": True  # to avoid warning about "Some private keys are missing[...]"
+        }
+        if decoded_script["p2sh"] == self.source_address:
+            import_this["redeemscript"] = self.redeem_script
+        else:
+            # segwit (either p2wsh or p2sh-in-p2wsh)
+            import_this["witnessscript"] = self.redeem_script
+            if self.source_address == decoded_script["segwit"]["p2sh-segwit"]:
+                import_this["redeemscript"] = decoded_script["segwit"]["hex"]
+        results = bitcoin_cli.json("importmulti", jsonstr([import_this]))
+        if not all(result["success"] for result in results) or \
+           any("warnings" in result for result in results):
+            raise Exception("Problem importing address to wallet")  # pragma: no cover
+
+    def _find_pubkeys(self):
+        """
+        Return a list of the pubkeys associated with our source address.
+
+        Assumes that source_address has already been imported to the wallet using `importmulti`
+        """
+        out = bitcoin_cli.json("getaddressinfo", self.source_address)
+        if "pubkeys" in out:
+            return out["pubkeys"]  # for non-segwit addresses
+        return out["embedded"]["pubkeys"]  # for segwit addresses
+
 
 class ManualWithdrawalXact(BaseWithdrawalXact):
     """
@@ -428,9 +468,9 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
         self._inputs = []
         self.keys = []
         self._validate_address()
+        self.fee_basis_satoshis_per_byte = None
         self._teach_address_to_wallet()
         self._pubkeys = self._find_pubkeys()
-        self.fee_basis_satoshis_per_byte = None
 
     def create_signed_transaction(self, destinations):
         """
@@ -491,46 +531,6 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
                 ("scriptPubKey", utxo["scriptPubKey"]["hex"]),
                 ("redeemScript", self.redeem_script),
             ]))
-
-    def _teach_address_to_wallet(self):
-        """
-        Teach the bitcoind wallet about our multisig address.
-
-        So it can use that knowledge to sign the transaction we're about to create.
-        """
-        # If address is p2wsh-in-p2sh, then the user-provided
-        # redeem_script is actually witnessScript, and I need to get the
-        # redeemScript from `decodescript`.
-
-        decoded_script = bitcoin_cli.json("decodescript", self.redeem_script)
-
-        import_this = {
-            "scriptPubKey": {"address": self.source_address},
-            "timestamp": "now",
-            "watchonly": True  # to avoid warning about "Some private keys are missing[...]"
-        }
-        if decoded_script["p2sh"] == self.source_address:
-            import_this["redeemscript"] = self.redeem_script
-        else:
-            # segwit (either p2wsh or p2sh-in-p2wsh)
-            import_this["witnessscript"] = self.redeem_script
-            if self.source_address == decoded_script["segwit"]["p2sh-segwit"]:
-                import_this["redeemscript"] = decoded_script["segwit"]["hex"]
-        results = bitcoin_cli.json("importmulti", jsonstr([import_this]))
-        if not all(result["success"] for result in results) or \
-           any("warnings" in result for result in results):
-            raise Exception("Problem importing address to wallet")  # pragma: no cover
-
-    def _find_pubkeys(self):
-        """
-        Return a list of the pubkeys associated with our source address.
-
-        Assumes that source_address has already been imported to the wallet using `importmulti`
-        """
-        out = bitcoin_cli.json("getaddressinfo", self.source_address)
-        if "pubkeys" in out:
-            return out["pubkeys"]  # for non-segwit addresses
-        return out["embedded"]["pubkeys"]  # for segwit addresses
 
     def _validate_address(self):
         """
