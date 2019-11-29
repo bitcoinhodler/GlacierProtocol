@@ -600,6 +600,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
     psbt: <object> output of `decodepsbt`
     destinations: <OrderedDict> address => amount for each output
     source_address: <string> our cold storage address
+    redeem_script: <string>
     keys: <list of strings>: private keys to sign with
 
     """
@@ -614,7 +615,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         pprint.pprint(self.psbt)
 
         self.keys = []
-        self.source_address = self._find_source_address()
+        self.source_address, self.redeem_script = self._find_source_address()
         self.destinations = self._find_output_addresses()
         self.sanity_check_psbt()
 
@@ -623,10 +624,14 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         Analyze PSBT and return our detected address as string.
         """
         inp0 = self.psbt['inputs'][0]
+        script = inp0['witness_script']['hex'] if 'witness_script' in inp0 \
+                 else inp0['redeem_script']['hex']
         if 'witness_utxo' in inp0:
-            return inp0['witness_utxo']['scriptPubKey']['address']
-        inp0_n = self.psbt['tx']['vin'][0]['vout']
-        return inp0['non_witness_utxo']['vout'][inp0_n]['scriptPubKey']['addresses'][0]
+            myaddr = inp0['witness_utxo']['scriptPubKey']['address']
+        else:
+            inp0_n = self.psbt['tx']['vin'][0]['vout']
+            myaddr = inp0['non_witness_utxo']['vout'][inp0_n]['scriptPubKey']['addresses'][0]
+        return myaddr, script
 
     def _find_output_addresses(self):
         """
