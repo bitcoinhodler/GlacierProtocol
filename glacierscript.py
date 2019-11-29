@@ -648,9 +648,9 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         print("I found psbt of", self.psbt_raw)
         pprint.pprint(self.psbt)
 
+        self.sanity_check_psbt()
         self.source_address, self.redeem_script = self._find_source_address()
         self.destinations = self._find_output_addresses()
-        self.sanity_check_psbt()
         super().__init__()
 
     def _input_addr_and_amount(self, index):
@@ -729,16 +729,47 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         https://medium.com/shiftcrypto/a-remote-theft-attack-on-trezor-model-t-44127cd7fb5a
 
         """
-        # Either all inputs must have witness_utxo, or all inputs must
-        # have non_witness_utxo.
+        # Number of inputs must match inputs in tx.
+        if len(self.psbt['inputs']) != len(self.psbt['tx']['vin']):
+            raise GlacierFatal("Invalid PSBT, inputs don't match tx")
 
-        # Every input must have redeem_script and/or
-        # witness_script. Otherwise we can't possibly sign. And one of
-        # them must be of type multisig.
+        # Every input must be populated with utxo info.
+        for inp in self.psbt['inputs']:
+            if 'witness_utxo' not in inp and 'non_witness_utxo' not in inp:
+                raise GlacierFatal("expected PSBT to describe every input")
+
+        # Either all inputs must have witness_utxo, or all inputs must
+        # have non_witness_utxo. Because we assume all inputs are from
+        # our one single cold storage address.
+        have_witness = 'witness_utxo' in self.psbt['inputs'][0]
+        for inp in self.psbt['inputs']:
+            if have_witness and 'witness_utxo' not in inp:
+                raise GlacierFatal("expected all inputs to be from same address")
+            if not have_witness and 'non_witness_utxo' not in inp:
+                raise GlacierFatal("expected all inputs to be from same address")
+
+        # Every input must have redeem_script and/or witness_script.
+        # Otherwise we can't possibly sign. And one of them must be of
+        # type multisig.
+        for inp in self.psbt['inputs']:
+            if have_witness and 'witness_script' not in inp:
+                raise GlacierFatal("expected PSBT to include witness_script")
+            if have_witness and inp['witness_script']['type'] != 'multisig':
+                raise GlacierFatal("expected witness_script to be multisig")
+            if not have_witness and 'redeem_script' not in inp:
+                raise GlacierFatal("expected PSBT to include redeem_script")
+            if not have_witness and inp['redeem_script']['type'] != 'multisig':
+                raise GlacierFatal("expected redeem_script to be multisig")
 
         # Every input must come from same address (so we can assume
         # it's ours without having to ask user to type in cold storage
-        # address)
+        # address). We need to identify our own address in order to
+        # identify the change output.
+        myaddr, _ = self._input_addr_and_amount(0)
+        for index, _ in enumerate(self.psbt['inputs']):
+            thisaddr, _ = self._input_addr_and_amount(index)
+            if myaddr != thisaddr:
+                raise GlacierFatal("expected all inputs to be from same address")
 
         # Do I need to check that inputs[0].non_witness_utxo.txid
         # matches the tx.vin[0].txid? Or will Bitcoin Core do that for
