@@ -689,7 +689,12 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         The destinations param is a holdover from
         ManualWithdrawalXact, and should match self.destinations.
         """
-        return {'hex': 'fake tx hex', 'complete': True}
+        prcs = bitcoin_cli.json("walletprocesspsbt", self.psbt_raw)
+        if not prcs['complete']:
+            print("ERROR: Expected PSBT to be complete by now. Exiting...")
+            sys.exit()
+        final = bitcoin_cli.json('finalizepsbt', prcs['psbt'])
+        return {'hex': final['hex'], 'complete': True}
 
     def sanity_check_psbt(self):
         """
