@@ -1,3 +1,45 @@
 Are you running this on a computer WITHOUT a network connection of any kind? (y/n)?Have the wireless cards in this computer been physically removed? (y/n)?Are you running on battery power? (y/n)?Are you running on an operating system booted from a USB drive? (y/n)?Is your screen hidden from view of windows, cameras, and other people? (y/n)?Are smartphones and all other nearby devices turned off and in a Faraday bag? (y/n)?Input a filename located in the current directory which contains the PSBT:
 I found psbt of cHNidP8BAFMCAAAAASX9+/r5FLgd8fsd2thLtfeNA0Ou4+bIcigceMcydMqXAAAAAAD9////AQGACQEAAAAAF6kU14DOpouLxbjDw3XAQMLM4IyakHeHAAAAAAABASDAgAkBAAAAABepFFNO484huPgFEo92udl341G7vqINhwEEIgAg2r6jRFwU5KCNZwXbQ3O+9GfUxk58jd8Um+UGcN5oeK4BBYtSIQKfUxUD+s2sJJb1CkRtm9KYRqBqBKReOEW2VrtHHfQi/CEC4weHcDqZDkAVosuQcfz9HH1GQfspTktMP19rRQoZJRMhAtooCIqAImURccTxNCm5hwnavhO8baUmU3/dLQcw3S27IQMobJbsqoUKa6Q8xF+7U5wfsdZcI8wPPNCfz5dlgm/53lSuAAA=
+{'fee': Decimal('0.00000191'),
+ 'inputs': [{'redeem_script': {'asm': '0 '
+                                      'dabea3445c14e4a08d6705db4373bef467d4c64e7c8ddf149be50670de6878ae',
+                               'hex': '0020dabea3445c14e4a08d6705db4373bef467d4c64e7c8ddf149be50670de6878ae',
+                               'type': 'witness_v0_scripthash'},
+             'witness_script': {'asm': '2 '
+                                       '029f531503facdac2496f50a446d9bd29846a06a04a45e3845b656bb471df422fc '
+                                       '02e30787703a990e4015a2cb9071fcfd1c7d4641fb294e4b4c3f5f6b450a192513 '
+                                       '02da28088a8022651171c4f13429b98709dabe13bc6da526537fdd2d0730dd2dbb '
+                                       '03286c96ecaa850a6ba43cc45fbb539c1fb1d65c23cc0f3cd09fcf9765826ff9de '
+                                       '4 OP_CHECKMULTISIG',
+                                'hex': '5221029f531503facdac2496f50a446d9bd29846a06a04a45e3845b656bb471df422fc2102e30787703a990e4015a2cb9071fcfd1c7d4641fb294e4b4c3f5f6b450a1925132102da28088a8022651171c4f13429b98709dabe13bc6da526537fdd2d0730dd2dbb2103286c96ecaa850a6ba43cc45fbb539c1fb1d65c23cc0f3cd09fcf9765826ff9de54ae',
+                                'type': 'multisig'},
+             'witness_utxo': {'amount': Decimal('0.17400000'),
+                              'scriptPubKey': {'address': '2MzqiaZzpLT2SSBfsFqqo3FpZsP8g6WTvyC',
+                                               'asm': 'OP_HASH160 '
+                                                      '534ee3ce21b8f805128f76b9d977e351bbbea20d '
+                                                      'OP_EQUAL',
+                                               'hex': 'a914534ee3ce21b8f805128f76b9d977e351bbbea20d87',
+                                               'type': 'scripthash'}}}],
+ 'outputs': [{}],
+ 'tx': {'hash': 'f93c32b12e0467166a79ed9dc71e549811a27251f474bdfba25b7933023a5f6c',
+        'locktime': 0,
+        'size': 83,
+        'txid': 'f93c32b12e0467166a79ed9dc71e549811a27251f474bdfba25b7933023a5f6c',
+        'version': 2,
+        'vin': [{'scriptSig': {'asm': '', 'hex': ''},
+                 'sequence': 4294967293,
+                 'txid': '97ca7432c7781c2872c8e6e3ae43038df7b54bd8da1dfbf11db814f9fafbfd25',
+                 'vout': 0}],
+        'vout': [{'n': 0,
+                  'scriptPubKey': {'addresses': ['2NCthaDAsJUJ2q5s1L4HhexUGMJ5t16vqer'],
+                                   'asm': 'OP_HASH160 '
+                                          'd780cea68b8bc5b8c3c375c040c2cce08c9a9077 '
+                                          'OP_EQUAL',
+                                   'hex': 'a914d780cea68b8bc5b8c3c375c040c2cce08c9a907787',
+                                   'reqSigs': 1,
+                                   'type': 'scripthash'},
+                  'value': Decimal('0.17399809')}],
+        'vsize': 83,
+        'weight': 332},
+ 'unknown': {}}
 Not implemented yet
