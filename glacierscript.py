@@ -628,6 +628,40 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         self.psbt = bitcoin_cli.json("decodepsbt", self.psbt_raw)
         print("I found psbt of", self.psbt_raw)
         pprint.pprint(self.psbt)
+        self.sanity_check_psbt()
+
+    def sanity_check_psbt(self):
+        """
+        Make sure psbt is as we expect.
+
+        This is perhaps overly defensive, but I want to make sure we
+        don't sign anything we don't completely understand.
+
+        We want to avoid an attack of this nature:
+
+        https://medium.com/shiftcrypto/a-remote-theft-attack-on-trezor-model-t-44127cd7fb5a
+
+        """
+        # Either all inputs must have witness_utxo, or all inputs must
+        # have non_witness_utxo.
+
+        # Every input must have redeem_script and/or
+        # witness_script. Otherwise we can't possibly sign. And one of
+        # them must be of type multisig.
+
+        # Every input must come from same address (so we can assume
+        # it's ours without having to ask user to type in cold storage
+        # address)
+
+        # Do I need to check that inputs[0].non_witness_utxo.txid
+        # matches the tx.vin[0].txid? Or will Bitcoin Core do that for
+        # me?
+
+        # Must have exactly one output whose value equals inputs plus
+        # fee; or must have exactly two outputs, one of which is the
+        # change back to same origin.
+
+
 
 
 ################################################################################################
