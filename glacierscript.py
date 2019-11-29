@@ -395,7 +395,7 @@ class BaseWithdrawalXact:
 
 class ManualWithdrawalXact(BaseWithdrawalXact):
     """
-    Class for constructing a withdrawal transaction.
+    Class for constructing a withdrawal transaction from manually provided UTXOs.
 
     Attributes
     ----------
@@ -586,6 +586,26 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
         if fee > self.MAX_FEE:
             raise GlacierExcessiveFee("Calculated fee ({}) is too high. Must be under {}".format(fee, self.MAX_FEE))
         return fee
+
+
+class PsbtWithdrawalXact(BaseWithdrawalXact):
+    """
+    Class for constructing a withdrawal transaction from PSBT.
+
+    Attributes
+    ----------
+    psbt_raw: <string> base64-encoded input PSBT from user
+    psbt: <object> output of `decodepsbt`
+    """
+
+    def __init__(self, psbt_raw):
+        """
+        Construct transaction based on the provided base64 psbt.
+        """
+        self.psbt_raw = psbt_raw
+        self.psbt = bitcoin_cli.json("decodepsbt", self.psbt_raw)
+        print("I found psbt of", self.psbt_raw)
+        pprint.pprint(self.psbt)
 
 
 ################################################################################################
@@ -957,9 +977,7 @@ class PsbtWithdrawalBuilder(BaseWithdrawalBuilder):
         addresses is a dict of {address: amount} of destinations.
         """
         psbt_raw = self._load_psbt()
-        psbt = bitcoin_cli.json("decodepsbt", psbt_raw)
-        print("I found psbt of", psbt_raw)
-        pprint.pprint(psbt)
+        xact = PsbtWithdrawalXact(psbt_raw)
         raise SystemExit("Not implemented yet")
 
 
