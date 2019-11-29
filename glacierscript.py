@@ -32,6 +32,7 @@ GlacierScript depends on the following command-line applications:
 """
 
 # standard Python libraries
+from abc import ABCMeta, abstractmethod
 import argparse
 from collections import OrderedDict
 import contextlib
@@ -951,8 +952,17 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
 #
 ################################################################################################
 
-class BaseWithdrawalBuilder:
+class BaseWithdrawalBuilder(metaclass=ABCMeta):
     """Interactively construct a withdrawal transaction, either via input TXs or PSBT."""
+
+    @abstractmethod
+    def construct_withdrawal_interactive(self):
+        """
+        Get details from user input and construct *WithdrawalXact object.
+
+        Returns => (xact, addresses) where xact is *WithdrawalXact, and
+        addresses is a dict of {address: amount} of destinations.
+        """
 
     @staticmethod
     def get_keys(xact):
