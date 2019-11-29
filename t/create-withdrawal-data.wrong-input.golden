@@ -13,5 +13,4 @@ Please paste raw transaction #1 (hexadecimal format) with unspent outputs at the
 OR
 input a filename located in the current directory which contains the raw transaction data
 (If the transaction data is over ~4000 characters long, you _must_ use a file.):
-
-Transaction data not found for source address: 2N93du8YobdgsHyu3qgBvSyhGUT52utMNeA
+ERROR: transaction data not found for source address: 2N93du8YobdgsHyu3qgBvSyhGUT52utMNeA. Exiting...
