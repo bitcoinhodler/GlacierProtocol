@@ -417,6 +417,14 @@ def jsonstr(thing):
 class BaseWithdrawalXact:
     """Class representing withdrawal transaction, either via input TXs or PSBT."""
 
+    def __init__(self):
+        """
+        Construct a new withdrawal.
+        """
+        self.keys = []
+        self._teach_address_to_wallet()
+        self._pubkeys = self._find_pubkeys()
+
     def add_key(self, key):
         """
         Use the (WIF format) private key for signing this withdrawal.
@@ -496,11 +504,9 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
         self.redeem_script = redeem_script
         self._seen_txhashes = set()  # only for detecting duplicates
         self._inputs = []
-        self.keys = []
         self._validate_address()
         self.fee_basis_satoshis_per_byte = None
-        self._teach_address_to_wallet()
-        self._pubkeys = self._find_pubkeys()
+        super().__init__()
 
     def create_signed_transaction(self, destinations):
         """
@@ -642,10 +648,10 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         print("I found psbt of", self.psbt_raw)
         pprint.pprint(self.psbt)
 
-        self.keys = []
         self.source_address, self.redeem_script = self._find_source_address()
         self.destinations = self._find_output_addresses()
         self.sanity_check_psbt()
+        super().__init__()
 
     def _find_source_address(self):
         """
