@@ -596,6 +596,9 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
     ----------
     psbt_raw: <string> base64-encoded input PSBT from user
     psbt: <object> output of `decodepsbt`
+    addresses: <OrderedDict> address => amount for each output
+    source_address: <string> our cold storage address
+    keys: <list of strings>: private keys to sign with
     """
 
     def __init__(self, psbt_raw):
@@ -606,7 +609,39 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         self.psbt = bitcoin_cli.json("decodepsbt", self.psbt_raw)
         print("I found psbt of", self.psbt_raw)
         pprint.pprint(self.psbt)
+
+        self.keys = []
+        self.source_address = self._find_source_address()
+        self.addresses = self._find_output_addresses()
         self.sanity_check_psbt()
+
+    def _find_source_address(self):
+        """
+        Analyze PSBT and return our detected address as string.
+        """
+
+    def _find_output_addresses(self):
+        """
+        Analyze PSBT and return OrderedDict of (address:amount) pairs.
+        """
+
+    def unspent_total(self):
+        """
+        Return the total amount of BTC available to spend from the input UTXOs.
+        """
+
+    def create_signed_transaction(self, destinations):
+        """
+        Return a hex string representing a signed bitcoin transaction.
+
+        returns => <string>
+
+        destinations: {address <string>: amount<string>} dictionary
+        mapping destination addresses to amount in BTC
+
+        The destinations param is a holdover from
+        ManualWithdrawalXact, and should match self.addresses.
+        """
 
     def sanity_check_psbt(self):
         """
