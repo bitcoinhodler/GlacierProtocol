@@ -1115,7 +1115,8 @@ class ManualWithdrawalBuilder(BaseWithdrawalBuilder):
 class PsbtWithdrawalBuilder(BaseWithdrawalBuilder):
     """Interactively construct a withdrawal transaction via PSBT."""
 
-    def _load_psbt(self):
+    @staticmethod
+    def _load_psbt():
         """
         Prompt user for filename, load PSBT from that file.
         """
