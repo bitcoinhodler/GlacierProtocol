@@ -711,6 +711,8 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         The destinations param is a holdover from
         ManualWithdrawalXact, and should match self.destinations.
         """
+        if destinations != self.destinations:
+            raise GlacierFatal("unable to change destinations of PSBT")
         prcs = bitcoin_cli.json("walletprocesspsbt", self.psbt_raw)
         if not prcs['complete']:
             raise GlacierFatal("Expected PSBT to be complete by now")
