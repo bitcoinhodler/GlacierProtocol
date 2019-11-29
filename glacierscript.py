@@ -551,14 +551,12 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
         # to generate a signature
         xact = bitcoin_cli.json("decoderawtransaction", hex_tx)
         if xact['hash'] in self._seen_txhashes:
-            print("ERROR: duplicated input transactions. Exiting...")
-            sys.exit()
+            raise GlacierFatal("duplicated input transactions")
         self._seen_txhashes.add(xact['hash'])
 
         utxos = self._get_utxos(xact)
         if not utxos:
-            print("ERROR: transaction data not found for source address: {}. Exiting...".format(self.source_address))
-            sys.exit()
+            raise GlacierFatal("transaction data not found for source address: {}".format(self.source_address))
 
         txid = xact["txid"]
         for utxo in utxos:
@@ -579,15 +577,13 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
         """
         decoded_script = bitcoin_cli.json("decodescript", self.redeem_script)
         if decoded_script["type"] != "multisig":
-            print("ERROR: Unrecognized redemption script. Doublecheck for typos. Exiting...")
-            sys.exit()
+            raise GlacierFatal("Unrecognized redemption script. Doublecheck for typos")
         ok_addresses = [decoded_script["p2sh"]]
         if "segwit" in decoded_script:
             ok_addresses.append(decoded_script["segwit"]["p2sh-segwit"])
             ok_addresses.extend(decoded_script["segwit"]["addresses"])
         if self.source_address not in ok_addresses:
-            print("ERROR: Redemption script does not match cold storage address. Doublecheck for typos. Exiting...")
-            sys.exit()
+            raise GlacierFatal("Redemption script does not match cold storage address. Doublecheck for typos")
 
     def _get_utxos(self, xact):
         """
@@ -717,8 +713,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         """
         prcs = bitcoin_cli.json("walletprocesspsbt", self.psbt_raw)
         if not prcs['complete']:
-            print("ERROR: Expected PSBT to be complete by now. Exiting...")
-            sys.exit()
+            raise GlacierFatal("Expected PSBT to be complete by now")
         final = bitcoin_cli.json('finalizepsbt', prcs['psbt'])
         return {'hex': final['hex'], 'complete': True}
 
@@ -874,8 +869,7 @@ def safety_checklist():
     for check in checks:
         answer = input(check + " (y/n)?")
         if answer.upper() != "Y":
-            print("ERROR: safety check failed. Exiting...")
-            sys.exit()
+            raise GlacierFatal("safety check failed")
 
 
 ################################################################################################
@@ -1132,8 +1126,7 @@ class ManualWithdrawalBuilder(BaseWithdrawalBuilder):
         fee = get_fee_interactive(xact, addresses)
         # Got this far
         if fee > input_amount:
-            print("ERROR: Your fee is greater than the sum of your unspent transactions.  Try using larger unspent transactions. Exiting...")
-            sys.exit()
+            raise GlacierFatal("Your fee is greater than the sum of your unspent transactions.  Try using larger unspent transactions")
 
         print("\nPlease enter the decimal amount (in bitcoin) to withdraw to the destination address.")
         print("\nExample: For 2.3 bitcoins, enter \"2.3\".")
@@ -1147,8 +1140,7 @@ class ManualWithdrawalBuilder(BaseWithdrawalBuilder):
             withdrawal_amount = Decimal(withdrawal_amount).quantize(SATOSHI_PLACES)
 
         if fee + withdrawal_amount > input_amount:
-            print("ERROR: fee + withdrawal amount greater than total amount available from unspent transactions. Exiting...")
-            sys.exit()
+            raise GlacierFatal("fee + withdrawal amount greater than total amount available from unspent transactions")
 
         change_amount = input_amount - withdrawal_amount - fee
 
@@ -1269,8 +1261,7 @@ def main():
     args = parser.parse_args()
     if not args.program:
         parser.print_usage()
-        print("ERROR: you must specify a subcommand. Exiting...")
-        sys.exit()
+        raise GlacierFatal("you must specify a subcommand")
 
     bitcoin_cli.verbose_mode = args.verbose
 
