@@ -44,4 +44,6 @@ I found psbt of cHNidP8BAFMCAAAAASX9+/r5FLgd8fsd2thLtfeNA0Ou4+bIcigceMcydMqXAAAA
  'unknown': {}}
 Found source address 2MzqiaZzpLT2SSBfsFqqo3FpZsP8g6WTvyC
 Found destinations OrderedDict([('2NCthaDAsJUJ2q5s1L4HhexUGMJ5t16vqer', Decimal('0.17399809'))])
-Not implemented yet
+
+How many private keys will you be signing this transaction with? 
+#: Key #1: Key #2: Not implemented yet

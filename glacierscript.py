@@ -1164,7 +1164,7 @@ class PsbtWithdrawalBuilder(BaseWithdrawalBuilder):
         xact = PsbtWithdrawalXact(psbt_raw)
         print("Found source address", xact.source_address)
         print("Found destinations", xact.destinations)
-        # Still need to ask user for keys.
+        self.get_keys(xact)
         raise SystemExit("Not implemented yet")
 
 
