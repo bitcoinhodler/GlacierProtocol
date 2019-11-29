@@ -9,7 +9,7 @@ set -e
 # 4. Electrum native p2wpkh with no change
 
 
-$GLACIERSCRIPT --regtest=$1 create-withdrawal-data << INPUT
+$GLACIERSCRIPT --regtest=$1 create-withdrawal-data << INPUT 2>&1
 y
 y
 y

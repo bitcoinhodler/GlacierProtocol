@@ -4,7 +4,7 @@ set -e
 # Enter No on the final confirmation, starting over the withdrawal
 # process. Enter a new destination address the second time through.
 
-$GLACIERSCRIPT --regtest=$1 create-withdrawal-data << INPUT
+$GLACIERSCRIPT --regtest=$1 create-withdrawal-data << INPUT 2>&1
 y
 y
 y
