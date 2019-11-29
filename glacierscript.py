@@ -653,18 +653,29 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         self.sanity_check_psbt()
         super().__init__()
 
+    def _input_addr_and_amount(self, index):
+        """
+        Return (address, amount) for input at {index}.
+        """
+        inp = self.psbt['inputs'][index]
+        if 'witness_utxo' in inp:
+            addr = inp['witness_utxo']['scriptPubKey']['address']
+            amount = inp['witness_utxo']['amount']
+        else:
+            inp0_n = self.psbt['tx']['vin'][index]['vout']
+            vout = inp['non_witness_utxo']['vout'][inp0_n]
+            addr = vout['scriptPubKey']['addresses'][0]
+            amount = vout['value']
+        return addr, amount
+
     def _find_source_address(self):
         """
-        Analyze PSBT and return our detected address as string.
+        Analyze PSBT and return our detected address and redeem script.
         """
         inp0 = self.psbt['inputs'][0]
         script = inp0['witness_script']['hex'] if 'witness_script' in inp0 \
             else inp0['redeem_script']['hex']
-        if 'witness_utxo' in inp0:
-            myaddr = inp0['witness_utxo']['scriptPubKey']['address']
-        else:
-            inp0_n = self.psbt['tx']['vin'][0]['vout']
-            myaddr = inp0['non_witness_utxo']['vout'][inp0_n]['scriptPubKey']['addresses'][0]
+        myaddr, _ = self._input_addr_and_amount(0)
         return myaddr, script
 
     def _find_output_addresses(self):
