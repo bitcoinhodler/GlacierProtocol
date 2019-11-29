@@ -39,6 +39,7 @@ from decimal import Decimal
 from hashlib import sha256, md5
 import json
 import os
+import pprint
 import subprocess
 import sys
 import time
@@ -955,8 +956,10 @@ class PsbtWithdrawalBuilder(BaseWithdrawalBuilder):
         Returns => (xact, addresses) where xact is WithdrawalXact, and
         addresses is a dict of {address: amount} of destinations.
         """
-        psbt = self._load_psbt()
-        print("I found psbt of", psbt)
+        psbt_raw = self._load_psbt()
+        psbt = bitcoin_cli.json("decodepsbt", psbt_raw)
+        print("I found psbt of", psbt_raw)
+        pprint.pprint(psbt)
         raise SystemExit("Not implemented yet")
 
 
