@@ -417,6 +417,17 @@ def jsonstr(thing):
 class BaseWithdrawalXact:
     """Class representing withdrawal transaction, either via input TXs or PSBT."""
 
+    def add_key(self, key):
+        """
+        Use the (WIF format) private key for signing this withdrawal.
+        """
+        self.keys.append(key)
+        # Teach the wallet about this key
+        pubkey = get_pubkey_for_wif_privkey(key)
+        if pubkey not in self._pubkeys:
+            print("ERROR: that key does not belong to this source address, exiting...")
+            sys.exit()
+
 
 class ManualWithdrawalXact(BaseWithdrawalXact):
     """
@@ -444,17 +455,6 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
         self._teach_address_to_wallet()
         self._pubkeys = self._find_pubkeys()
         self.fee_basis_satoshis_per_byte = None
-
-    def add_key(self, key):
-        """
-        Use the (WIF format) private key for signing this withdrawal.
-        """
-        self.keys.append(key)
-        # Teach the wallet about this key
-        pubkey = get_pubkey_for_wif_privkey(key)
-        if pubkey not in self._pubkeys:
-            print("ERROR: that key does not belong to this source address, exiting...")
-            sys.exit()
 
     def create_signed_transaction(self, destinations):
         """
