@@ -1140,8 +1140,9 @@ class PsbtWithdrawalBuilder(BaseWithdrawalBuilder):
         """
         psbt_raw = self._load_psbt()
         xact = PsbtWithdrawalXact(psbt_raw)
-        print("Found source address", xact.source_address)
-        print("Found destinations", xact.destinations)
+        self.print_tx(xact, xact.destinations)
+        if not yes_no_interactive():
+            raise GlacierFatal("aborting")
         self.get_keys(xact)
         return (xact, xact.destinations)
 
