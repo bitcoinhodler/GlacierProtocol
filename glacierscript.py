@@ -398,11 +398,14 @@ def jsonstr(thing):
 class BaseWithdrawalXact:
     """Class representing withdrawal transaction, either via input TXs or PSBT."""
 
-    def __init__(self):
+    def __init__(self, source_address, redeem_script):
         """
         Construct a new withdrawal.
         """
+        self.source_address = source_address
+        self.redeem_script = redeem_script
         self.keys = []
+        self._validate_address()
         self._teach_address_to_wallet()
         self._pubkeys = self._find_pubkeys()
 
@@ -415,6 +418,23 @@ class BaseWithdrawalXact:
         pubkey = get_pubkey_for_wif_privkey(key)
         if pubkey not in self._pubkeys:
             raise GlacierFatal("that key does not belong to this source address")
+
+    def _validate_address(self):
+        """
+        Validate the supplied cold storage address and redemption script.
+
+        Given our source cold storage address and redemption script,
+        make sure the redeem script is valid and matches the address.
+        """
+        decoded_script = bitcoin_cli.json("decodescript", self.redeem_script)
+        if decoded_script["type"] != "multisig":
+            raise GlacierFatal("Unrecognized redemption script. Doublecheck for typos")
+        ok_addresses = [decoded_script["p2sh"]]
+        if "segwit" in decoded_script:
+            ok_addresses.append(decoded_script["segwit"]["p2sh-segwit"])
+            ok_addresses.extend(decoded_script["segwit"]["addresses"])
+        if self.source_address not in ok_addresses:
+            raise GlacierFatal("Redemption script does not match cold storage address. Doublecheck for typos")
 
     def _teach_address_to_wallet(self):
         """
@@ -480,13 +500,10 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
         """
         Construct a new withdrawal from the specified source address.
         """
-        self.source_address = source_address
-        self.redeem_script = redeem_script
+        super().__init__(source_address, redeem_script)
         self._seen_txhashes = set()  # only for detecting duplicates
         self._inputs = []
-        self._validate_address()
         self.fee_basis_satoshis_per_byte = None
-        super().__init__()
 
     def create_signed_transaction(self, destinations):
         """
@@ -545,23 +562,6 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
                 ("scriptPubKey", utxo["scriptPubKey"]["hex"]),
                 ("redeemScript", self.redeem_script),
             ]))
-
-    def _validate_address(self):
-        """
-        Validate the supplied cold storage address and redemption script.
-
-        Given our source cold storage address and redemption script,
-        make sure the redeem script is valid and matches the address.
-        """
-        decoded_script = bitcoin_cli.json("decodescript", self.redeem_script)
-        if decoded_script["type"] != "multisig":
-            raise GlacierFatal("Unrecognized redemption script. Doublecheck for typos")
-        ok_addresses = [decoded_script["p2sh"]]
-        if "segwit" in decoded_script:
-            ok_addresses.append(decoded_script["segwit"]["p2sh-segwit"])
-            ok_addresses.extend(decoded_script["segwit"]["addresses"])
-        if self.source_address not in ok_addresses:
-            raise GlacierFatal("Redemption script does not match cold storage address. Doublecheck for typos")
 
     def _get_utxos(self, xact):
         """
@@ -627,9 +627,9 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         pprint.pprint(self.psbt)
 
         self.sanity_check_psbt()
-        self.source_address, self.redeem_script = self._find_source_address()
+        source_address, redeem_script = self._find_source_address()
+        super().__init__(source_address, redeem_script)
         self.destinations = self._find_output_addresses()
-        super().__init__()
 
     def _input_addr_and_amount(self, index):
         """
