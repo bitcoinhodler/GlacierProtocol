@@ -966,6 +966,19 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
             key = input("Key #{0}: ".format(key_idx + 1))
             xact.add_key(key)
 
+    @staticmethod
+    def print_tx(xact, addresses):
+        """
+        Print transaction details in human-readable format.
+        """
+        print("{0} BTC in unspent supplied transactions".format(xact.unspent_total()))
+        for address, value in addresses.items():
+            if address == xact.source_address:
+                print("{0} BTC going back to cold storage address {1}".format(value, address))
+            else:
+                print("{0} BTC going to destination address {1}".format(value, address))
+        print("Fee amount: {0}".format(xact.unspent_total() - sum(addresses.values())))
+
     def withdraw_interactive(self):
         """
         Construct and sign a transaction to withdraw funds from cold storage.
@@ -983,14 +996,7 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
             # check data
             print("\nIs this data correct?")
             print("*** WARNING: Incorrect data may lead to loss of funds ***\n")
-
-            print("{0} BTC in unspent supplied transactions".format(xact.unspent_total()))
-            for address, value in addresses.items():
-                if address == xact.source_address:
-                    print("{0} BTC going back to cold storage address {1}".format(value, address))
-                else:
-                    print("{0} BTC going to destination address {1}".format(value, address))
-            print("Fee amount: {0}".format(xact.unspent_total() - sum(addresses.values())))
+            self.print_tx(xact, addresses)
             print("\nSigning with private keys: ")
             for key in xact.keys:
                 print("{}".format(key))
