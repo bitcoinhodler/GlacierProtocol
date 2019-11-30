@@ -39,7 +39,7 @@ Amount to send to n4S1Q6S9b5dq72ttpnFZXwaPCs2Z8ojwPR (leave blank to withdraw al
 Is this data correct?
 *** WARNING: Incorrect data may lead to loss of funds ***
 
-0.00050000 BTC in unspent supplied transactions
+0.00050000 BTC in unspent inputs from cold storage address 2N42986nuqGfmbRUuojYCboE7EE9VLmYai2
 0.00040660 BTC going back to cold storage address 2N42986nuqGfmbRUuojYCboE7EE9VLmYai2
 0.00004000 BTC going to destination address n4S1Q6S9b5dq72ttpnFZXwaPCs2Z8ojwPR
 Fee amount: 0.00005340

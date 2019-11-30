@@ -42,7 +42,7 @@ Amount to send to mp1KQzUoDf9div7jjgon3UuqLThMSo3tmF (leave blank to withdraw al
 Is this data correct?
 *** WARNING: Incorrect data may lead to loss of funds ***
 
-0.00005000 BTC in unspent supplied transactions
+0.00005000 BTC in unspent inputs from cold storage address 2N238gpicqPFfMz8sUN7pqqaJnYkgsC1WmL
 0.00002380 BTC going back to cold storage address 2N238gpicqPFfMz8sUN7pqqaJnYkgsC1WmL
 0.00001000 BTC going to destination address mp1KQzUoDf9div7jjgon3UuqLThMSo3tmF
 Fee amount: 0.00001620

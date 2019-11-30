@@ -36,7 +36,7 @@ Amount to send to myP4xdJNwAW9iMakvCjnozg814ewgn8apd (leave blank to withdraw al
 Is this data correct?
 *** WARNING: Incorrect data may lead to loss of funds ***
 
-0.10000000 BTC in unspent supplied transactions
+0.10000000 BTC in unspent inputs from cold storage address 2N93du8YobdgsHyu3qgBvSyhGUT52utMNeA
 0.06997760 BTC going back to cold storage address 2N93du8YobdgsHyu3qgBvSyhGUT52utMNeA
 0.03000000 BTC going to destination address myP4xdJNwAW9iMakvCjnozg814ewgn8apd
 Fee amount: 0.00002240
