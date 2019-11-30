@@ -971,7 +971,8 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
         """
         Print transaction details in human-readable format.
         """
-        print("{0} BTC in unspent supplied transactions".format(xact.unspent_total()))
+        print("{0} BTC in unspent inputs from cold storage address {1}".format(
+            xact.unspent_total(), xact.source_address))
         for address, value in addresses.items():
             if address == xact.source_address:
                 print("{0} BTC going back to cold storage address {1}".format(value, address))

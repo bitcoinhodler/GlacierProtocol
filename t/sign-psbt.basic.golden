@@ -50,7 +50,7 @@ How many private keys will you be signing this transaction with?
 Is this data correct?
 *** WARNING: Incorrect data may lead to loss of funds ***
 
-0.17400000 BTC in unspent supplied transactions
+0.17400000 BTC in unspent inputs from cold storage address 2MzqiaZzpLT2SSBfsFqqo3FpZsP8g6WTvyC
 0.17399809 BTC going to destination address 2NCthaDAsJUJ2q5s1L4HhexUGMJ5t16vqer
 Fee amount: 0.00000191
 
