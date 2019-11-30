@@ -777,10 +777,6 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         # matches the tx.vin[0].txid? Or will Bitcoin Core do that for
         # me?
 
-        # Must have exactly one output whose value equals inputs plus
-        # fee; or must have exactly two outputs, one of which is the
-        # change back to same origin.
-
 
 ################################################################################################
 #
