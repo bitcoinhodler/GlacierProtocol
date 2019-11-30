@@ -793,18 +793,13 @@ def yes_no_interactive():
     """
     Prompt user for a yes/no confirmation and repeat until valid answer is received.
     """
-    def confirm_prompt():
-        return input("Confirm? (y/n): ")
-
-    confirm = confirm_prompt()
-
     while True:
+        confirm = input("Confirm? (y/n): ")
         if confirm.upper() == "Y":
             return True
         if confirm.upper() == "N":
             return False
         print("You must enter y (for yes) or n (for no).")
-        confirm = confirm_prompt()
 
 
 def safety_checklist():
