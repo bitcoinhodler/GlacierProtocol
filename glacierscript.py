@@ -693,7 +693,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         Return the total amount of BTC available to spend from the input UTXOs.
         """
         inamts = []
-        for index in range(len(self.psbt['inputs'])):
+        for index, _ in enumerate(self.psbt['inputs']):
             _, amount = self._input_addr_and_amount(index)
             inamts.append(amount)
         return sum(inamts)
