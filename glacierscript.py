@@ -751,6 +751,24 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
             if myaddr != thisaddr:
                 raise GlacierFatal("expected all inputs to be from same address")
 
+        # Die if anything unusual or unrecognized. We don't want to
+        # sign something that we don't fully understand.
+        allowed_global_keys = ['fee', 'inputs', 'outputs', 'tx', 'unknown']
+        for key in self.psbt:
+            if key not in allowed_global_keys:
+                raise GlacierFatal("Unknown PSBT key '{}'".format(key))
+
+        if 'unknown' in self.psbt and self.psbt['unknown']:
+            raise GlacierFatal("Unknown global fields in PSBT: {}".format(
+                repr(self.psbt['unknown'])))
+
+        allowed_input_keys = ['redeem_script', 'witness_script',
+                              'witness_utxo', 'non_witness_utxo']
+        for inp in self.psbt['inputs']:
+            for key in inp:
+                if key not in allowed_input_keys:
+                    raise GlacierFatal("Unknown PSBT input key '{}'".format(key))
+
         # Do I need to check that inputs[0].non_witness_utxo.txid
         # matches the tx.vin[0].txid? Or will Bitcoin Core do that for
         # me?
