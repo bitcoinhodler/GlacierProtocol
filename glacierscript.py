@@ -1009,8 +1009,6 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
 
         signed_tx = xact.create_signed_transaction(addresses)
 
-        print("\nSufficient private keys to execute transaction?")
-        print(signed_tx["complete"])
         if not signed_tx["complete"]:
             raise GlacierFatal("not enough private keys to complete transaction")
 
