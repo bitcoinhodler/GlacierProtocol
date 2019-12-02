@@ -48,7 +48,4 @@ Signing with private keys:
 Confirm? (y/n): 
 Calculating transaction...
 
-
-Sufficient private keys to execute transaction?
-False
 ERROR: not enough private keys to complete transaction. Exiting...
