@@ -607,7 +607,7 @@ def convert_one_file(filename):
     runfile.save()
 
 
-def convert(args):
+def convert_testnet_to_regtest(args):
     """
     Parse a *.run test input, convert it from testnet to regtest (if needed).
 
@@ -702,7 +702,7 @@ def main():
         hand-creating any new tests via testnet.
         """),
         formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser_convert.set_defaults(program=convert)
+    parser_convert.set_defaults(program=convert_testnet_to_regtest)
     parser_convert.add_argument('runfile', nargs='+')
 
     parser_stop = subparsers.add_parser(
