@@ -1087,6 +1087,8 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
 
         print("\nSufficient private keys to execute transaction?")
         print(signed_tx["complete"])
+        if not signed_tx["complete"]:
+            raise GlacierFatal("not enough private keys to complete transaction")
 
         print("\nRaw signed transaction (hex):")
         print(signed_tx["hex"])
