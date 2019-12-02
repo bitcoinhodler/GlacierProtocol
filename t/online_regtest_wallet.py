@@ -85,7 +85,7 @@ def confirm_txs_in_runfile(txdata):
     prf = ParsedRunfile(runfile)
     if set(txdata['txs']) != set(prf.input_txs):
         print("In file {}, found unexpected input transactions.".format(runfile))
-        print("If this file has deliberately changed, run `{} convert {}`".format(__file__, runfile))
+        print("If this file has deliberately changed, run `{} convert-testnet-to-regtest {}`".format(__file__, runfile))
         raise SystemExit("Error: Unexpected transaction in *.run file")
 
 
@@ -370,7 +370,7 @@ class TxFile():
     given *.run file. The tx.json file is effectively append-only:
     except for marking old transactions as obsolete, the only changes
     we make are to append new transactions to the end of the list. (By
-    the `convert` subcommand.)
+    the `convert-testnet-to-regtest` subcommand.)
 
     """
 
@@ -687,7 +687,7 @@ def main():
     parser_submit.add_argument('goldenfile')
 
     parser_convert = subparsers.add_parser(
-        'convert',
+        'convert-testnet-to-regtest',
         help="Convert a test's *.run from testnet to regtest",
         description=textwrap.dedent("""\
         Parse one or more *.run files, which must be withdrawal tests,
