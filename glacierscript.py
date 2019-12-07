@@ -40,7 +40,6 @@ from decimal import Decimal
 from hashlib import sha256, md5
 import json
 import os
-import pprint
 import subprocess
 import sys
 import time
@@ -623,9 +622,6 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         """
         self.psbt_raw = psbt_raw
         self.psbt = bitcoin_cli.json("decodepsbt", self.psbt_raw)
-        print("I found psbt of", self.psbt_raw)
-        pprint.pprint(self.psbt)
-
         self.sanity_check_psbt()
         source_address, redeem_script = self._find_source_address()
         super().__init__(source_address, redeem_script)
