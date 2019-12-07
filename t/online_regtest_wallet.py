@@ -53,12 +53,19 @@ def start(args):
     # Load all transactions in tx.json and reconstruct those in our blockchain
     txfile = TxFile()
     for txdata in txfile:
-        for hextx in txdata['txs']:
-            recreate_tx(txdata, hextx)
-        if args.program == start:  # noqa:pylint:comparison-with-callable
-            # If we're running `convert` then we allow runfile to differ, since
-            # otherwise we wouldn't be able to change it and then re-convert it
-            confirm_txs_in_runfile(txdata)
+        if 'txs' in txdata:
+            if 'psbt' in txdata:
+                raise RuntimeError("Didn't expect both txs and psbt in tx.json for " + txdata['file'])
+            for hextx in txdata['txs']:
+                recreate_tx(txdata, hextx)
+            if args.program == start:  # noqa:pylint:comparison-with-callable
+                # If we're running `convert` then we allow runfile to differ, since
+                # otherwise we wouldn't be able to change it and then re-convert it
+                confirm_txs_in_runfile(txdata)
+        elif 'psbt' in txdata:
+            recreate_psbt(txdata)
+        else:
+            raise RuntimeError("Expected either txs or psbt in tx.json for " + txdata['file'])
 
 
 def recreate_tx(txdata, hextx):
@@ -78,6 +85,19 @@ def recreate_tx(txdata, hextx):
         print("Actual transaction constructed:", file=sys.stderr)
         pprint.pprint(actual, stream=sys.stderr)
         raise RuntimeError("Did not create expected transaction for " + txdata['file'])
+
+
+def recreate_psbt(txdata):
+    """
+    Import address from PSBT, recreate its inputs, recreate PSBT.
+
+    Make sure it matches what we got last time we started.
+
+    NOT FULLY IMPLEMENTED YET...only importing the address for now.
+    """
+    # Obviously we aren't creating a withdrawal, but constructing
+    # this object does all the heavy lifting of decoding & importing:
+    xact = glacierscript.PsbtWithdrawalXact(txdata['psbt'])
 
 
 def confirm_txs_in_runfile(txdata):
