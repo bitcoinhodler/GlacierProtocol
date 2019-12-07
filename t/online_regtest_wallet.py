@@ -126,7 +126,7 @@ def mine_block(count=1):
     bitcoin_cli.json("generatetoaddress", "{}".format(count), adrs)
 
 
-def create_input2(addresstype, amount):
+def create_input2(amount, *, addresstype=None):
     """
     Create an input for an input (input^2).
 
@@ -198,7 +198,7 @@ def build_one_input2(vin, amount_btc):
         form = next(f for f in scriptsigs if re.fullmatch(scriptsigs[f], vin_sig))
     except StopIteration as exc:
         raise NotImplementedError("unrecognized scriptsig in vin: {}".format(vin)) from exc
-    return create_input2(form, amount_btc)
+    return create_input2(amount_btc, addresstype=form)
 
 
 def build_inputs2(like_tx):
