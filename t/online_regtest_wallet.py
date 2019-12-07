@@ -54,21 +54,30 @@ def start(args):
     txfile = TxFile()
     for txdata in txfile:
         for hextx in txdata['txs']:
-            xact = build_input_xact(txdata['address'], hextx)
-            # We should always create the same transactions, since we start
-            # with a seeded wallet and tx.json is append-only.
-            if xact != hextx:
-                actual = bitcoin_cli.json("decoderawtransaction", xact)
-                expected = bitcoin_cli.json("decoderawtransaction", hextx)
-                print("Expected transaction:", file=sys.stderr)
-                pprint.pprint(expected, stream=sys.stderr)
-                print("Actual transaction constructed:", file=sys.stderr)
-                pprint.pprint(actual, stream=sys.stderr)
-                raise RuntimeError("Did not create expected transaction for " + txdata['file'])
+            recreate_tx(txdata, hextx)
         if args.program == start:  # noqa:pylint:comparison-with-callable
             # If we're running `convert` then we allow runfile to differ, since
             # otherwise we wouldn't be able to change it and then re-convert it
             confirm_txs_in_runfile(txdata)
+
+
+def recreate_tx(txdata, hextx):
+    """
+    Recreate one transaction from tx.json into our regtest blockchain.
+
+    Make sure it matches what we got last time we started.
+    """
+    xact = build_input_xact(txdata['address'], hextx)
+    # We should always create the same transactions, since we start
+    # with a seeded wallet and tx.json is append-only.
+    if xact != hextx:
+        actual = bitcoin_cli.json("decoderawtransaction", xact)
+        expected = bitcoin_cli.json("decoderawtransaction", hextx)
+        print("Expected transaction:", file=sys.stderr)
+        pprint.pprint(expected, stream=sys.stderr)
+        print("Actual transaction constructed:", file=sys.stderr)
+        pprint.pprint(actual, stream=sys.stderr)
+        raise RuntimeError("Did not create expected transaction for " + txdata['file'])
 
 
 def confirm_txs_in_runfile(txdata):
