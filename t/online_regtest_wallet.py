@@ -92,12 +92,65 @@ def recreate_psbt(txdata):
     Import address from PSBT, recreate its inputs, recreate PSBT.
 
     Make sure it matches what we got last time we started.
-
-    NOT FULLY IMPLEMENTED YET...only importing the address for now.
     """
     # Obviously we aren't creating a withdrawal, but constructing
     # this object does all the heavy lifting of decoding & importing:
     xact = glacierscript.PsbtWithdrawalXact(txdata['psbt'])
+    psbt = xact.psbt
+    newinputs = []  # for the 'inputs' argument to `walletcreatefundedpsbt`
+    for index, inp in enumerate(psbt['inputs']):
+        if 'witness_utxo' in inp:
+            newinputs.append(recreate_witness_utxo(psbt, index))
+        else:
+            raise NotImplementedError()
+    # Now we have newinputs for `walletcreatefundedpsbt`
+    outputs = [{vout['scriptPubKey']['addresses'][0]: vout['value']}
+               for vout in psbt['tx']['vout']]
+    options = {
+        'lockUnspents': True,  # so no other PSBT uses the same inputs
+        'feeRate': Decimal("0.00001000"),  # minimal, so it doesn't add another input & change output
+        # HACK replaceable? if original PSBT is?
+    }
+    # I want `walletcreatefundedpsbt` instead of `createpsbt` so I can lock
+    # unspents, and so it will fill input fields in the PSBT.
+    results = bitcoin_cli.json("walletcreatefundedpsbt",
+                               glacierscript.jsonstr(newinputs),
+                               glacierscript.jsonstr(outputs),
+                               '0',  # locktime
+                               glacierscript.jsonstr(options))
+    if results['changepos'] != -1:
+        raise RuntimeError("Somehow walletcreatefundedpsbt added a change output for " + txdata['file'])
+    newpsbt = bitcoin_cli.json("decodepsbt", results['psbt'])
+    if len(newpsbt['inputs']) != len(psbt['inputs']):
+        raise RuntimeError("Somehow walletcreatefundedpsbt added an extra input for " + txdata['file'])
+    if results['psbt'] != txdata['psbt']:
+        actual = bitcoin_cli.json("decodepsbt", results['psbt'])
+        expected = bitcoin_cli.json("decodepsbt", txdata['psbt'])
+        print("Expected PSBT:", file=sys.stderr)
+        pprint.pprint(expected, stream=sys.stderr)
+        print("Actual PSBT constructed:", file=sys.stderr)
+        print(results['psbt'], file=sys.stderr)
+        pprint.pprint(actual, stream=sys.stderr)
+        raise RuntimeError("Did not create expected PSBT for " + txdata['file'])
+
+
+def recreate_witness_utxo(psbt, index):
+    """
+    Create a UTXO that looks just like psbt input #index.
+
+    Returns a dict suitable for the inputs list of
+    `walletcreatefundedpsbt`.
+    """
+    utxo = psbt['inputs'][index]['witness_utxo']
+    dest = utxo['scriptPubKey']['address']
+    amount = utxo['amount']
+    # Input suitable for `createrawtransaction`
+    crtinp = create_input2(amount, dest=dest)
+
+    # Is sequence always 4294967293 (0xfffffffd)?
+    sequence = psbt['tx']['vin'][index]['sequence']
+    crtinp['sequence'] = sequence
+    return crtinp
 
 
 def confirm_txs_in_runfile(txdata):
@@ -126,7 +179,7 @@ def mine_block(count=1):
     bitcoin_cli.json("generatetoaddress", "{}".format(count), adrs)
 
 
-def create_input2(amount, *, addresstype=None):
+def create_input2(amount, *, addresstype='bech32', dest=None):
     """
     Create an input for an input (input^2).
 
@@ -149,7 +202,7 @@ def create_input2(amount, *, addresstype=None):
     inputtx = next(unspent for unspent in unspents
                    if unspent["amount"] >= amount + MIN_FEE and unspent["spendable"])
     change_adrs = bitcoin_cli.checkoutput("getnewaddress", '', addresstype).strip()
-    dest_adrs = bitcoin_cli.checkoutput("getnewaddress", '', addresstype).strip()
+    dest_adrs = dest or bitcoin_cli.checkoutput("getnewaddress", '', addresstype).strip()
     outputs = [
         {dest_adrs: amount}
     ]
