@@ -524,9 +524,10 @@ class ParsedRunfile(metaclass=ABCMeta):
     modification. It can then write out the regenerated file.
     """
 
-    def __init__(self, filename):
+    def __init__(self, subcommand, filename):
         """Open file and parse it."""
         self.modified = False
+        self.subcommand = subcommand
         self.filename = filename
         with open(filename, 'rt') as infile:
             contents = infile.read()
@@ -541,7 +542,7 @@ class ParsedRunfile(metaclass=ABCMeta):
         ]
         for prefix, klass in subclass_map:
             if prefix in filename:
-                return klass(filename)
+                return klass(prefix, filename)
         raise RuntimeError("Unrecognized test input filename: " + filename)
 
     @staticmethod
@@ -582,11 +583,11 @@ class ParsedRunfile(metaclass=ABCMeta):
 class CreateWithdrawalDataRunfile(ParsedRunfile):
     """Version of ParsedRunfile to handle create-withdrawal-data tests."""
 
-    def __init__(self, filename):
+    def __init__(self, subcommand, filename):
         """Create new instance."""
         self._input_txs = []
         self._input_tx_files = []
-        super().__init__(filename)
+        super().__init__(subcommand, filename)
 
     @property
     def input_txs(self):
@@ -618,7 +619,7 @@ class CreateWithdrawalDataRunfile(ParsedRunfile):
             testmode = 'regtest'
             self.modified = True
         cmdline_and_confirm = parser.send(r"""
-                            =\$1 \s create-withdrawal-data \s \<\< \s INPUT .*\n  # rest of cmdline
+                            =\$1 \s""" + self.subcommand + r"""\s \<\< \s INPUT .*\n  # rest of cmdline
                             (y\n){6}       # safety confirmations
                         """)
         self.cold_storage_address = parser.send(r"""
@@ -712,11 +713,11 @@ class CreateWithdrawalDataRunfile(ParsedRunfile):
 class SignPsbtRunfile(ParsedRunfile):
     """Version of ParsedRunfile to handle sign-psbt tests."""
 
-    def __init__(self, filename):
+    def __init__(self, subcommand, filename):
         """Create new instance."""
         self._psbt = None
         self._psbt_files = []
-        super().__init__(filename)
+        super().__init__(subcommand, filename)
 
     def parse_lines(self, contents):
         """Go through contents (one giant string) to find what we need."""
