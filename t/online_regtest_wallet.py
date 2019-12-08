@@ -537,6 +537,7 @@ class ParsedRunfile(metaclass=ABCMeta):
         """Create an instance of the proper subclass, based on filename."""
         subclass_map = [
             ('create-withdrawal-data', CreateWithdrawalDataRunfile),
+            ('sign-psbt', SignPsbtRunfile),
         ]
         for prefix, klass in subclass_map:
             if prefix in filename:
@@ -706,6 +707,20 @@ class CreateWithdrawalDataRunfile(ParsedRunfile):
             self.input_txs = [converter[hextx] for hextx in self.input_txs]
             txjson.put(self.filename, self.cold_storage_address, newtx)
         self.save()
+
+
+class SignPsbtRunfile(ParsedRunfile):
+    """Version of ParsedRunfile to handle sign-psbt tests."""
+
+    def __init__(self, filename):
+        """Create new instance."""
+        self._psbt = None
+        self._psbt_files = []
+        super().__init__(filename)
+
+    def parse_lines(self, contents):
+        """Go through contents (one giant string) to find what we need."""
+        raise NotImplementedError
 
 
 def convert_one_file(filename):
