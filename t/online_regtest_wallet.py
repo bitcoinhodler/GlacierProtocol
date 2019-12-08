@@ -549,17 +549,6 @@ class ParsedRunfile():
                 return klass(filename)
         raise RuntimeError("Unrecognized test input filename: " + filename)
 
-    @property
-    def input_txs(self):
-        """Return the list of input transactions used by this runfile."""
-        return self._input_txs
-
-    @input_txs.setter
-    def input_txs(self, value):
-        """Assign a new list of input transactions to replace the originals."""
-        self.modified = True
-        self._input_txs = value
-
     @staticmethod
     def parser_coroutine(contents):
         """
@@ -577,6 +566,29 @@ class ParsedRunfile():
                 raise ParseError("did not match expected regexp")
             contents = contents[match.end():]
         yield match.group()  # Last group...shouldn't ever return
+
+    def _convert_tb1_to_bcrt1(self, addr):
+        """
+        Convert given address, if bech32, from testnet to regtest.
+
+        (Old-style non-segwit addresses are identical on testnet vs regtest.)
+        """
+        if addr.startswith('tb1'):
+            self.modified = True
+            witver, witprog = segwit_addr.decode('tb', addr)
+            return segwit_addr.encode('bcrt', witver, witprog)
+        return addr
+
+    @property
+    def input_txs(self):
+        """Return the list of input transactions used by this runfile."""
+        return self._input_txs
+
+    @input_txs.setter
+    def input_txs(self, value):
+        """Assign a new list of input transactions to replace the originals."""
+        self.modified = True
+        self._input_txs = value
 
     def parse_lines(self, contents):
         """Go through contents (one giant string) to find what we need."""
@@ -642,18 +654,6 @@ class ParsedRunfile():
             + str(input_tx_count) \
             + "\n"
         self.back_matter = back_matter
-
-    def _convert_tb1_to_bcrt1(self, addr):
-        """
-        Convert given address, if bech32, from testnet to regtest.
-
-        (Old-style non-segwit addresses are identical on testnet vs regtest.)
-        """
-        if addr.startswith('tb1'):
-            self.modified = True
-            witver, witprog = segwit_addr.decode('tb', addr)
-            return segwit_addr.encode('bcrt', witver, witprog)
-        return addr
 
     def save(self):
         """Write out a new runfile with our modified input transactions."""
