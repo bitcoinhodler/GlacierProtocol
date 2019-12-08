@@ -579,27 +579,6 @@ class ParsedRunfile(metaclass=ABCMeta):
     def parse_lines(self, contents):
         """Go through contents (one giant string) to find what we need."""
 
-
-class CreateWithdrawalDataRunfile(ParsedRunfile):
-    """Version of ParsedRunfile to handle create-withdrawal-data tests."""
-
-    def __init__(self, subcommand, filename):
-        """Create new instance."""
-        self._input_txs = []
-        self._input_tx_files = []
-        super().__init__(subcommand, filename)
-
-    @property
-    def input_txs(self):
-        """Return the list of input transactions used by this runfile."""
-        return self._input_txs
-
-    @input_txs.setter
-    def input_txs(self, value):
-        """Assign a new list of input transactions to replace the originals."""
-        self.modified = True
-        self._input_txs = value
-
     def parse_beginning(self, contents):
         """
         Create parser, parse beginning of run file.
@@ -631,6 +610,27 @@ class CreateWithdrawalDataRunfile(ParsedRunfile):
                             (y\n){6}       # safety confirmations
                         """)
         return (parser, opening + testmode + cmdline_and_confirm)
+
+
+class CreateWithdrawalDataRunfile(ParsedRunfile):
+    """Version of ParsedRunfile to handle create-withdrawal-data tests."""
+
+    def __init__(self, subcommand, filename):
+        """Create new instance."""
+        self._input_txs = []
+        self._input_tx_files = []
+        super().__init__(subcommand, filename)
+
+    @property
+    def input_txs(self):
+        """Return the list of input transactions used by this runfile."""
+        return self._input_txs
+
+    @input_txs.setter
+    def input_txs(self, value):
+        """Assign a new list of input transactions to replace the originals."""
+        self.modified = True
+        self._input_txs = value
 
     def parse_lines(self, contents):
         """Go through contents (one giant string) to find what we need."""
