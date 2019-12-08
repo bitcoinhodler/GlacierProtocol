@@ -660,33 +660,39 @@ class ParsedRunfile():
 
             outfile.write(self.back_matter)
 
+    def convert_to_regtest(self):
+        """
+        Convert a testnet test to use regtest.
+
+        It's important that our updates of tx.json happen before the
+        *.run script is rewritten.  That way, if we get interrupted
+        between those two, the next time we run, we'll find our
+        transactions in tx.json and everything will just work. If we
+        did it in the opposite order, we'd leave things in a broken
+        state.
+
+        """
+        txjson = TxFile()
+        tx_from_json = txjson.get(self.filename)
+        if not tx_from_json \
+           or tx_from_json['address'] != self.cold_storage_address \
+           or set(tx_from_json['txs']) != set(self.input_txs):
+            newtx = []
+            converter = {}
+            for hextx in self.input_txs:
+                if hextx not in converter:
+                    contx = build_input_xact(self.cold_storage_address, hextx)
+                    newtx.append(contx)
+                    converter[hextx] = contx
+            self.input_txs = [converter[hextx] for hextx in self.input_txs]
+            txjson.put(self.filename, self.cold_storage_address, newtx)
+        self.save()
+
 
 def convert_one_file(filename):
-    """
-    Convert one *.run file from testnet to regtest.
-
-    It's important that our updates of tx.json happen before the *.run
-    script is rewritten.  That way, if we get interrupted between
-    those two, the next time we run, we'll find our transactions in
-    tx.json and everything will just work. If we did it in the
-    opposite order, we'd leave things in a broken state.
-    """
+    """Convert one *.run file from testnet to regtest."""
     runfile = ParsedRunfile(filename)
-    txjson = TxFile()
-    tx_from_json = txjson.get(filename)
-    if not tx_from_json \
-       or tx_from_json['address'] != runfile.cold_storage_address \
-       or set(tx_from_json['txs']) != set(runfile.input_txs):
-        newtx = []
-        converter = {}
-        for hextx in runfile.input_txs:
-            if hextx not in converter:
-                contx = build_input_xact(runfile.cold_storage_address, hextx)
-                newtx.append(contx)
-                converter[hextx] = contx
-        runfile.input_txs = [converter[hextx] for hextx in runfile.input_txs]
-        txjson.put(filename, runfile.cold_storage_address, newtx)
-    runfile.save()
+    runfile.convert_to_regtest()
 
 
 def convert_testnet_to_regtest(args):
