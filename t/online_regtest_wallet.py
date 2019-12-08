@@ -666,7 +666,8 @@ class CreateWithdrawalDataRunfile(ParsedRunfile):
             if not re.match(r"^[0-9a-fA-F]+$", xact):
                 # If not hex, this must be a filename
                 filename = xact
-                xact = open(filename).read().strip()
+                with open(filename, 'rt') as xfile:
+                    xact = xfile.read().strip()
             self._input_txs.append(xact)
             self._input_tx_files.append(filename)
 
