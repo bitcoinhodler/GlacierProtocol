@@ -164,7 +164,7 @@ def confirm_txs_in_runfile(txdata):
         return
     # Find *.run in t/ directory, same directory as this script
     runfile = os.path.join(os.path.dirname(__file__), txdata['file'])
-    prf = ParsedRunfile(runfile)
+    prf = ParsedRunfile.create(runfile)
     if set(txdata['txs']) != set(prf.input_txs):
         print("In file {}, found unexpected input transactions.".format(runfile))
         print("If this file has deliberately changed, run `{} convert-testnet-to-regtest {}`".format(__file__, runfile))
@@ -538,6 +538,17 @@ class ParsedRunfile():
             contents = infile.read()
         self.parse_lines(contents)
 
+    @staticmethod
+    def create(filename):
+        """Create an instance of the proper subclass, based on filename."""
+        subclass_map = [
+            ('create-withdrawal-data', ParsedRunfile),
+        ]
+        for prefix, klass in subclass_map:
+            if prefix in filename:
+                return klass(filename)
+        raise RuntimeError("Unrecognized test input filename: " + filename)
+
     @property
     def input_txs(self):
         """Return the list of input transactions used by this runfile."""
@@ -691,7 +702,7 @@ class ParsedRunfile():
 
 def convert_one_file(filename):
     """Convert one *.run file from testnet to regtest."""
-    runfile = ParsedRunfile(filename)
+    runfile = ParsedRunfile.create(filename)
     runfile.convert_to_regtest()
 
 
