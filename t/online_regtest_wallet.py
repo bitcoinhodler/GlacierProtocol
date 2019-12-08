@@ -605,8 +605,16 @@ class CreateWithdrawalDataRunfile(ParsedRunfile):
         self.modified = True
         self._input_txs = value
 
-    def parse_lines(self, contents):
-        """Go through contents (one giant string) to find what we need."""
+    def parse_beginning(self, contents):
+        """
+        Create parser, parse beginning of run file.
+
+        Basically everything that's common between
+        create-withdrawal-data and sign-psbt.
+
+        Returns (parser, beginning_of_file).
+
+        """
         parser = self.parser_coroutine(contents)
         next(parser)  # prime the coroutine
         opening = parser.send(r"""
@@ -627,7 +635,11 @@ class CreateWithdrawalDataRunfile(ParsedRunfile):
                             =\$1 \s""" + self.subcommand + r"""\s \<\< \s INPUT .*\n  # rest of cmdline
                             (y\n){6}       # safety confirmations
                         """)
+        return (parser, opening + testmode + cmdline_and_confirm)
 
+    def parse_lines(self, contents):
+        """Go through contents (one giant string) to find what we need."""
+        parser, beginning_of_file = self.parse_beginning(contents)
         self.cold_storage_address = parser.send(r"""
                             (2[0-9a-zA-Z]+|(tb1|bcrt1)[0-9a-z]+) \n # cold storage address
                         """).strip()
@@ -661,9 +673,7 @@ class CreateWithdrawalDataRunfile(ParsedRunfile):
         back_matter = parser.send(r"""
                             .* \Z  # everything up to the end
                         """)
-        self.front_matter = opening \
-            + testmode \
-            + cmdline_and_confirm \
+        self.front_matter = beginning_of_file \
             + self.cold_storage_address + "\n" \
             + script \
             + dest_address + "\n" \
