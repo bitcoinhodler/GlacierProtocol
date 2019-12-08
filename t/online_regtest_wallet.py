@@ -682,16 +682,20 @@ class CreateWithdrawalDataRunfile(ParsedRunfile):
         if not self.modified:
             return
         with atomic_write(self.filename) as outfile:
-            outfile.write(self.front_matter)
-            for idx, xact in enumerate(self._input_txs):
-                if self._input_tx_files[idx]:
-                    outfile.write(self._input_tx_files[idx] + "\n")
-                    with open(self._input_tx_files[idx], 'wt') as txfile:
-                        txfile.write(xact + "\n")
-                else:
-                    outfile.write(xact + "\n")
+            self.write_file_to(outfile)
 
-            outfile.write(self.back_matter)
+    def write_file_to(self, outfile):
+        """Print file contents to the given filehandle."""
+        outfile.write(self.front_matter)
+        for idx, xact in enumerate(self._input_txs):
+            if self._input_tx_files[idx]:
+                outfile.write(self._input_tx_files[idx] + "\n")
+                with open(self._input_tx_files[idx], 'wt') as txfile:
+                    txfile.write(xact + "\n")
+            else:
+                outfile.write(xact + "\n")
+
+        outfile.write(self.back_matter)
 
     def convert_to_regtest(self):
         """
