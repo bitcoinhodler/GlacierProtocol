@@ -611,6 +611,17 @@ class ParsedRunfile(metaclass=ABCMeta):
                         """)
         return (parser, opening + testmode + cmdline_and_confirm)
 
+    def save(self):
+        """Write out a new runfile with our modified input transactions."""
+        if not self.modified:
+            return
+        with atomic_write(self.filename) as outfile:
+            self.write_file_to(outfile)
+
+    @abstractmethod
+    def write_file_to(self, outfile):
+        """Print file contents to the given filehandle."""
+
 
 class CreateWithdrawalDataRunfile(ParsedRunfile):
     """Version of ParsedRunfile to handle create-withdrawal-data tests."""
@@ -676,13 +687,6 @@ class CreateWithdrawalDataRunfile(ParsedRunfile):
             + str(input_tx_count) \
             + "\n"
         self.back_matter = back_matter
-
-    def save(self):
-        """Write out a new runfile with our modified input transactions."""
-        if not self.modified:
-            return
-        with atomic_write(self.filename) as outfile:
-            self.write_file_to(outfile)
 
     def write_file_to(self, outfile):
         """Print file contents to the given filehandle."""
