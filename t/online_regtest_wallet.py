@@ -604,14 +604,14 @@ class CreateWithdrawalDataRunfile(ParsedRunfile):
         """Go through contents (one giant string) to find what we need."""
         parser = self.parser_coroutine(contents)
         next(parser)  # prime the coroutine
-        front_matter = parser.send(r"""
-                           \A     # beginning of file
-                           .*?    # match as few as possible
-                           ^      # beginning of line
-                           \$GLACIERSCRIPT  # Run script
-                           [^\n]* # any extra cmdline options (like -v)
-                           \s+ -- # beginning of --testnet or --regtest
-                        """)
+        opening = parser.send(r"""
+                      \A     # beginning of file
+                      .*?    # match as few as possible
+                      ^      # beginning of line
+                      \$GLACIERSCRIPT  # Run script
+                      [^\n]* # any extra cmdline options (like -v)
+                      \s+ -- # beginning of --testnet or --regtest
+                   """)
         testmode = parser.send(r"""
                        (testnet|regtest)
                     """)
@@ -622,6 +622,7 @@ class CreateWithdrawalDataRunfile(ParsedRunfile):
                             =\$1 \s""" + self.subcommand + r"""\s \<\< \s INPUT .*\n  # rest of cmdline
                             (y\n){6}       # safety confirmations
                         """)
+
         self.cold_storage_address = parser.send(r"""
                             (2[0-9a-zA-Z]+|(tb1|bcrt1)[0-9a-z]+) \n # cold storage address
                         """).strip()
@@ -655,7 +656,7 @@ class CreateWithdrawalDataRunfile(ParsedRunfile):
         back_matter = parser.send(r"""
                             .* \Z  # everything up to the end
                         """)
-        self.front_matter = front_matter \
+        self.front_matter = opening \
             + testmode \
             + cmdline_and_confirm \
             + self.cold_storage_address + "\n" \
