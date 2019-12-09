@@ -139,7 +139,10 @@ class PsbtPsbtCreator(PsbtCreator):
         # Input suitable for `createrawtransaction`
         crtinp = create_input2(amount, dest=dest)
 
-        # Is sequence always 4294967293 (0xfffffffd)?
+        # Contra bitcoin-cli help text, 'sequence' is optional,
+        # and apparently uses 0xffffffff if unspecified. I'm not
+        # sure how my example PSBT from sign-psbt.basic ended up
+        # with 4294967293 (0xfffffffd).
         sequence = psbt['tx']['vin'][index]['sequence']
         crtinp['sequence'] = sequence
         return crtinp
