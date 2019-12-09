@@ -140,6 +140,11 @@ class PsbtPsbtCreator(PsbtCreator):
             sequence = self.psbt['tx']['vin'][index]['sequence']
             yield (amount, dest, sequence)
 
+    def construct_outputs(self):
+        """Return list of {address:value} for the outputs."""
+        return [{vout['scriptPubKey']['addresses'][0]: vout['value']}
+                for vout in self.psbt['tx']['vout']]
+
     def build_psbt(self):
         """Build and return a PSBT as a base64 string."""
         newinputs = []  # for the 'inputs' argument to `createpsbt`
@@ -151,9 +156,7 @@ class PsbtPsbtCreator(PsbtCreator):
         else:
             raise NotImplementedError()
         # Now we have newinputs for `createpsbt`
-        outputs = [{vout['scriptPubKey']['addresses'][0]: vout['value']}
-                   for vout in self.psbt['tx']['vout']]
-
+        outputs = self.construct_outputs()
         createpsbt = bitcoin_cli.checkoutput(
             "createpsbt",
             glacierscript.jsonstr(newinputs),
