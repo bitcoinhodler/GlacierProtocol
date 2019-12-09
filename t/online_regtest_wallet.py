@@ -741,11 +741,25 @@ class SignPsbtRunfile(ParsedRunfile):
     def __init__(self, subcommand, filename):
         """Create new instance."""
         self._psbt = None
-        self._psbt_files = []
+        self.psbt_filename = None
         super().__init__(subcommand, filename)
 
     def parse_lines(self, contents):
         """Go through contents (one giant string) to find what we need."""
+        parser, self.front_matter = self.parse_beginning(contents)
+
+        self.psbt_filename = parser.send(r"""
+                            [^\n]+ \n
+                        """).strip()
+        with open(self.psbt_filename, 'rt') as pfile:
+            self._psbt = pfile.read().strip()
+
+        self.back_matter = parser.send(r"""
+                               .* \Z  # everything up to the end
+                           """)
+
+    def convert_to_regtest(self):
+        """Convert a testnet test to use regtest."""
         raise NotImplementedError
 
 
