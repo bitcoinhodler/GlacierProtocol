@@ -108,8 +108,35 @@ class PsbtCreator(metaclass=ABCMeta):
     """
 
     @abstractmethod
+    def gen_witness_tuples(self):
+        """Generate tuples of (amount, dest, sequence) for each input."""
+
+    @abstractmethod
+    def construct_outputs(self):
+        """Return list of {address:value} for the outputs."""
+
     def build_psbt(self):
         """Build and return a PSBT as a base64 string."""
+        newinputs = []  # for the 'inputs' argument to `createpsbt`
+        if self.xact.segwit:
+            for amount, dest, sequence in self.gen_witness_tuples():
+                crtinp = create_input2(amount, dest=dest)
+                crtinp['sequence'] = sequence
+                newinputs.append(crtinp)
+        else:
+            raise NotImplementedError()
+        # Now we have newinputs for `createpsbt`
+        outputs = self.construct_outputs()
+        createpsbt = bitcoin_cli.checkoutput(
+            "createpsbt",
+            glacierscript.jsonstr(newinputs),
+            glacierscript.jsonstr(outputs),
+            '0',  # locktime
+            # replaceable is determined by sequence numbers in recreate_witness_utxo
+        ).strip()
+        bitcoin_cli.checkoutput("lockunspent", 'false', glacierscript.jsonstr(newinputs))
+        results = bitcoin_cli.json("walletprocesspsbt", createpsbt, 'false', 'ALL', 'false')
+        return trim_psbt.strip(results['psbt'])
 
 
 class PsbtPsbtCreator(PsbtCreator):
@@ -144,29 +171,6 @@ class PsbtPsbtCreator(PsbtCreator):
         """Return list of {address:value} for the outputs."""
         return [{vout['scriptPubKey']['addresses'][0]: vout['value']}
                 for vout in self.psbt['tx']['vout']]
-
-    def build_psbt(self):
-        """Build and return a PSBT as a base64 string."""
-        newinputs = []  # for the 'inputs' argument to `createpsbt`
-        if self.xact.segwit:
-            for amount, dest, sequence in self.gen_witness_tuples():
-                crtinp = create_input2(amount, dest=dest)
-                crtinp['sequence'] = sequence
-                newinputs.append(crtinp)
-        else:
-            raise NotImplementedError()
-        # Now we have newinputs for `createpsbt`
-        outputs = self.construct_outputs()
-        createpsbt = bitcoin_cli.checkoutput(
-            "createpsbt",
-            glacierscript.jsonstr(newinputs),
-            glacierscript.jsonstr(outputs),
-            '0',  # locktime
-            # replaceable is determined by sequence numbers in recreate_witness_utxo
-        ).strip()
-        bitcoin_cli.checkoutput("lockunspent", 'false', glacierscript.jsonstr(newinputs))
-        results = bitcoin_cli.json("walletprocesspsbt", createpsbt, 'false', 'ALL', 'false')
-        return trim_psbt.strip(results['psbt'])
 
 
 def recreate_psbt(txdata):
