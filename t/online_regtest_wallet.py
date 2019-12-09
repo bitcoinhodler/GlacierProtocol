@@ -840,7 +840,26 @@ def recreate_as_psbt(args):
     """
     Take a create-withdrawal-test and duplicate it as PSBT.
     """
-    raise NotImplementedError()
+    start(args)
+    print("Recreating {} as PSBT...".format(args.runfile))
+    prf = ParsedRunfile.create(args.runfile)
+    if prf.modified:
+        raise RuntimeError("I can only convert regtest tests")
+    if prf.subcommand != 'create-withdrawal-data':
+        raise RuntimeError("I can only convert create-withdrawal-data tests")
+
+    # I also need to see the Glacier-created withdrawal transaction so
+    # I can see what the outputs should be.
+    goldenfile = args.runfile.replace('.run', '.golden')
+    try:
+        rawtx = find_withdrawal_tx(goldenfile)
+    except NoTransactionFound:
+        raise RuntimeError("I can only convert tests that successfully created a withdrawal")
+    decoded_tx = bitcoin_cli.json("decoderawtransaction", rawtx)
+
+    print("Not implemented yet...")
+
+    stop(args)
 
 
 def stop(_):
