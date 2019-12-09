@@ -91,6 +91,27 @@ def recreate_tx(txdata, hextx):
         raise RuntimeError("Did not create expected transaction for " + txdata['file'])
 
 
+class PsbtCreator(metaclass=ABCMeta):
+    """
+    Class for constructing a PSBT.
+
+    We have two use cases for this: (1) loading the tx file, so that
+    sign-psbt tests will find their expected inputs in the regtest
+    blockchain, and (2) the recreate-as-psbt subcommand. PSBTs created
+    for #2 will then become use case #1 the next time we start up, so
+    it had better construct the exact same PSBT.
+
+    This base class is for sharing the common code; the details of
+    what the PSBT inputs and outputs should look like are sufficiently
+    different that I made those into two different subclasses.
+
+    """
+
+    @abstractmethod
+    def build_psbt(self):
+        """Build and return a PSBT as a base64 string."""
+
+
 def build_psbt(rawpsbt):
     """
     Import address from PSBT, recreate its inputs, recreate PSBT.
