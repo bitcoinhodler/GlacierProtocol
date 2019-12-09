@@ -127,6 +127,23 @@ class PsbtPsbtCreator(PsbtCreator):
         """Create new instance; rawpsbt is base64 string."""
         self.rawpsbt = rawpsbt
 
+    @staticmethod
+    def recreate_witness_utxo(psbt, index):
+        """
+        Create a UTXO that looks just like psbt input #index.
+
+        Returns a dict suitable for the inputs list of
+        `createpsbt`.
+        """
+        utxo = psbt['inputs'][index]['witness_utxo']
+        dest = utxo['scriptPubKey']['address']
+        amount = utxo['amount']
+        # Input suitable for `createrawtransaction`
+        crtinp = create_input2(amount, dest=dest)
+        sequence = psbt['tx']['vin'][index]['sequence']
+        crtinp['sequence'] = sequence
+        return crtinp
+
     def build_psbt(self):
         """Build and return a PSBT as a base64 string."""
         # Obviously we aren't creating a withdrawal, but constructing
@@ -136,7 +153,7 @@ class PsbtPsbtCreator(PsbtCreator):
         newinputs = []  # for the 'inputs' argument to `createpsbt`
         for index, inp in enumerate(psbt['inputs']):
             if 'witness_utxo' in inp:
-                newinputs.append(recreate_witness_utxo(psbt, index))
+                newinputs.append(self.recreate_witness_utxo(psbt, index))
             else:
                 raise NotImplementedError()
         # Now we have newinputs for `createpsbt`
@@ -172,23 +189,6 @@ def recreate_psbt(txdata):
         print(results_psbt, file=sys.stderr)
         pprint.pprint(actual, stream=sys.stderr)
         raise RuntimeError("Did not create expected PSBT for " + txdata['file'])
-
-
-def recreate_witness_utxo(psbt, index):
-    """
-    Create a UTXO that looks just like psbt input #index.
-
-    Returns a dict suitable for the inputs list of
-    `createpsbt`.
-    """
-    utxo = psbt['inputs'][index]['witness_utxo']
-    dest = utxo['scriptPubKey']['address']
-    amount = utxo['amount']
-    # Input suitable for `createrawtransaction`
-    crtinp = create_input2(amount, dest=dest)
-    sequence = psbt['tx']['vin'][index]['sequence']
-    crtinp['sequence'] = sequence
-    return crtinp
 
 
 def confirm_txs_in_runfile(txdata):
