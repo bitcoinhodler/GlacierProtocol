@@ -112,8 +112,8 @@ class PsbtCreator(metaclass=ABCMeta):
         """Generate tuples of (amount, dest, sequence) for each input."""
 
     @abstractmethod
-    def construct_outputs(self):
-        """Return list of {address:value} for the outputs."""
+    def outputs_like_tx(self):
+        """Return decoded transaction with outputs to recreate."""
 
     def build_psbt(self):
         """Build and return a PSBT as a base64 string."""
@@ -126,7 +126,9 @@ class PsbtCreator(metaclass=ABCMeta):
         else:
             raise NotImplementedError()
         # Now we have newinputs for `createpsbt`
-        outputs = self.construct_outputs()
+        otx = self.outputs_like_tx()
+        outputs = [{vout['scriptPubKey']['addresses'][0]: vout['value']}
+                   for vout in otx['vout']]
         createpsbt = bitcoin_cli.checkoutput(
             "createpsbt",
             glacierscript.jsonstr(newinputs),
@@ -167,10 +169,9 @@ class PsbtPsbtCreator(PsbtCreator):
             sequence = self.psbt['tx']['vin'][index]['sequence']
             yield (amount, dest, sequence)
 
-    def construct_outputs(self):
-        """Return list of {address:value} for the outputs."""
-        return [{vout['scriptPubKey']['addresses'][0]: vout['value']}
-                for vout in self.psbt['tx']['vout']]
+    def outputs_like_tx(self):
+        """Return decoded transaction with outputs to recreate."""
+        return self.psbt['tx']
 
 
 def recreate_psbt(txdata):
