@@ -126,13 +126,14 @@ def recreate_psbt(txdata):
     newpsbt = bitcoin_cli.json("decodepsbt", results['psbt'])
     if len(newpsbt['inputs']) != len(psbt['inputs']):
         raise RuntimeError("Somehow walletcreatefundedpsbt added an extra input for " + filename)
-    if results['psbt'] != txdata['psbt']:
-        actual = bitcoin_cli.json("decodepsbt", results['psbt'])
+    newrawpsbt = results['psbt']
+    if newrawpsbt != txdata['psbt']:
+        actual = bitcoin_cli.json("decodepsbt", newrawpsbt)
         expected = bitcoin_cli.json("decodepsbt", txdata['psbt'])
         print("Expected PSBT:", file=sys.stderr)
         pprint.pprint(expected, stream=sys.stderr)
         print("Actual PSBT constructed:", file=sys.stderr)
-        print(results['psbt'], file=sys.stderr)
+        print(newrawpsbt, file=sys.stderr)
         pprint.pprint(actual, stream=sys.stderr)
         raise RuntimeError("Did not create expected PSBT for " + txdata['file'])
 
