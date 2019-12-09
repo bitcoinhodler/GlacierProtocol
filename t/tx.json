@@ -153,7 +153,7 @@
   },
   {
     "file": "sign-psbt.basic.run",
-    "obsolete": false,
+    "obsolete": true,
     "psbt": "cHNidP8BAFMCAAAAARSOc2f1TrJM304PvLM8+Qi5UXwzvPVpddLdLlVHc3Y6AQAAAAD9////AQGACQEAAAAAF6kU14DOpouLxbjDw3XAQMLM4IyakHeHAAAAAAABASDAgAkBAAAAABepFFNO484huPgFEo92udl341G7vqINhwEEIgAg2r6jRFwU5KCNZwXbQ3O+9GfUxk58jd8Um+UGcN5oeK4BBYtSIQKfUxUD+s2sJJb1CkRtm9KYRqBqBKReOEW2VrtHHfQi/CEC4weHcDqZDkAVosuQcfz9HH1GQfspTktMP19rRQoZJRMhAtooCIqAImURccTxNCm5hwnavhO8baUmU3/dLQcw3S27IQMobJbsqoUKa6Q8xF+7U5wfsdZcI8wPPNCfz5dlgm/53lSuAAA="
   }
 ]
