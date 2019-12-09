@@ -112,36 +112,47 @@ class PsbtCreator(metaclass=ABCMeta):
         """Build and return a PSBT as a base64 string."""
 
 
-def build_psbt(rawpsbt):
+class PsbtPsbtCreator(PsbtCreator):
     """
-    Import address from PSBT, recreate its inputs, recreate PSBT.
+    Construct a PSBT by mimicing another PSBT.
 
-    Returns new PSBT as base64 string.
+    Also imports its address & redeem script into the bitcoind wallet.
+
+    Used for setting up PSBTs at start, so the sign-psbt tests will be
+    able to find their expected inputs.
+
     """
-    # Obviously we aren't creating a withdrawal, but constructing
-    # this object does all the heavy lifting of decoding & importing:
-    xact = glacierscript.PsbtWithdrawalXact(rawpsbt)
-    psbt = xact.psbt
-    newinputs = []  # for the 'inputs' argument to `createpsbt`
-    for index, inp in enumerate(psbt['inputs']):
-        if 'witness_utxo' in inp:
-            newinputs.append(recreate_witness_utxo(psbt, index))
-        else:
-            raise NotImplementedError()
-    # Now we have newinputs for `createpsbt`
-    outputs = [{vout['scriptPubKey']['addresses'][0]: vout['value']}
-               for vout in psbt['tx']['vout']]
 
-    createpsbt = bitcoin_cli.checkoutput(
-        "createpsbt",
-        glacierscript.jsonstr(newinputs),
-        glacierscript.jsonstr(outputs),
-        '0',  # locktime
-        # replaceable is determined by sequence numbers in recreate_witness_utxo
-    ).strip()
-    bitcoin_cli.checkoutput("lockunspent", 'false', glacierscript.jsonstr(newinputs))
-    results = bitcoin_cli.json("walletprocesspsbt", createpsbt, 'false', 'ALL', 'false')
-    return trim_psbt.strip(results['psbt'])
+    def __init__(self, rawpsbt):
+        """Create new instance; rawpsbt is base64 string."""
+        self.rawpsbt = rawpsbt
+
+    def build_psbt(self):
+        """Build and return a PSBT as a base64 string."""
+        # Obviously we aren't creating a withdrawal, but constructing
+        # this object does all the heavy lifting of decoding & importing:
+        xact = glacierscript.PsbtWithdrawalXact(self.rawpsbt)
+        psbt = xact.psbt
+        newinputs = []  # for the 'inputs' argument to `createpsbt`
+        for index, inp in enumerate(psbt['inputs']):
+            if 'witness_utxo' in inp:
+                newinputs.append(recreate_witness_utxo(psbt, index))
+            else:
+                raise NotImplementedError()
+        # Now we have newinputs for `createpsbt`
+        outputs = [{vout['scriptPubKey']['addresses'][0]: vout['value']}
+                   for vout in psbt['tx']['vout']]
+
+        createpsbt = bitcoin_cli.checkoutput(
+            "createpsbt",
+            glacierscript.jsonstr(newinputs),
+            glacierscript.jsonstr(outputs),
+            '0',  # locktime
+            # replaceable is determined by sequence numbers in recreate_witness_utxo
+        ).strip()
+        bitcoin_cli.checkoutput("lockunspent", 'false', glacierscript.jsonstr(newinputs))
+        results = bitcoin_cli.json("walletprocesspsbt", createpsbt, 'false', 'ALL', 'false')
+        return trim_psbt.strip(results['psbt'])
 
 
 def recreate_psbt(txdata):
@@ -151,7 +162,7 @@ def recreate_psbt(txdata):
     Make sure it matches what we got last time we started.
     """
     rawpsbt = txdata['psbt']
-    results_psbt = build_psbt(rawpsbt)
+    results_psbt = PsbtPsbtCreator(rawpsbt).build_psbt()
     if results_psbt != txdata['psbt']:
         actual = bitcoin_cli.json("decodepsbt", results_psbt)
         expected = bitcoin_cli.json("decodepsbt", txdata['psbt'])
@@ -811,7 +822,7 @@ class SignPsbtRunfile(ParsedRunfile):
         tx_from_json = txjson.get(self.filename)
         if not tx_from_json \
            or tx_from_json['psbt'] != self.psbt:
-            self.psbt = build_psbt(self.psbt)
+            self.psbt = PsbtPsbtCreator(self.psbt).build_psbt()
             txjson.put(self.filename, psbt=self.psbt)
         self.save()
 
