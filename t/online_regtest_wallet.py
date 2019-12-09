@@ -118,7 +118,8 @@ class PsbtCreator(metaclass=ABCMeta):
         if self.xact.segwit:
             for amount, dest, sequence in self.gen_witness_tuples():
                 crtinp = create_input2(amount, dest=dest)
-                crtinp['sequence'] = sequence
+                if sequence is not None:
+                    crtinp['sequence'] = sequence
                 newinputs.append(crtinp)
         else:
             raise NotImplementedError()
@@ -141,7 +142,7 @@ class PsbtCreator(metaclass=ABCMeta):
         if results['changepos'] != -1:
             raise RuntimeError("Somehow walletcreatefundedpsbt added a change output for " + self.filename)
         newpsbt = bitcoin_cli.json("decodepsbt", results['psbt'])
-        if len(newpsbt['inputs']) != len(self.psbt['inputs']):
+        if len(newpsbt['inputs']) != len(newinputs):
             raise RuntimeError("Somehow walletcreatefundedpsbt added an extra input for " + self.filename)
         return results['psbt']
 
@@ -182,6 +183,48 @@ class PsbtPsbtCreator(PsbtCreator):
     def outputs_like_tx(self):
         """Return decoded transaction with outputs to recreate."""
         return self.psbt['tx']
+
+
+class TxlistPsbtCreator(PsbtCreator):
+    """
+    Construct a PSBT by mimicing a list of input transactions.
+
+    Also imports its address & redeem script into the bitcoind wallet.
+
+    Used for recreate-as-psbt, to build a PSBT based off the input
+    transactions and constructed outputs.
+
+    """
+
+    def __init__(self, filename, prf, decoded_tx):
+        """
+        Create new instance.
+
+        prf is ParsedRunfile
+        decoded_tx is constructed withdrawal.
+        """
+        self.filename = filename
+        self.prf = prf
+        self.decoded_tx = decoded_tx
+        # Start a withdrawal transaction just so it can figure out the
+        # address details -- namely, segwit or not.
+        self.xact = glacierscript.ManualWithdrawalXact(
+            prf.cold_storage_address, prf.redeem_script)
+
+    def gen_witness_tuples(self):
+        """Generate tuples of (amount, dest, sequence) for each input."""
+        for hextx in self.prf.input_txs:
+            # Find any outputs to our address, which are the only
+            # ones we care about. Typically there will be exactly one.
+            txdec = bitcoin_cli.json("decoderawtransaction", hextx)
+            for outp in txdec['vout']:
+                if self.prf.cold_storage_address \
+                   in outp['scriptPubKey']['addresses']:
+                    yield (outp['value'], self.prf.cold_storage_address, None)
+
+    def outputs_like_tx(self):
+        """Return decoded transaction with outputs to recreate."""
+        return self.decoded_tx
 
 
 def recreate_psbt(txdata):
@@ -714,9 +757,9 @@ class CreateWithdrawalDataRunfile(ParsedRunfile):
                         """).strip()
         self.cold_storage_address = self._convert_tb1_to_bcrt1(self.cold_storage_address)
 
-        script = parser.send(r"""
-                            [0-9a-fA-F]+ \n   # redeem script
-                        """)
+        self.redeem_script = parser.send(r"""
+                                 [0-9a-fA-F]+ \n   # redeem script
+                             """).strip()
         dest_address = parser.send(r"""
                             [0-9a-zA-Z]+ \n    # destination address
                         """).strip()
@@ -745,7 +788,7 @@ class CreateWithdrawalDataRunfile(ParsedRunfile):
                         """)
         self.front_matter = beginning_of_file \
             + self.cold_storage_address + "\n" \
-            + script \
+            + self.redeem_script + "\n" \
             + dest_address + "\n" \
             + str(input_tx_count) \
             + "\n"
@@ -895,8 +938,8 @@ def recreate_as_psbt(args):
         raise RuntimeError("I can only convert tests that successfully created a withdrawal")
     decoded_tx = bitcoin_cli.json("decoderawtransaction", rawtx)
 
+    psbt = TxlistPsbtCreator(args.runfile, prf, decoded_tx).build_psbt()
     print("Not implemented yet...")
-
     stop(args)
 
 
