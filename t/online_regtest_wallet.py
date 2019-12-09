@@ -62,14 +62,14 @@ def start(args):
                 raise RuntimeError("Didn't expect both txs and psbt in tx.json for " + txdata['file'])
             for hextx in txdata['txs']:
                 recreate_tx(txdata, hextx)
-            if args.program == start:  # noqa:pylint:comparison-with-callable
-                # If we're running `convert` then we allow runfile to differ, since
-                # otherwise we wouldn't be able to change it and then re-convert it
-                confirm_txs_in_runfile(txdata)
         elif 'psbt' in txdata:
             recreate_psbt(txdata)
         else:
             raise RuntimeError("Expected either txs or psbt in tx.json for " + txdata['file'])
+        if args.program == start:  # noqa:pylint:comparison-with-callable
+            # If we're running `convert` then we allow runfile to differ, since
+            # otherwise we wouldn't be able to change it and then re-convert it
+            confirm_txs_in_runfile(txdata)
 
 
 def recreate_tx(txdata, hextx):
@@ -161,8 +161,12 @@ def confirm_txs_in_runfile(txdata):
     # Find *.run in t/ directory, same directory as this script
     runfile = os.path.join(os.path.dirname(__file__), txdata['file'])
     prf = ParsedRunfile.create(runfile)
-    if set(txdata['txs']) != set(prf.input_txs):
-        print("In file {}, found unexpected input transactions.".format(runfile))
+    if 'txs' in txdata:
+        match = set(txdata['txs']) == set(prf.input_txs)
+    else:
+        match = txdata['psbt'] == prf.psbt
+    if not match:
+        print("In file {}, found unexpected input transactions or PSBT.".format(runfile))
         print("If this file has deliberately changed, run `{} convert-testnet-to-regtest {}`".format(__file__, runfile))
         raise SystemExit("Error: Unexpected transaction in *.run file")
 
@@ -743,6 +747,17 @@ class SignPsbtRunfile(ParsedRunfile):
         self.psbt_filename = None
         super().__init__(subcommand, filename)
 
+    @property
+    def psbt(self):
+        """Return the PSBT from this test."""
+        return self._psbt
+
+    @psbt.setter
+    def psbt(self, value):
+        """Set the PSBT to a new value."""
+        self.modified = True
+        self._psbt = value
+
     def parse_lines(self, contents):
         """Go through contents (one giant string) to find what we need."""
         parser, self.front_matter = self.parse_beginning(contents)
@@ -759,6 +774,10 @@ class SignPsbtRunfile(ParsedRunfile):
 
     def convert_to_regtest(self):
         """Convert a testnet test to use regtest."""
+        raise NotImplementedError
+
+    def write_file_to(self, _outfile):
+        """Print file contents to the given filehandle."""
         raise NotImplementedError
 
 
