@@ -503,7 +503,7 @@ class TxFile():
         except StopIteration:
             return None
 
-    def put(self, filename, *, cold_storage_address=None, txs=None):
+    def put(self, filename, *, cold_storage_address=None, txs=None, psbt=None):
         """
         Replace the TX structures for the specified filename with txs.
 
@@ -519,6 +519,8 @@ class TxFile():
             new['address'] = cold_storage_address
         if txs:
             new['txs'] = txs
+        if psbt:
+            new['psbt'] = psbt
         old = self.get(filename)
         if old:
             old['obsolete'] = True
@@ -791,7 +793,21 @@ class SignPsbtRunfile(ParsedRunfile):
 
     def convert_to_regtest(self):
         """Convert a testnet test to use regtest."""
-        raise NotImplementedError
+        txjson = TxFile()
+        tx_from_json = txjson.get(self.filename)
+        if not tx_from_json \
+           or tx_from_json['psbt'] != self.psbt:
+            self.psbt = build_psbt(self.filename, self.psbt)
+            txjson.put(self.filename, psbt=self.psbt)
+        self.save()
+
+    def write_file_to(self, outfile):
+        """Print file contents to the given filehandle."""
+        outfile.write(self.front_matter)
+        outfile.write(self.psbt_filename + "\n")
+        outfile.write(self.back_matter)
+        with open(self.psbt_filename, 'wt') as pfile:
+            pfile.write(self.psbt + "\n")
 
 
 def convert_one_file(filename):
