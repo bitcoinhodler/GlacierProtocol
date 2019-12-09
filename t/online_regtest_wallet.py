@@ -131,20 +131,19 @@ class PsbtPsbtCreator(PsbtCreator):
         xact = glacierscript.PsbtWithdrawalXact(self.rawpsbt)
         self.psbt = xact.psbt
 
-    @staticmethod
-    def recreate_witness_utxo(psbt, index):
+    def recreate_witness_utxo(self, index):
         """
         Create a UTXO that looks just like psbt input #index.
 
         Returns a dict suitable for the inputs list of
         `createpsbt`.
         """
-        utxo = psbt['inputs'][index]['witness_utxo']
+        utxo = self.psbt['inputs'][index]['witness_utxo']
         dest = utxo['scriptPubKey']['address']
         amount = utxo['amount']
         # Input suitable for `createrawtransaction`
         crtinp = create_input2(amount, dest=dest)
-        sequence = psbt['tx']['vin'][index]['sequence']
+        sequence = self.psbt['tx']['vin'][index]['sequence']
         crtinp['sequence'] = sequence
         return crtinp
 
@@ -153,7 +152,7 @@ class PsbtPsbtCreator(PsbtCreator):
         newinputs = []  # for the 'inputs' argument to `createpsbt`
         for index, inp in enumerate(self.psbt['inputs']):
             if 'witness_utxo' in inp:
-                newinputs.append(self.recreate_witness_utxo(self.psbt, index))
+                newinputs.append(self.recreate_witness_utxo(index))
             else:
                 raise NotImplementedError()
         # Now we have newinputs for `createpsbt`
