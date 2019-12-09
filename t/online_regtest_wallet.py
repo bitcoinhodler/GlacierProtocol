@@ -487,7 +487,7 @@ class TxFile():
         except StopIteration:
             return None
 
-    def put(self, filename, cold_storage_address, txs):
+    def put(self, filename, *, cold_storage_address=None, txs=None):
         """
         Replace the TX structures for the specified filename with txs.
 
@@ -496,11 +496,13 @@ class TxFile():
         """
         basefilename = os.path.basename(filename)
         new = {
-            'address': cold_storage_address,
             'file': basefilename,
             'obsolete': False,
-            'txs': txs,
         }
+        if cold_storage_address:
+            new['address'] = cold_storage_address
+        if txs:
+            new['txs'] = txs
         old = self.get(filename)
         if old:
             old['obsolete'] = True
@@ -731,7 +733,9 @@ class CreateWithdrawalDataRunfile(ParsedRunfile):
                     newtx.append(contx)
                     converter[hextx] = contx
             self.input_txs = [converter[hextx] for hextx in self.input_txs]
-            txjson.put(self.filename, self.cold_storage_address, newtx)
+            txjson.put(self.filename,
+                       cold_storage_address=self.cold_storage_address,
+                       txs=newtx)
         self.save()
 
 
