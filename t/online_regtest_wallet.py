@@ -124,6 +124,10 @@ class PsbtPsbtCreator(PsbtCreator):
         """Create new instance; rawpsbt is base64 string."""
         self.filename = filename
         self.rawpsbt = rawpsbt
+        # Obviously we aren't creating a withdrawal, but constructing
+        # this object does all the heavy lifting of decoding & importing:
+        xact = glacierscript.PsbtWithdrawalXact(self.rawpsbt)
+        self.psbt = xact.psbt
 
     @staticmethod
     def recreate_witness_utxo(psbt, index):
@@ -149,19 +153,15 @@ class PsbtPsbtCreator(PsbtCreator):
 
     def build_psbt(self):
         """Build and return a PSBT as a base64 string."""
-        # Obviously we aren't creating a withdrawal, but constructing
-        # this object does all the heavy lifting of decoding & importing:
-        xact = glacierscript.PsbtWithdrawalXact(self.rawpsbt)
-        psbt = xact.psbt
         newinputs = []  # for the 'inputs' argument to `walletcreatefundedpsbt`
-        for index, inp in enumerate(psbt['inputs']):
+        for index, inp in enumerate(self.psbt['inputs']):
             if 'witness_utxo' in inp:
-                newinputs.append(self.recreate_witness_utxo(psbt, index))
+                newinputs.append(self.recreate_witness_utxo(self.psbt, index))
             else:
                 raise NotImplementedError()
         # Now we have newinputs for `walletcreatefundedpsbt`
         outputs = [{vout['scriptPubKey']['addresses'][0]: vout['value']}
-                   for vout in psbt['tx']['vout']]
+                   for vout in self.psbt['tx']['vout']]
         options = {
             'lockUnspents': True,  # so no other PSBT uses the same inputs
             'feeRate': Decimal("0.00001000"),  # minimal, so it doesn't add another input & change output
@@ -177,7 +177,7 @@ class PsbtPsbtCreator(PsbtCreator):
         if results['changepos'] != -1:
             raise RuntimeError("Somehow walletcreatefundedpsbt added a change output for " + self.filename)
         newpsbt = bitcoin_cli.json("decodepsbt", results['psbt'])
-        if len(newpsbt['inputs']) != len(psbt['inputs']):
+        if len(newpsbt['inputs']) != len(self.psbt['inputs']):
             raise RuntimeError("Somehow walletcreatefundedpsbt added an extra input for " + self.filename)
         return results['psbt']
 
