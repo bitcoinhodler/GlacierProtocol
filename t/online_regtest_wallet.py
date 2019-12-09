@@ -105,8 +105,43 @@ class PsbtCreator(metaclass=ABCMeta):
     """
 
     @abstractmethod
+    def gen_witness_tuples(self):
+        """Generate tuples of (amount, dest, sequence) for each input."""
+
+    @abstractmethod
+    def construct_outputs(self):
+        """Return list of {address:value} for the outputs."""
+
     def build_psbt(self):
         """Build and return a PSBT as a base64 string."""
+        newinputs = []  # for the 'inputs' argument to `walletcreatefundedpsbt`
+        if self.xact.segwit:
+            for amount, dest, sequence in self.gen_witness_tuples():
+                crtinp = create_input2(amount, dest=dest)
+                crtinp['sequence'] = sequence
+                newinputs.append(crtinp)
+        else:
+            raise NotImplementedError()
+        # Now we have newinputs for `walletcreatefundedpsbt`
+        outputs = self.construct_outputs()
+        options = {
+            'lockUnspents': True,  # so no other PSBT uses the same inputs
+            'feeRate': Decimal("0.00001000"),  # minimal, so it doesn't add another input & change output
+            # HACK replaceable? if original PSBT is?
+        }
+        # I want `walletcreatefundedpsbt` instead of `createpsbt` so I can lock
+        # unspents, and so it will fill input fields in the PSBT.
+        results = bitcoin_cli.json("walletcreatefundedpsbt",
+                                   glacierscript.jsonstr(newinputs),
+                                   glacierscript.jsonstr(outputs),
+                                   '0',  # locktime
+                                   glacierscript.jsonstr(options))
+        if results['changepos'] != -1:
+            raise RuntimeError("Somehow walletcreatefundedpsbt added a change output for " + self.filename)
+        newpsbt = bitcoin_cli.json("decodepsbt", results['psbt'])
+        if len(newpsbt['inputs']) != len(self.psbt['inputs']):
+            raise RuntimeError("Somehow walletcreatefundedpsbt added an extra input for " + self.filename)
+        return results['psbt']
 
 
 class PsbtPsbtCreator(PsbtCreator):
@@ -146,37 +181,6 @@ class PsbtPsbtCreator(PsbtCreator):
         """Return list of {address:value} for the outputs."""
         return [{vout['scriptPubKey']['addresses'][0]: vout['value']}
                 for vout in self.psbt['tx']['vout']]
-
-    def build_psbt(self):
-        """Build and return a PSBT as a base64 string."""
-        newinputs = []  # for the 'inputs' argument to `walletcreatefundedpsbt`
-        if self.xact.segwit:
-            for amount, dest, sequence in self.gen_witness_tuples():
-                crtinp = create_input2(amount, dest=dest)
-                crtinp['sequence'] = sequence
-                newinputs.append(crtinp)
-        else:
-            raise NotImplementedError()
-        # Now we have newinputs for `walletcreatefundedpsbt`
-        outputs = self.construct_outputs()
-        options = {
-            'lockUnspents': True,  # so no other PSBT uses the same inputs
-            'feeRate': Decimal("0.00001000"),  # minimal, so it doesn't add another input & change output
-            # HACK replaceable? if original PSBT is?
-        }
-        # I want `walletcreatefundedpsbt` instead of `createpsbt` so I can lock
-        # unspents, and so it will fill input fields in the PSBT.
-        results = bitcoin_cli.json("walletcreatefundedpsbt",
-                                   glacierscript.jsonstr(newinputs),
-                                   glacierscript.jsonstr(outputs),
-                                   '0',  # locktime
-                                   glacierscript.jsonstr(options))
-        if results['changepos'] != -1:
-            raise RuntimeError("Somehow walletcreatefundedpsbt added a change output for " + self.filename)
-        newpsbt = bitcoin_cli.json("decodepsbt", results['psbt'])
-        if len(newpsbt['inputs']) != len(self.psbt['inputs']):
-            raise RuntimeError("Somehow walletcreatefundedpsbt added an extra input for " + self.filename)
-        return results['psbt']
 
 
 def recreate_psbt(txdata):
