@@ -142,6 +142,11 @@ class PsbtPsbtCreator(PsbtCreator):
             sequence = self.psbt['tx']['vin'][index]['sequence']
             yield (amount, dest, sequence)
 
+    def construct_outputs(self):
+        """Return list of {address:value} for the outputs."""
+        return [{vout['scriptPubKey']['addresses'][0]: vout['value']}
+                for vout in self.psbt['tx']['vout']]
+
     def build_psbt(self):
         """Build and return a PSBT as a base64 string."""
         newinputs = []  # for the 'inputs' argument to `walletcreatefundedpsbt`
@@ -153,8 +158,7 @@ class PsbtPsbtCreator(PsbtCreator):
         else:
             raise NotImplementedError()
         # Now we have newinputs for `walletcreatefundedpsbt`
-        outputs = [{vout['scriptPubKey']['addresses'][0]: vout['value']}
-                   for vout in self.psbt['tx']['vout']]
+        outputs = self.construct_outputs()
         options = {
             'lockUnspents': True,  # so no other PSBT uses the same inputs
             'feeRate': Decimal("0.00001000"),  # minimal, so it doesn't add another input & change output
