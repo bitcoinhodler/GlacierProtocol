@@ -829,6 +829,13 @@ def convert_testnet_to_regtest(args):
     stop(args)
 
 
+def recreate_as_psbt(args):
+    """
+    Take a create-withdrawal-test and duplicate it as PSBT.
+    """
+    raise NotImplementedError()
+
+
 def stop(_):
     """
     Stop the bitcoind server.
@@ -906,6 +913,23 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter)
     parser_convert.set_defaults(program=convert_testnet_to_regtest)
     parser_convert.add_argument('runfile', nargs='+')
+
+    parser_recreate = subparsers.add_parser(
+        'recreate-as-psbt',
+        help="Duplicate a withdrawal test into a PSBT version",
+        description=textwrap.dedent("""\
+        Take a create-withdrawal-data.*.run file and convert the
+        withdrawal details into a PSBT, creating a new test named
+        sign-psbt.*.run. The inputs and outputs of this PSBT will be
+        of identical types and amounts as the original test case.
+
+        This lets us quickly create lots of test cases for the
+        sign-psbt flow (although many of the interesting cases are no
+        longer interesting).
+        """),
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser_recreate.set_defaults(program=recreate_as_psbt)
+    parser_recreate.add_argument('runfile')
 
     parser_stop = subparsers.add_parser(
         'stop',
