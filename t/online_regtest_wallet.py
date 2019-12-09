@@ -88,16 +88,14 @@ def recreate_tx(txdata, hextx):
         raise RuntimeError("Did not create expected transaction for " + txdata['file'])
 
 
-def recreate_psbt(txdata):
+def build_psbt(filename, rawpsbt):
     """
     Import address from PSBT, recreate its inputs, recreate PSBT.
 
-    Make sure it matches what we got last time we started.
+    Returns new PSBT as base64 string.
     """
     # Obviously we aren't creating a withdrawal, but constructing
     # this object does all the heavy lifting of decoding & importing:
-    rawpsbt = txdata['psbt']
-    filename = txdata['file']
     xact = glacierscript.PsbtWithdrawalXact(rawpsbt)
     psbt = xact.psbt
     newinputs = []  # for the 'inputs' argument to `walletcreatefundedpsbt`
@@ -126,7 +124,18 @@ def recreate_psbt(txdata):
     newpsbt = bitcoin_cli.json("decodepsbt", results['psbt'])
     if len(newpsbt['inputs']) != len(psbt['inputs']):
         raise RuntimeError("Somehow walletcreatefundedpsbt added an extra input for " + filename)
-    newrawpsbt = results['psbt']
+    return results['psbt']
+
+
+def recreate_psbt(txdata):
+    """
+    Import address from PSBT, recreate its inputs, recreate PSBT.
+
+    Make sure it matches what we got last time we started.
+    """
+    rawpsbt = txdata['psbt']
+    filename = txdata['file']
+    newrawpsbt = build_psbt(filename, rawpsbt)
     if newrawpsbt != txdata['psbt']:
         actual = bitcoin_cli.json("decodepsbt", newrawpsbt)
         expected = bitcoin_cli.json("decodepsbt", txdata['psbt'])
