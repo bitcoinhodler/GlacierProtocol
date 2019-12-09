@@ -102,7 +102,7 @@ define test_recipe =
 	cd $(RUNDIR) && ../../$< $(compteur) 2>&1 > ../../$(OUTPUT)
 	@$(1) $(GOLDEN_FILE) $(OUTPUT) || \
 	  (echo "Test $@ failed" && exit 1)
-	@if [[ "$@" == *"withdrawal"* ]]; then \
+	@if [[ "$@" == *"create-withdrawal-data."* || "$@" == *"sign-psbt."* ]]; then \
 	  if grep --word-regexp --quiet -- -regtest $<; then \
 	    (cd testrun/online && ../../t/online_regtest_wallet.py submit ../../$(GOLDEN_FILE)); \
 	  fi; \
