@@ -128,33 +128,28 @@ class PsbtPsbtCreator(PsbtCreator):
         self.rawpsbt = rawpsbt
         # Obviously we aren't creating a withdrawal, but constructing
         # this object does all the heavy lifting of decoding & importing:
-        xact = glacierscript.PsbtWithdrawalXact(self.rawpsbt)
-        self.psbt = xact.psbt
+        self.xact = glacierscript.PsbtWithdrawalXact(self.rawpsbt)
+        self.psbt = self.xact.psbt
 
-    def recreate_witness_utxo(self, index):
-        """
-        Create a UTXO that looks just like psbt input #index.
-
-        Returns a dict suitable for the inputs list of
-        `createpsbt`.
-        """
-        utxo = self.psbt['inputs'][index]['witness_utxo']
-        dest = utxo['scriptPubKey']['address']
-        amount = utxo['amount']
-        # Input suitable for `createrawtransaction`
-        crtinp = create_input2(amount, dest=dest)
-        sequence = self.psbt['tx']['vin'][index]['sequence']
-        crtinp['sequence'] = sequence
-        return crtinp
+    def gen_witness_tuples(self):
+        """Generate tuples of (amount, dest, sequence) for each input."""
+        for index, inp in enumerate(self.psbt['inputs']):
+            utxo = inp['witness_utxo']
+            dest = utxo['scriptPubKey']['address']
+            amount = utxo['amount']
+            sequence = self.psbt['tx']['vin'][index]['sequence']
+            yield (amount, dest, sequence)
 
     def build_psbt(self):
         """Build and return a PSBT as a base64 string."""
         newinputs = []  # for the 'inputs' argument to `createpsbt`
-        for index, inp in enumerate(self.psbt['inputs']):
-            if 'witness_utxo' in inp:
-                newinputs.append(self.recreate_witness_utxo(index))
-            else:
-                raise NotImplementedError()
+        if self.xact.segwit:
+            for amount, dest, sequence in self.gen_witness_tuples():
+                crtinp = create_input2(amount, dest=dest)
+                crtinp['sequence'] = sequence
+                newinputs.append(crtinp)
+        else:
+            raise NotImplementedError()
         # Now we have newinputs for `createpsbt`
         outputs = [{vout['scriptPubKey']['addresses'][0]: vout['value']}
                    for vout in self.psbt['tx']['vout']]
