@@ -404,7 +404,7 @@ class BaseWithdrawalXact:
         self.source_address = source_address
         self.redeem_script = redeem_script
         self.keys = []
-        self._validate_address()
+        self.segwit = self._validate_address()
         self._teach_address_to_wallet()
         self._pubkeys = self._find_pubkeys()
 
@@ -424,16 +424,19 @@ class BaseWithdrawalXact:
 
         Given our source cold storage address and redemption script,
         make sure the redeem script is valid and matches the address.
+
+        Returns True iff address is segwit (either p2wsh-in-p2sh or p2wsh).
         """
         decoded_script = bitcoin_cli.json("decodescript", self.redeem_script)
         if decoded_script["type"] != "multisig":
             raise GlacierFatal("Unrecognized redemption script. Doublecheck for typos")
-        ok_addresses = [decoded_script["p2sh"]]
+        if self.source_address == decoded_script["p2sh"]:
+            return False
         if "segwit" in decoded_script:
-            ok_addresses.append(decoded_script["segwit"]["p2sh-segwit"])
-            ok_addresses.extend(decoded_script["segwit"]["addresses"])
-        if self.source_address not in ok_addresses:
-            raise GlacierFatal("Redemption script does not match cold storage address. Doublecheck for typos")
+            if self.source_address in [decoded_script["segwit"]["p2sh-segwit"],
+                                       *decoded_script["segwit"]["addresses"]]:
+                return True
+        raise GlacierFatal("Redemption script does not match cold storage address. Doublecheck for typos")
 
     def _teach_address_to_wallet(self):
         """
