@@ -109,43 +109,55 @@ class PsbtCreator(metaclass=ABCMeta):
         """Build and return a PSBT as a base64 string."""
 
 
-def build_psbt(filename, rawpsbt):
+class PsbtPsbtCreator(PsbtCreator):
     """
-    Import address from PSBT, recreate its inputs, recreate PSBT.
+    Construct a PSBT by mimicing another PSBT.
 
-    Returns new PSBT as base64 string.
+    Also imports its address & redeem script into the bitcoind wallet.
+
+    Used for setting up PSBTs at start, so the sign-psbt tests will be
+    able to find their expected inputs.
+
     """
-    # Obviously we aren't creating a withdrawal, but constructing
-    # this object does all the heavy lifting of decoding & importing:
-    xact = glacierscript.PsbtWithdrawalXact(rawpsbt)
-    psbt = xact.psbt
-    newinputs = []  # for the 'inputs' argument to `walletcreatefundedpsbt`
-    for index, inp in enumerate(psbt['inputs']):
-        if 'witness_utxo' in inp:
-            newinputs.append(recreate_witness_utxo(psbt, index))
-        else:
-            raise NotImplementedError()
-    # Now we have newinputs for `walletcreatefundedpsbt`
-    outputs = [{vout['scriptPubKey']['addresses'][0]: vout['value']}
-               for vout in psbt['tx']['vout']]
-    options = {
-        'lockUnspents': True,  # so no other PSBT uses the same inputs
-        'feeRate': Decimal("0.00001000"),  # minimal, so it doesn't add another input & change output
-        # HACK replaceable? if original PSBT is?
-    }
-    # I want `walletcreatefundedpsbt` instead of `createpsbt` so I can lock
-    # unspents, and so it will fill input fields in the PSBT.
-    results = bitcoin_cli.json("walletcreatefundedpsbt",
-                               glacierscript.jsonstr(newinputs),
-                               glacierscript.jsonstr(outputs),
-                               '0',  # locktime
-                               glacierscript.jsonstr(options))
-    if results['changepos'] != -1:
-        raise RuntimeError("Somehow walletcreatefundedpsbt added a change output for " + filename)
-    newpsbt = bitcoin_cli.json("decodepsbt", results['psbt'])
-    if len(newpsbt['inputs']) != len(psbt['inputs']):
-        raise RuntimeError("Somehow walletcreatefundedpsbt added an extra input for " + filename)
-    return results['psbt']
+
+    def __init__(self, filename, rawpsbt):
+        """Create new instance; rawpsbt is base64 string."""
+        self.filename = filename
+        self.rawpsbt = rawpsbt
+
+    def build_psbt(self):
+        """Build and return a PSBT as a base64 string."""
+        # Obviously we aren't creating a withdrawal, but constructing
+        # this object does all the heavy lifting of decoding & importing:
+        xact = glacierscript.PsbtWithdrawalXact(self.rawpsbt)
+        psbt = xact.psbt
+        newinputs = []  # for the 'inputs' argument to `walletcreatefundedpsbt`
+        for index, inp in enumerate(psbt['inputs']):
+            if 'witness_utxo' in inp:
+                newinputs.append(recreate_witness_utxo(psbt, index))
+            else:
+                raise NotImplementedError()
+        # Now we have newinputs for `walletcreatefundedpsbt`
+        outputs = [{vout['scriptPubKey']['addresses'][0]: vout['value']}
+                   for vout in psbt['tx']['vout']]
+        options = {
+            'lockUnspents': True,  # so no other PSBT uses the same inputs
+            'feeRate': Decimal("0.00001000"),  # minimal, so it doesn't add another input & change output
+            # HACK replaceable? if original PSBT is?
+        }
+        # I want `walletcreatefundedpsbt` instead of `createpsbt` so I can lock
+        # unspents, and so it will fill input fields in the PSBT.
+        results = bitcoin_cli.json("walletcreatefundedpsbt",
+                                   glacierscript.jsonstr(newinputs),
+                                   glacierscript.jsonstr(outputs),
+                                   '0',  # locktime
+                                   glacierscript.jsonstr(options))
+        if results['changepos'] != -1:
+            raise RuntimeError("Somehow walletcreatefundedpsbt added a change output for " + self.filename)
+        newpsbt = bitcoin_cli.json("decodepsbt", results['psbt'])
+        if len(newpsbt['inputs']) != len(psbt['inputs']):
+            raise RuntimeError("Somehow walletcreatefundedpsbt added an extra input for " + self.filename)
+        return results['psbt']
 
 
 def recreate_psbt(txdata):
@@ -156,7 +168,7 @@ def recreate_psbt(txdata):
     """
     rawpsbt = txdata['psbt']
     filename = txdata['file']
-    newrawpsbt = build_psbt(filename, rawpsbt)
+    newrawpsbt = PsbtPsbtCreator(filename, rawpsbt).build_psbt()
     if newrawpsbt != txdata['psbt']:
         actual = bitcoin_cli.json("decodepsbt", newrawpsbt)
         expected = bitcoin_cli.json("decodepsbt", txdata['psbt'])
@@ -818,7 +830,7 @@ class SignPsbtRunfile(ParsedRunfile):
         tx_from_json = txjson.get(self.filename)
         if not tx_from_json \
            or tx_from_json['psbt'] != self.psbt:
-            self.psbt = build_psbt(self.filename, self.psbt)
+            self.psbt = PsbtPsbtCreator(self.filename, self.psbt).build_psbt()
             txjson.put(self.filename, psbt=self.psbt)
         self.save()
 
