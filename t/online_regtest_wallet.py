@@ -95,11 +95,13 @@ class PsbtCreator(metaclass=ABCMeta):
     """
     Class for constructing a PSBT.
 
-    We have two use cases for this: (1) loading the tx file, so that
+    We have three use cases for this: (1) loading the tx file, so that
     sign-psbt tests will find their expected inputs in the regtest
-    blockchain, and (2) the recreate-as-psbt subcommand. PSBTs created
-    for #2 will then become use case #1 the next time we start up, so
-    it had better construct the exact same PSBT.
+    blockchain, (2) converting a sign-psbt test from testnet to
+    regtest, which means we need new txids for the inputs; and (3) the
+    recreate-as-psbt subcommand. PSBTs created for #2 and #3 will then
+    become use case #1 the next time we start up, so it had better
+    construct the exact same PSBT.
 
     This base class is for sharing the common code; the details of
     what the PSBT inputs and outputs should look like are sufficiently
@@ -150,6 +152,8 @@ class PsbtPsbtCreator(PsbtCreator):
 
     Used for setting up PSBTs at start, so the sign-psbt tests will be
     able to find their expected inputs.
+
+    Also used for converting testnet sign-psbt tests to regtest.
 
     """
 
@@ -928,6 +932,8 @@ def recreate_as_psbt(args):
     decoded_tx = bitcoin_cli.json("decoderawtransaction", rawtx)
 
     psbt = TxlistPsbtCreator(args.runfile, prf, decoded_tx).build_psbt()
+    # Now that we have our raw PSBT, write that to a *.psbt file, and write
+    # out a new runfile (make sure it's +x).
     print("Not implemented yet...")
     stop(args)
 
