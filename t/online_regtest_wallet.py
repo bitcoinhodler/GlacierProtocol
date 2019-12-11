@@ -124,7 +124,7 @@ class PsbtCreator(metaclass=ABCMeta):
                     crtinp['sequence'] = sequence
                 newinputs.append(crtinp)
         else:
-            raise NotImplementedError()
+            raise NotImplementedError("Non-segwit cold storage addresses not yet supported")
         # Now we have newinputs for `walletcreatefundedpsbt`
         otx = self.outputs_like_tx()
         outputs = [{vout['scriptPubKey']['addresses'][0]: vout['value']}
