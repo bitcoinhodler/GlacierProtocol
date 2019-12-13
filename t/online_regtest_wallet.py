@@ -644,8 +644,7 @@ class ParsedRunfile(metaclass=ABCMeta):
                 return klass(prefix, filename)
         raise RuntimeError("Unrecognized test input filename: " + filename)
 
-    @staticmethod
-    def parser_coroutine(contents):
+    def parser_coroutine(self, contents):
         """
         Accept a sequence of regexps that contents must match, yielding matched strings.
 
@@ -658,7 +657,7 @@ class ParsedRunfile(metaclass=ABCMeta):
             regexp = yield match.group() if match else None
             match = re.match(regexp, contents, re.DOTALL | re.MULTILINE | re.VERBOSE)
             if not match:
-                raise ParseError("did not match expected regexp")
+                raise ParseError("did not match expected regexp in " + self.filename)
             contents = contents[match.end():]
         yield match.group()  # Last group...shouldn't ever return
 
