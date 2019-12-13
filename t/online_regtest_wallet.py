@@ -117,7 +117,8 @@ def create_input2(addresstype, amount):
     unspents = bitcoin_cli.json("listunspent")
     # Choose first unspent that's large enough. There should always be one because of
     # all our coinbase outputs of 50.0 BTC
-    inputtx = next(unspent for unspent in unspents if unspent["amount"] >= amount + MIN_FEE)
+    inputtx = next(unspent for unspent in unspents
+                   if unspent["amount"] >= amount + MIN_FEE and unspent["spendable"])
     change_adrs = bitcoin_cli.checkoutput("getnewaddress", '', addresstype).strip()
     dest_adrs = bitcoin_cli.checkoutput("getnewaddress", '', addresstype).strip()
     outputs = [
