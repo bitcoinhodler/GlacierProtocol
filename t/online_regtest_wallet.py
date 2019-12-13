@@ -744,7 +744,7 @@ class CreateWithdrawalDataRunfile(ParsedRunfile):
 
     def parse_lines(self, contents):
         """Go through contents (one giant string) to find what we need."""
-        parser, beginning_of_file = self.parse_beginning(contents)
+        parser, self.beginning_of_file = self.parse_beginning(contents)
         self.cold_storage_address = parser.send(r"""
                             (2[0-9a-zA-Z]+|(tb1|bcrt1)[0-9a-z]+) \n # cold storage address
                         """).strip()
@@ -779,13 +779,32 @@ class CreateWithdrawalDataRunfile(ParsedRunfile):
         back_matter = parser.send(r"""
                             .* \Z  # everything up to the end
                         """)
-        self.front_matter = beginning_of_file \
+        self.front_matter = self.beginning_of_file \
             + self.cold_storage_address + "\n" \
             + self.redeem_script + "\n" \
             + dest_address + "\n" \
             + str(input_tx_count) \
             + "\n"
         self.back_matter = back_matter
+
+    def find_keys(self):
+        """
+        Find the privkeys and return them as a list.
+
+        Only run if we're doing recreate-as-psbt since not all
+        create-withdrawal-data tests have any keys.
+        """
+        parser = self.parser_coroutine(self.back_matter)
+        next(parser)  # prime the coroutine
+        key_count = int(parser.send(r"""
+            \d+ \n
+        """))
+        keys = []
+        for _ in range(key_count):
+            keys.append(parser.send(r"""
+                [^\n]+ \n
+            """).rstrip())
+        return keys
 
     def write_file_to(self, outfile):
         """Print file contents to the given filehandle."""
@@ -932,9 +951,33 @@ def recreate_as_psbt(args):
     decoded_tx = bitcoin_cli.json("decoderawtransaction", rawtx)
 
     psbt = TxlistPsbtCreator(args.runfile, prf, decoded_tx).build_psbt()
+
     # Now that we have our raw PSBT, write that to a *.psbt file, and write
     # out a new runfile (make sure it's +x).
-    print("Not implemented yet...")
+    begin = prf.beginning_of_file.replace("create-withdrawal-data", "sign-psbt")
+    keys = prf.find_keys()
+    destfilename = args.runfile.replace("create-withdrawal-data", "sign-psbt")
+    psbtfilename = destfilename.replace(".run", ".psbt")
+    goldenfilename = destfilename.replace(".run", ".golden")
+
+    txjson = TxFile()
+    txjson.put(destfilename, psbt=psbt)
+
+    with open(destfilename, 'wt') as dest:
+        print(begin, file=dest, end='')  # beginning_of_file already has a newline
+        print(psbtfilename, file=dest)
+        print("y", file=dest)
+        print(str(len(keys)), file=dest)
+        print("\n".join(keys), file=dest)
+        print("y", file=dest)
+        print("INPUT", file=dest)
+    with open(psbtfilename, 'wt') as dest:
+        print(psbt, file=dest)
+    with open(goldenfilename, 'wt'):
+        pass
+    os.chmod(destfilename, 0o755)  # executable
+    print("Successfully created {}, {}, and placeholder {}.".format(
+        psbtfilename, destfilename, goldenfilename))
     stop(args)
 
 
