@@ -426,7 +426,14 @@ def build_input_xact(cold_address, like_this):
     Returns: raw hex transaction.
 
     """
-    like_tx = bitcoin_cli.json("decoderawtransaction", like_this)
+    return build_input_xact_d(
+        cold_address,
+        bitcoin_cli.json("decoderawtransaction", like_this)
+    )
+
+
+def build_input_xact_d(cold_address, like_tx):
+    """Construct a single transaction, from already-decoded tx."""
     inputs = build_inputs2(like_tx)
     outputs = build_inp_outputs(cold_address, like_tx)
     return create_and_mine(inputs, outputs)
