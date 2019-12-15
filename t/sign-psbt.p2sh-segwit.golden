@@ -4,7 +4,7 @@ Are you running this on a computer WITHOUT a network connection of any kind? (y/
 0.03000000 BTC going to destination address myP4xdJNwAW9iMakvCjnozg814ewgn8apd
 Fee amount: 0.00002240
 Confirm? (y/n): 
-How many private keys will you be signing this transaction with? 
+How many private keys will you be signing this transaction with (at least 2 required)?
 #: Key #1: Key #2: 
 Is this data correct?
 *** WARNING: Incorrect data may lead to loss of funds ***
