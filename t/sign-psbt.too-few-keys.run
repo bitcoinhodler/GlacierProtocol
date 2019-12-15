@@ -12,8 +12,6 @@ y
 ../../t/sign-psbt.too-few-keys.psbt
 y
 1
-922F7weRdtBgCnqcnuMo8hba8wj75fZc2nx4oTnLHevh9GaCVXA
-y
 INPUT
 
 retVal=$?
