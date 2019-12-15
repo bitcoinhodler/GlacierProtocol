@@ -116,7 +116,7 @@ class PsbtCreator(metaclass=ABCMeta):
 
     def build_psbt(self):
         """Build and return a PSBT as a base64 string."""
-        newinputs = []  # for the 'inputs' argument to `walletcreatefundedpsbt`
+        newinputs = []  # for the 'inputs' argument to `createpsbt`
         if self.xact.segwit:
             for amount, dest, sequence in self.gen_witness_tuples():
                 crtinp = create_input2(amount, dest=dest)
@@ -125,27 +125,19 @@ class PsbtCreator(metaclass=ABCMeta):
                 newinputs.append(crtinp)
         else:
             raise NotImplementedError("Non-segwit cold storage addresses not yet supported")
-        # Now we have newinputs for `walletcreatefundedpsbt`
+        # Now we have newinputs for `createpsbt`
         otx = self.outputs_like_tx()
         outputs = [{vout['scriptPubKey']['addresses'][0]: vout['value']}
                    for vout in otx['vout']]
-        options = {
-            'lockUnspents': True,  # so no other PSBT uses the same inputs
-            'feeRate': Decimal("0.00001000"),  # minimal, so it doesn't add another input & change output
-            # HACK replaceable? if original PSBT is?
-        }
-        # I want `walletcreatefundedpsbt` instead of `createpsbt` so I can lock
-        # unspents, and so it will fill input fields in the PSBT.
-        results = bitcoin_cli.json("walletcreatefundedpsbt",
-                                   glacierscript.jsonstr(newinputs),
-                                   glacierscript.jsonstr(outputs),
-                                   '0',  # locktime
-                                   glacierscript.jsonstr(options))
-        if results['changepos'] != -1:
-            raise RuntimeError("Somehow walletcreatefundedpsbt added a change output for " + self.filename)
-        newpsbt = bitcoin_cli.json("decodepsbt", results['psbt'])
-        if len(newpsbt['inputs']) != len(newinputs):
-            raise RuntimeError("Somehow walletcreatefundedpsbt added an extra input for " + self.filename)
+        createpsbt = bitcoin_cli.checkoutput(
+            "createpsbt",
+            glacierscript.jsonstr(newinputs),
+            glacierscript.jsonstr(outputs),
+            '0',  # locktime
+            'false',  # replaceable: HACK true if original PSBT is?
+        ).strip()
+        bitcoin_cli.checkoutput("lockunspent", 'false', glacierscript.jsonstr(newinputs))
+        results = bitcoin_cli.json("walletprocesspsbt", createpsbt, 'false')
         return results['psbt']
 
 
