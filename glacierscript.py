@@ -430,7 +430,7 @@ class BaseWithdrawalXact:
         self.keys = []
         self.segwit = self._validate_address()
         self._teach_address_to_wallet()
-        self._pubkeys = self._find_pubkeys()
+        self.sigsrequired, self._pubkeys = self._find_pubkeys()
 
     def add_key(self, key):
         """
@@ -499,14 +499,14 @@ class BaseWithdrawalXact:
 
     def _find_pubkeys(self):
         """
-        Return a list of the pubkeys associated with our source address.
+        Return (sigsrequired, pubkeys) associated with our source address.
 
         Assumes that source_address has already been imported to the wallet using `importmulti`
         """
         out = bitcoin_cli.json("getaddressinfo", self.source_address)
-        if "pubkeys" in out:
-            return out["pubkeys"]  # for non-segwit addresses
-        return out["embedded"]["pubkeys"]  # for segwit addresses
+        if "pubkeys" not in out:
+            out = out["embedded"]  # for p2sh-segwit
+        return (out["sigsrequired"], out["pubkeys"])
 
 
 class ManualWithdrawalXact(BaseWithdrawalXact):
@@ -1049,6 +1049,9 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
         """Prompt user for private keys and add them to the withdrawal transaction."""
         print("\nHow many private keys will you be signing this transaction with? ")
         key_count = int(input("#: "))
+
+        if key_count < xact.sigsrequired:
+            raise GlacierFatal("not enough private keys to complete transaction (need {})".format(xact.sigsrequired))
 
         for key_idx in range(key_count):
             key = input("Key #{0}: ".format(key_idx + 1))
