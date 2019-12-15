@@ -111,6 +111,10 @@ class PsbtCreator(metaclass=ABCMeta):
         """Generate tuples of (amount, dest, sequence) for each input."""
 
     @abstractmethod
+    def gen_input_txs(self):
+        """Generate decoded transactions for each input."""
+
+    @abstractmethod
     def outputs_like_tx(self):
         """Return decoded transaction with outputs to recreate."""
 
@@ -118,13 +122,25 @@ class PsbtCreator(metaclass=ABCMeta):
         """Build and return a PSBT as a base64 string."""
         newinputs = []  # for the 'inputs' argument to `createpsbt`
         if self.xact.segwit:
+            # For segwit, the PSBT will include only txid/vout/amount,
+            # so we don't need to recreate any more than that.
             for amount, dest, sequence in self.gen_witness_tuples():
                 crtinp = create_input2(amount, dest=dest)
                 if sequence is not None:
                     crtinp['sequence'] = sequence
                 newinputs.append(crtinp)
         else:
-            raise NotImplementedError("Non-segwit cold storage addresses not yet supported")
+            # For non-segwit, the PSBT will include the entire input TX,
+            # so we must recreate the entire input TX.
+            for dectx in self.gen_input_txs():
+                intx = build_input_xact_d(self.xact.source_address, dectx)
+                decoded = bitcoin_cli.json("decoderawtransaction", intx)
+                crtinp = {
+                    'txid': decoded['txid'],
+                    'vout': next(vout['n'] for vout in decoded['vout']
+                                 if self.xact.source_address in vout['scriptPubKey']['addresses']),
+                }
+                newinputs.append(crtinp)
         # Now we have newinputs for `createpsbt`
         otx = self.outputs_like_tx()
         outputs = [{vout['scriptPubKey']['addresses'][0]: vout['value']}
@@ -176,6 +192,11 @@ class PsbtPsbtCreator(PsbtCreator):
             sequence = self.psbt['tx']['vin'][index]['sequence']
             yield (amount, dest, sequence)
 
+    def gen_input_txs(self):
+        """Generate decoded transactions for each input."""
+        for inp in self.psbt['inputs']:
+            yield inp['non_witness_utxo']
+
     def outputs_like_tx(self):
         """Return decoded transaction with outputs to recreate."""
         return self.psbt['tx']
@@ -217,6 +238,11 @@ class TxlistPsbtCreator(PsbtCreator):
                 if self.prf.cold_storage_address \
                    in outp['scriptPubKey']['addresses']:
                     yield (outp['value'], self.prf.cold_storage_address, None)
+
+    def gen_input_txs(self):
+        """Generate decoded transactions for each input."""
+        for rawtx in self.prf.input_txs:
+            yield bitcoin_cli.json("decoderawtransaction", rawtx)
 
     def outputs_like_tx(self):
         """Return decoded transaction with outputs to recreate."""
