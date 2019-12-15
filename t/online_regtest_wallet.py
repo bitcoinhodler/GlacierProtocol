@@ -978,8 +978,8 @@ def recreate_as_psbt(args):
     goldenfile = args.runfile.replace('.run', '.golden')
     try:
         rawtx = find_withdrawal_tx(goldenfile)
-    except NoTransactionFound:
-        raise RuntimeError("I can only convert tests that successfully created a withdrawal")
+    except NoTransactionFound as exc:
+        raise RuntimeError("I can only convert tests that successfully created a withdrawal") from exc
     decoded_tx = bitcoin_cli.json("decoderawtransaction", rawtx)
 
     psbt = TxlistPsbtCreator(args.runfile, prf, decoded_tx).build_psbt()
