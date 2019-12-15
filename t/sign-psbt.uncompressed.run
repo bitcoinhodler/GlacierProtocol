@@ -1,0 +1,19 @@
+#!/bin/bash
+set -e
+
+# Also tests excessive fee correction
+
+$GLACIERSCRIPT --regtest=$1 sign-psbt << INPUT 2>&1
+y
+y
+y
+y
+y
+y
+../../t/sign-psbt.uncompressed.psbt
+y
+2
+92jodMpEwGtS11sMjxfq6acnc1Yi6VX2QFZWr4YQVjXnQGdKH1g
+922F7weRdtBgCnqcnuMo8hba8wj75fZc2nx4oTnLHevh9GaCVXA
+y
+INPUT
