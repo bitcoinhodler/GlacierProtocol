@@ -357,10 +357,10 @@ def build_one_input2(vin, amount_btc):
     scriptsigs = {
         # Standard P2PKH: sig pubkey
         'legacy': r'sig: [0-9a-f]{140,144}\[ALL\] [0-9a-f]{66} witness: None',
-        # P2WPKH-in-P2SH:
-        'p2sh-segwit': r'sig: [0-9a-f]{44} witness: [0-9a-f]{140,144} [0-9a-f]{66}',
+        # P2WPKH-in-P2SH: (we won't always have the witness sigs, if it's a PSBT)
+        'p2sh-segwit': r'sig: [0-9a-f]{44} witness: (None|[0-9a-f]{140,144} [0-9a-f]{66})',
         # P2WPKH:
-        'bech32': r'sig:  witness: [0-9a-f]{140,144} [0-9a-f]{66}',
+        'bech32': r'sig:  witness: (None|[0-9a-f]{140,144} [0-9a-f]{66})',
     }
     witness = " ".join(vin["txinwitness"]) if "txinwitness" in vin else "None"
     vin_sig = "sig: {} witness: {}".format(vin["scriptSig"]["asm"], witness)
