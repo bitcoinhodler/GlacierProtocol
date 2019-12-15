@@ -1,0 +1,22 @@
+#!/bin/bash
+set -e
+
+# Test validation of extra keys. Only need 2, providing 4 as I would in the test withdrawal process
+
+
+$GLACIERSCRIPT --regtest=$1 sign-psbt << INPUT 2>&1
+y
+y
+y
+y
+y
+y
+../../t/sign-psbt.extra-keys-segwit.psbt
+y
+4
+cUY5DRXSmpqT7WpBAkjFz6PPxHoPJ2Cw2VNCa7muihpRjAUJVycs
+cQTQEE1ooQHpVi5C4aTcbYPSUMzY2gF1DVdafUsEwnYYaT97UUMy
+cQsAGjLXgGXpa48W8kUh3Pci8bMDENoUW5zVkanknDUWd4uxQSPh
+cTQHU4ZzwLthJhDU6oxSzmWsTmwhDvFphJCfKFDZxxy6F8j37jRq
+y
+INPUT
