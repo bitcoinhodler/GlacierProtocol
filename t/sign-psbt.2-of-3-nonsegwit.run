@@ -1,0 +1,17 @@
+#!/bin/bash
+set -e
+
+$GLACIERSCRIPT --regtest=$1 sign-psbt << INPUT 2>&1
+y
+y
+y
+y
+y
+y
+../../t/sign-psbt.2-of-3-nonsegwit.psbt
+y
+2
+cVV1MBAgdAnrX8bjQWSJcgZAbVtprR8kgdfez858ejvXs3qZWqn2
+cQy39MvkMKeaEvG1wXejdtEvAdU381u9EBBmcKUJWbfn6QL82YvR
+y
+INPUT
