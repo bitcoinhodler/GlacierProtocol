@@ -711,10 +711,10 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         ManualWithdrawalXact, and should match self.destinations.
         """
         if destinations != self.destinations:
-            raise GlacierFatal("unable to change destinations of PSBT")
+            raise GlacierFatal("unable to change destinations of PSBT")  # pragma: no cover
         prcs = bitcoin_cli.json("walletprocesspsbt", self.psbt_raw)
         if not prcs['complete']:
-            raise GlacierFatal("Expected PSBT to be complete by now")
+            raise GlacierFatal("Expected PSBT to be complete by now")  # pragma: no cover
         final = bitcoin_cli.json('finalizepsbt', prcs['psbt'])
         return {'hex': final['hex'], 'complete': True}
 
@@ -1107,7 +1107,8 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
         signed_tx = xact.create_signed_transaction(addresses)
 
         if not signed_tx["complete"]:
-            raise GlacierFatal("not enough private keys to complete transaction")
+            # This should have already been caught by sigsrequired check
+            raise GlacierFatal("not enough private keys to complete transaction")  # pragma: no cover
 
         print("\nRaw signed transaction (hex):")
         print(signed_tx["hex"])
