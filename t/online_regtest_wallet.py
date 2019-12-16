@@ -109,6 +109,10 @@ class PsbtCreator(metaclass=ABCMeta):
 
     """
 
+    def __init__(self, xact):
+        """Create new instance."""
+        self.xact = xact
+
     @abstractmethod
     def gen_witness_tuples(self):
         """Generate tuples of (amount, dest, sequence) for each input."""
@@ -178,7 +182,7 @@ class PsbtPsbtCreator(PsbtCreator):
         self.rawpsbt = rawpsbt
         # Obviously we aren't creating a withdrawal, but constructing
         # this object does all the heavy lifting of decoding & importing:
-        self.xact = glacierscript.PsbtWithdrawalXact(self.rawpsbt)
+        super().__init__(glacierscript.PsbtWithdrawalXact(self.rawpsbt))
         self.psbt = self.xact.psbt
 
     def gen_witness_tuples(self):
@@ -223,8 +227,8 @@ class TxlistPsbtCreator(PsbtCreator):
         self.decoded_tx = decoded_tx
         # Start a withdrawal transaction just so it can figure out the
         # address details -- namely, segwit or not.
-        self.xact = glacierscript.ManualWithdrawalXact(
-            prf.cold_storage_address, prf.redeem_script)
+        super().__init__(glacierscript.ManualWithdrawalXact(
+            prf.cold_storage_address, prf.redeem_script))
 
     def gen_witness_tuples(self):
         """Generate tuples of (amount, dest, sequence) for each input."""
