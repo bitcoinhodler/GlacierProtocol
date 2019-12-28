@@ -101,7 +101,7 @@ descriptor; (2) sign a transaction.
 
 ## Output script descriptor
 
-`wsh(xpub.../0/*)`; change goes to `wsh(xpub.../1/*)`. Or should we
+`wpkh(xpub.../0/*)`; change goes to `wpkh(xpub.../1/*)`. Or should we
 use a BIP84 derivation path for better wallet compatibility?
 
 ## Process descriptions
