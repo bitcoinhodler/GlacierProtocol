@@ -23,19 +23,22 @@ def main():
     # print how much we are spending and where
     for out in tx.tx.vout:
         print(out.value,"to",out.script_pubkey.address(NETWORKS["test"]))
+    save_to_file(tx, 'test.psbt')
 
-    raw = tx.serialize()
+
+def save_to_file(psbt, filename):
+    """Given a PSBT object, write it in base64 to filename."""
+    raw = psbt.serialize()
     # convert to base64
     b64_psbt = b2a_base64(raw)
     # somehow b2a ends with \n...
     if b64_psbt[-1:] == b"\n":
         b64_psbt = b64_psbt[:-1]
     # print
-    print("\nRe-serialzed transaction:")
     new_psbt = b64_psbt.decode('utf-8')
-    print(new_psbt)
-    if new_psbt != orig_psbt:
-        raise ValueError("What happened")
+    print("Creating", filename)
+    with open(filename, 'wt') as outfile:
+        print(new_psbt, file=outfile)
 
 
 if __name__ == '__main__':
