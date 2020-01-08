@@ -20,9 +20,24 @@ def main():
     # then parse
     tx = psbt.PSBT.parse(raw)
 
+    def amount_for(idx):
+        """Return satoshis on input {idx}. Assumes non-witness inputs."""
+        vout = tx.tx.vin[idx].vout
+        outp = tx.inputs[idx].non_witness_utxo.vout[vout]
+        return outp.value
+
+    # Calculate and display transaction fee.
+    input_total = sum(amount_for(idx) for idx in range(len(tx.tx.vin)))
+    output_total = sum(out.value for out in tx.tx.vout)
+
+    print("Inputs total", input_total, "sats")
+    print("Outputs total", output_total, "sats")
+    print("Fee equals", input_total - output_total, "sats")
+
     # print how much we are spending and where
     for out in tx.tx.vout:
         print(out.value,"to",out.script_pubkey.address(NETWORKS["test"]))
+
     save_to_file(tx, 'test.psbt')
 
 
