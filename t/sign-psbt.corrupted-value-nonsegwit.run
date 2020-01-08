@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# The input PSBT has been manipulated to have one of its inputs appear
+# smaller than it actually is, as if a hacker were trying to steal
+# your coins via transaction fees.
+
+# This is testnet, not regtest, because we don't want
+# online_regtest_wallet.py attempting to recreate this PSBT. Since we
+# aren't successfully creating any transaction, there's nothing to
+# submit back to the "online" blockchain for validation, so it doesn't
+# really matter, and since the PSBT has been deliberately corrupted by
+# hand, online_regtest_wallet.py wouldn't be able to recreate it
+# anyway.
+
+$GLACIERSCRIPT --testnet=$1 sign-psbt << INPUT 2>&1
+y
+y
+y
+y
+y
+y
+../../t/sign-psbt.corrupted-value-nonsegwit.psbt
+INPUT
+
+retVal=$?
+if [ $retVal -eq 0 ]; then
+    echo "Error: expected glacierscript.py to fail"
+    exit 1
+fi

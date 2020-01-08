@@ -20,6 +20,10 @@ def main():
     # then parse
     tx = psbt.PSBT.parse(raw)
 
+    # Corrupt the input amount!
+    tx.inputs[0].non_witness_utxo.vout[1].value = 48000  # was 50000
+
+
     def amount_for(idx):
         """Return satoshis on input {idx}. Assumes non-witness inputs."""
         vout = tx.tx.vin[idx].vout
@@ -38,7 +42,7 @@ def main():
     for out in tx.tx.vout:
         print(out.value,"to",out.script_pubkey.address(NETWORKS["test"]))
 
-    save_to_file(tx, 'test.psbt')
+    save_to_file(tx, 'sign-psbt.corrupted-value-nonsegwit.psbt')
 
 
 def save_to_file(psbt, filename):
