@@ -786,9 +786,10 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
                 if key not in allowed_input_keys:
                     raise GlacierFatal("Unknown PSBT input key '{}'".format(key))
 
-        # Do I need to check that inputs[0].non_witness_utxo.txid
-        # matches the tx.vin[0].txid? Or will Bitcoin Core do that for
-        # me?
+        # Bitcoin-cli's decodepsbt will check that
+        # inputs[0].non_witness_utxo.txid matches the tx.vin[0].txid,
+        # so I don't need to do that here. See
+        # t/sign-psbt.corrupted-value-nonsegwit.run.
 
 
 ################################################################################################
