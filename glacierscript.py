@@ -689,7 +689,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         inp0 = self.psbt['inputs'][0]
         script = inp0['witness_script']['hex'] if 'witness_script' in inp0 \
             else inp0['redeem_script']['hex']
-        myaddr, _ = self._input_addr_and_amount(0)
+        myaddr, _ = next(self._input_iter())
         return myaddr, script
 
     def _find_output_addresses(self):
