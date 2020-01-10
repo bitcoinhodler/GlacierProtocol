@@ -652,21 +652,6 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         super().__init__(source_address, redeem_script)
         self.destinations = self._find_output_addresses()
 
-    def _input_addr_and_amount(self, index):
-        """
-        Return (address, amount) for input at {index}.
-        """
-        inp = self.psbt['inputs'][index]
-        if 'witness_utxo' in inp:
-            addr = inp['witness_utxo']['scriptPubKey']['address']
-            amount = inp['witness_utxo']['amount']
-        else:
-            inp0_n = self.psbt['tx']['vin'][index]['vout']
-            vout = inp['non_witness_utxo']['vout'][inp0_n]
-            addr = vout['scriptPubKey']['addresses'][0]
-            amount = vout['value']
-        return addr, amount
-
     def _input_iter(self):
         """
         Iterate over (address, amount) for each input.
