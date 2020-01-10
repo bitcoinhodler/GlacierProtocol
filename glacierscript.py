@@ -777,9 +777,8 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         # it's ours without having to ask user to type in cold storage
         # address). We need to identify our own address in order to
         # identify the change output.
-        myaddr, _ = self._input_addr_and_amount(0)
-        for index, _ in enumerate(self.psbt['inputs']):
-            thisaddr, _ = self._input_addr_and_amount(index)
+        myaddr, _ = next(self._input_iter())
+        for thisaddr, _ in self._input_iter():
             if myaddr != thisaddr:
                 raise GlacierFatal("expected all inputs to be from same address")
 
