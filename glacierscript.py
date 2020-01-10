@@ -706,10 +706,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         """
         Return the total amount of BTC available to spend from the input UTXOs.
         """
-        inamts = []
-        for _, amount in self._input_iter():
-            inamts.append(amount)
-        return sum(inamts)
+        return sum(amount for _, amount in self._input_iter())
 
     def create_signed_transaction(self, destinations):
         """
