@@ -667,6 +667,21 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
             amount = vout['value']
         return addr, amount
 
+    def _input_iter(self):
+        """
+        Iterate over (address, amount) for each input.
+        """
+        for index, inp in enumerate(self.psbt['inputs']):
+            if 'witness_utxo' in inp:
+                addr = inp['witness_utxo']['scriptPubKey']['address']
+                amount = inp['witness_utxo']['amount']
+            else:
+                inp0_n = self.psbt['tx']['vin'][index]['vout']
+                vout = inp['non_witness_utxo']['vout'][inp0_n]
+                addr = vout['scriptPubKey']['addresses'][0]
+                amount = vout['value']
+            yield addr, amount
+
     def _find_source_address(self):
         """
         Analyze PSBT and return our detected address and redeem script.
@@ -692,8 +707,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         Return the total amount of BTC available to spend from the input UTXOs.
         """
         inamts = []
-        for index, _ in enumerate(self.psbt['inputs']):
-            _, amount = self._input_addr_and_amount(index)
+        for _, amount in self._input_iter():
             inamts.append(amount)
         return sum(inamts)
 
