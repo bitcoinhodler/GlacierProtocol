@@ -84,6 +84,7 @@ $ make COVERAGE=1; firefox coverage-report/index.html
 | `segwit-inputs`            | Both     | [#14](https://github.com/GlacierProtocol/GlacierProtocol/issues/14)| Inputs with a variety of output types |
 | `too-few-keys`             | Both     | | Not enough private keys provided |
 | `uncompressed`             | Both     | | Basic p2sh with uncompressed keys (original Glacier release) |
+| `witness-then-non-witness` | PSBT only| | psbt with 1st input witness, 2nd non-witness |
 | `wrong-input`              | CWD only | | Input TX with no output to us |
 | `wrong-keys-nonsegwit`     | Both     | | Validation of extra keys (p2sh) |
 | `wrong-keys-segwit`        | Both     | | Validation of extra keys (p2wsh-in-p2sh) |
