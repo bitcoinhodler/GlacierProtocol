@@ -727,9 +727,8 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         https://medium.com/shiftcrypto/a-remote-theft-attack-on-trezor-model-t-44127cd7fb5a
 
         """
-        # Number of inputs must match inputs in tx.
-        if len(self.psbt['inputs']) != len(self.psbt['tx']['vin']):
-            raise GlacierFatal("Invalid PSBT, inputs don't match tx")
+        # decodepsbt has already checked that the length of psbt['inputs']
+        # matches length of psbt['tx']['vin'].
 
         # Every input must be populated with utxo info.
         for inp in self.psbt['inputs']:
