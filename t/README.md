@@ -67,6 +67,7 @@ $ make COVERAGE=1; firefox coverage-report/index.html
 | `bad-redeem-script`        | CWD only | [#57](https://github.com/GlacierProtocol/GlacierProtocol/issues/57)| Mistyped redemption script |
 | `bech32`                   | Both     | | p2wpkh destination address |
 | `compressed`               | Both     | | p2sh with compressed keys |
+| `corrupted-inputs`         | PSBT only| | psbt with missing input |
 | `corrupted-value-nonsegwit`| PSBT only| | psbt with malicious modification |
 | `dup-inputs`               | CWD only | [#75](https://github.com/GlacierProtocol/GlacierProtocol/issues/75) | Same input pasted twice |
 | `extra-keys-nonsegwit`     | Both     | [#20](https://github.com/GlacierProtocol/GlacierProtocol/issues/20)| Validation of extra keys (p2sh) |

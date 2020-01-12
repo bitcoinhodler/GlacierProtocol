@@ -12,8 +12,8 @@ from binascii import a2b_base64, b2a_base64
 
 def main():
     # parse psbt transaction
-    # From sign-psbt.uncompressed.psbt:
-    orig_psbt = "cHNidP8BAHUCAAAAAfJhL6kG42b89bDWlMdPRNrE4Qi6f76NITsZ2t5UJjFmAQAAAAD/////AtSeAAAAAAAAF6kUdi/qMkbcTOGc/T8aqWheiDhgUFeHoA8AAAAAAAAZdqkU+1tniKM2wM9JuQ5RrUJvLom/Q/uIrAAAAAAAAQDfAgAAAAFWDAzZ/CRJrj03Jln8hoA9cdlz0Oj407ZoKoHGYRYjJAEAAABqRzBEAiAxVkTRJzpriWN+BaJPIFRnSRkJeVXmMgYTuI4PABLQawIgcrKtCtmObWGWqMrH3K8zVvw1P+zWYQgQJHwdPC5mEhgBIQOGX/ISA/a2uTUJ5AvT0bQtfOGUYadEqc0kqOF5O39YWP////8CMAz1BQAAAAAZdqkUPM59uAX0QZX8OcQ8DFJkPG7aE4KIrFDDAAAAAAAAF6kUdi/qMkbcTOGc/T8aqWheiDhgUFeHAAAAAAEE/QsBUkEEd/FfIq7/rz87xIooCnZ/fGryEnZ4PAn/O8qrvs4XgRNc8PKPZD08YKdcKdsIGdVEK66D2PdOfETO0yVWZZmOUkEEA/ZCIjvHUeElq2BO0gxUTpM+uCoZIB+QvaYjap3b7ayTHBCMfDGJt/x+pwl7AiF9gZ6GaphBKRxSL2kXOhJSSkEEaJXz7QHAkCW6nPq3tn1pnj66zq2gvv9wvHLH8Q3y0cZ033Q7u1jOohFwgxM05NbZZe00ziMklVcJH0QDBaucAEEEnzyxUhMMJB4BuSIKFH9p9xEbgw3vNbUQlzq0e7mvf/byH8talYg5/uACLo6l3cbXH8YkqEvcQoNRk6v+4SWxw1SuAAEA/QsBUkEEd/FfIq7/rz87xIooCnZ/fGryEnZ4PAn/O8qrvs4XgRNc8PKPZD08YKdcKdsIGdVEK66D2PdOfETO0yVWZZmOUkEEA/ZCIjvHUeElq2BO0gxUTpM+uCoZIB+QvaYjap3b7ayTHBCMfDGJt/x+pwl7AiF9gZ6GaphBKRxSL2kXOhJSSkEEaJXz7QHAkCW6nPq3tn1pnj66zq2gvv9wvHLH8Q3y0cZ033Q7u1jOohFwgxM05NbZZe00ziMklVcJH0QDBaucAEEEnzyxUhMMJB4BuSIKFH9p9xEbgw3vNbUQlzq0e7mvf/byH8talYg5/uACLo6l3cbXH8YkqEvcQoNRk6v+4SWxw1SuAAA="
+    # From sign-psbt.segwit-inputs.psbt:
+    orig_psbt = "cHNidP8BAM4CAAAABFAqXQa2PFg8pAnCVBZEiWjWiT9kCtvhtFL789qp9txJAQAAAAD/////FIiqv5nPcATIXvaPyvXKTHdvvZ4Lx/hcq7eB5JCMoWsAAAAAAP////+WskoLtxYV1tlohvYVa1+LaDA7VJVXOImftYpHs/WL4AAAAAAA/////xhRnXo1X5jbt57UFzdk97EVrsku74Mt6pqpdizQEcG/AAAAAAD/////AeH1IQoAAAAAF6kUhUbnR8gJQ3awoK9EvFu7jdTwIY2HAAAAAAABAIoCAAAAAcC/NJJsUqFeod2Avd7/ssZzjybwFIYqGmEvQmuHYyPVAQAAABcWABTQB03a+UQVNYAF1jYLqSn2KKi6wf////8CEH6IAgAAAAAXqRSp4cLcMuRItnG9EaM4hGn3pIcmX4egf4gCAAAAABepFL05lruabEAdp+ZdTbs6m5eM0EXshwAAAAABBItSIQPRTdz7aBf1V5aVu7PrPhhYh78pQrAx5vcWNDuP5+no4iECj81G+GFLLL8xgJaWgkKh4ivPttjyttyTnIwnw0eyk3shAxWstVASD0zctGDVxJCAq1CMpMzY3t7Kwi/urIzQF9TBIQIrBj7i8i+eGYLBQP53hnLGgxEaeW3Mzb1Hu2Xj1gipg1SuAAEAcgIAAAAB2T89qSgOt9YXHadGJn70ael9dGX3nqRqReB0ld/Cd1MBAAAAAP////8CCEuHAgAAAAAXqRS9OZa7mmxAHafmXU27OpuXjNBF7Idws4kCAAAAABYAFEdvx77Y6Nd+j/cMVGveWto3zc7GAAAAAAEEi1IhA9FN3PtoF/VXlpW7s+s+GFiHvylCsDHm9xY0O4/n6ejiIQKPzUb4YUssvzGAlpaCQqHiK8+22PK23JOcjCfDR7KTeyEDFay1UBIPTNy0YNXEkICrUIykzNje3srCL+6sjNAX1MEhAisGPuLyL54ZgsFA/neGcsaDERp5bczNvUe7ZePWCKmDVK4AAQBqAgAAAAFtxht/2X8gayzOn51bht9UhI9RgjHNFt6KzM1CxtZ3yAEAAAAXFgAUrhC9pL7tuNF0nizVDDiqX/yG5hP/////AYh9iAIAAAAAF6kUvTmWu5psQB2n5l1Nuzqbl4zQReyHAAAAAAEEi1IhA9FN3PtoF/VXlpW7s+s+GFiHvylCsDHm9xY0O4/n6ejiIQKPzUb4YUssvzGAlpaCQqHiK8+22PK23JOcjCfDR7KTeyEDFay1UBIPTNy0YNXEkICrUIykzNje3srCL+6sjNAX1MEhAisGPuLyL54ZgsFA/neGcsaDERp5bczNvUe7ZePWCKmDVK4AAQBTAgAAAAEFKFZCgO502jYEGbmHynXbzDhML6IoNspAe1cPldUKoAEAAAAA/////wH/sokCAAAAABepFL05lruabEAdp+ZdTbs6m5eM0EXshwAAAAABBItSIQPRTdz7aBf1V5aVu7PrPhhYh78pQrAx5vcWNDuP5+no4iECj81G+GFLLL8xgJaWgkKh4ivPttjyttyTnIwnw0eyk3shAxWstVASD0zctGDVxJCAq1CMpMzY3t7Kwi/urIzQF9TBIQIrBj7i8i+eGYLBQP53hnLGgxEaeW3Mzb1Hu2Xj1gipg1SuAAA="
 
     # first convert it to binary
     raw = a2b_base64(orig_psbt)
@@ -23,10 +23,6 @@ def main():
     # Since cold storage address in question is non-segwit for this case:
     if not all(x.non_witness_utxo for x in tx.inputs):
         raise ValueError("Expected all non-witness inputs")
-
-    # Corrupt the input amount!
-    tx.inputs[0].non_witness_utxo.vout[1].value = 48000  # was 50000
-
 
     def amount_for(idx):
         """Return satoshis on input {idx}. Assumes non-witness inputs."""
@@ -38,7 +34,7 @@ def main():
     input_total = sum(amount_for(idx) for idx in range(len(tx.tx.vin)))
     output_total = sum(out.value for out in tx.tx.vout)
 
-    print("Inputs total", input_total, "sats")
+    print("Inputs total", input_total, "sats from", len(tx.tx.vin), "inputs")
     print("Outputs total", output_total, "sats")
     print("Fee equals", input_total - output_total, "sats")
 
@@ -46,7 +42,10 @@ def main():
     for out in tx.tx.vout:
         print(out.value,"to",out.script_pubkey.address(NETWORKS["test"]))
 
-    save_to_file(tx, 'sign-psbt.corrupted-value-nonsegwit.psbt')
+    # Corrupt the PSBT by deleting the last input
+    del tx.inputs[-1]
+
+    save_to_file(tx, 'sign-psbt.corrupted-inputs.psbt')
 
 
 def save_to_file(psbt, filename):
