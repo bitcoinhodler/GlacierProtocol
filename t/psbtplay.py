@@ -20,6 +20,10 @@ def main():
     # then parse
     tx = psbt.PSBT.parse(raw)
 
+    # Since cold storage address in question is non-segwit for this case:
+    if not all(x.non_witness_utxo for x in tx.inputs):
+        raise ValueError("Expected all non-witness inputs")
+
     # Corrupt the input amount!
     tx.inputs[0].non_witness_utxo.vout[1].value = 48000  # was 50000
 
