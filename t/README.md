@@ -67,7 +67,7 @@ $ make COVERAGE=1; firefox coverage-report/index.html
 | `bad-redeem-script`        | CWD only | [#57](https://github.com/GlacierProtocol/GlacierProtocol/issues/57)| Mistyped redemption script |
 | `bech32`                   | Both     | | p2wpkh destination address |
 | `compressed`               | Both     | | p2sh with compressed keys |
-| `corrupted-inputs`         | PSBT only| | psbt with missing input |
+| `corrupted-inputs`         | PSBT only| | psbt with one missing input |
 | `corrupted-value-nonsegwit`| PSBT only| | psbt with malicious modification |
 | `dup-inputs`               | CWD only | [#75](https://github.com/GlacierProtocol/GlacierProtocol/issues/75) | Same input pasted twice |
 | `extra-keys-nonsegwit`     | Both     | [#20](https://github.com/GlacierProtocol/GlacierProtocol/issues/20)| Validation of extra keys (p2sh) |
@@ -75,6 +75,7 @@ $ make COVERAGE=1; firefox coverage-report/index.html
 | `fails`                    | CWD only | | Invalid destination address |
 | `insufficient-funds`       | CWD only | [#21](https://github.com/GlacierProtocol/GlacierProtocol/issues/21)| Withdrawal amount too large; correction of entered fee rate |
 | `large-withdrawal`         | Both     | [#78](https://github.com/GlacierProtocol/GlacierProtocol/issues/78)| Transaction too big for single QR code |
+| `no-inputs`                | PSBT only| | psbt with no inputs described |
 | `not-enough-for-fee`       | CWD only | | Fee larger than unspent |
 | `one-wrong-input`          | CWD only | [#23](https://github.com/GlacierProtocol/GlacierProtocol/issues/23)| Unrelated input TX pasted |
 | `p2sh-segwit`              | Both     | | Basic withdrawal from p2wsh-in-p2sh address |
