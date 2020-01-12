@@ -76,6 +76,7 @@ $ make COVERAGE=1; firefox coverage-report/index.html
 | `insufficient-funds`       | CWD only | [#21](https://github.com/GlacierProtocol/GlacierProtocol/issues/21)| Withdrawal amount too large; correction of entered fee rate |
 | `large-withdrawal`         | Both     | [#78](https://github.com/GlacierProtocol/GlacierProtocol/issues/78)| Transaction too big for single QR code |
 | `no-inputs`                | PSBT only| | psbt with no inputs described |
+| `non-witness-then-witness` | PSBT only| | psbt with 1st input non-witness, 2nd witness |
 | `not-enough-for-fee`       | CWD only | | Fee larger than unspent |
 | `one-wrong-input`          | CWD only | [#23](https://github.com/GlacierProtocol/GlacierProtocol/issues/23)| Unrelated input TX pasted |
 | `p2sh-segwit`              | Both     | | Basic withdrawal from p2wsh-in-p2sh address |
