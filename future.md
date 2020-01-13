@@ -17,11 +17,14 @@ achieve this, with various tradeoffs in complexity and security.
 
 * Recovery possible with only M-of-N paper packets
 
+* Privacy: compromise of a single paper packet should not give away
+  any information
+
 * Low-security withdrawal process documented for heirs
 
 * Recovery likely by heirs with only M-of-N paper packets and no
-  knowledge of the wallet system, assuming Bitcoin expert consultation
-
+  foreknowledge of the wallet system, assuming Bitcoin expert
+  consultation
 
 ### Non-goals
 
@@ -507,11 +510,11 @@ Some options for higher-efficiency encoding of the wallet data:
 * Use a binary format for the xpubs and describe the output script in
   some other way
 
-* Instead of JSON, use a binary format for the data structure (Google
-  protobuf?)
+* Instead of JSON, use a binary format for the data structure (BSON?
+  UBJSON? BJSON?)
 
 * Truncate each mnemonic into its unique first 4 chars, and remove all
-  spaces
+  spaces. Danger: less recognizable as SLIP39.
 
 # Questions
 
