@@ -307,10 +307,12 @@ I'll leave a note in the JSON about change.
 
 When signing, we also need to verify that change address is valid.
 
-Does the PSBT contain the output scripts for p2wsh outputs? It better,
-for our change output to be properly validated. We need to validate
-that the output address matches the accompanying script, in case the
-PSBT has been tampered with.
+The PSBT will contain the output scripts and BIP32 derivation paths
+for p2wsh change outputs. We need to validate that the script matches
+our descriptor at the given derivation path, that the derivation paths
+are reasonable, and that the output address matches the accompanying
+script. (Perhaps decodepsbt will detect the latter, like it does with
+some other tampered PSBTs.)
 
 ## Process descriptions
 
@@ -382,12 +384,12 @@ Follow the "Import watch-only wallet into Bitcoin Core" subprocess.
 If user doesn't have watch-only wallet in Bitcoin Core, follow "Import
 watch-only wallet into Bitcoin Core" subprocess.
 
-Get next unused receive address from Bitcoin Core, with index. Don't
-show user! Tell user the index and have them type in the first 8
-digits or so from photo. (If no photo, or this index is not in photo,
-follow the "Generate receiving addresses" subprocess.) Once first 8
-digits match, show entire address and confirm with user. Copy/paste
-address and send bitcoins.
+Get next unused receive address from Bitcoin Core, with index. Show
+user all but the last 4 digits of the address. Tell user the index and
+have them type in the last 4 digits or so from photo. (If no photo, or
+this index is not in photo, follow the "Generate receiving addresses"
+subprocess.) Once last 4 digits match, copy/paste address and send
+bitcoins.
 
 Should we go easier: just show the user and trust they actually verify
 it vs photo?
@@ -470,8 +472,8 @@ outputs match our expected descriptor. Display tx details to user and
 confirm. Then user types in xprv key via mnemonics. Sign
 transaction. Display updated PSBT as QR code. Scan with phone. (Might
 take multiple QR codes again.) Could we possibly display only the new
-signature and have the online node stuff that into the PSBT? Just so
-we don't have scan back the entire (possibly large) PSBT?
+signature(s) and have the online node stuff that into the PSBT? Just
+so we don't have scan back the entire (possibly large) PSBT?
 
 On the online PC, import each PSBT, combine and finalize. Display
 transaction details again. After user confirmation, broadcast.
@@ -494,8 +496,9 @@ recover the descriptor JSON and go from there.
 The sharded JSON consists of 530+ mnemonic words at ~3700
 characters. Encoded in QR's alphanumeric mode (which is base 45), this
 is very inefficient, and limits us to L-level error correction in the
-largest QR version 40. But as long as the quarantined laptop scanners
-can scan it, we should be okay?
+largest QR version 40. As long as the quarantined laptop scanners can
+scan it, we should be okay -- except that one of mine cannot scan such
+a large QR successfully.
 
 With the PSBTs, we will need the ability to split them into
 multiple. We can offer the user a density option if they're having
@@ -505,7 +508,7 @@ have to.
 
 Some options for higher-efficiency encoding of the wallet data:
 
-* Use a binary format for the descriptor (miniscript?)
+* Use a binary format for the descriptor
 
 * Use a binary format for the xpubs and describe the output script in
   some other way
@@ -522,6 +525,7 @@ Some options for higher-efficiency encoding of the wallet data:
 mistyped mnemonic: report suggested corrections instead of simply
 failing. Otherwise the fancy error-correcting checksum is pointless.
 
-2. Instead of sharding the 512-bit xprv, should we do what Trezor does
-with SLIP39 and use a PBKDF2-based key generation process like BIP39?
-They only need 20 or 33 words, instead of 59.
+2. For the Shamir flow, instead of sharding the 512-bit xprv, should
+we do what Trezor does with SLIP39 and use a PBKDF2-based key
+generation process like BIP39?  They only need 20 or 33 words, instead
+of 59.
