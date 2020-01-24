@@ -43,3 +43,16 @@ $ make COVERAGE=1; firefox coverage-report/index.html
 # Test Catalog
 
 *Coming soon*
+
+# Online Regtest Wallet
+
+The program `online_regtest_wallet.py` is used by the `Makefile` to
+mimic an online node, in order to validate that the withdrawal
+transactions produced by GlacierScript are valid.
+
+It constructs a regtest blockchain, including the input transactions
+as expected by the tests, then mines the generated withdrawal
+transactions into blocks.
+
+The file `tx.json` describes the input transactions as expected by the
+tests.
