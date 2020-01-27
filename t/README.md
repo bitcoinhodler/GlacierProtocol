@@ -69,6 +69,7 @@ $ make COVERAGE=1; firefox coverage-report/index.html
 | `compressed`               | Both     | | p2sh with compressed keys |
 | `corrupted-inputs`         | PSBT only| | psbt with one missing input |
 | `corrupted-value-nonsegwit`| PSBT only| | psbt with malicious modification |
+| `different-addrs`          | PSBT only| | psbt spending from 2 different p2wsh addresses |
 | `dup-inputs`               | CWD only | [#75](https://github.com/GlacierProtocol/GlacierProtocol/issues/75) | Same input pasted twice |
 | `extra-keys-nonsegwit`     | Both     | [#20](https://github.com/GlacierProtocol/GlacierProtocol/issues/20)| Validation of extra keys (p2sh) |
 | `extra-keys-segwit`        | Both     | [#20](https://github.com/GlacierProtocol/GlacierProtocol/issues/20)| Validation of extra keys (p2wsh-in-p2sh) |
