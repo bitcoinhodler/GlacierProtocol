@@ -432,6 +432,7 @@ class BaseWithdrawalXact:
         self.segwit = self._validate_address()
         self._teach_address_to_wallet()
         self.sigsrequired, self._pubkeys = self._find_pubkeys()
+        self.fee = None  # not yet known
 
     def add_key(self, key):
         """
@@ -621,10 +622,10 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
         decoded_tx = bitcoin_cli.json("decoderawtransaction", signed_tx["hex"])
         size = decoded_tx["vsize"]
 
-        fee = satoshi_to_btc(size * self.fee_basis_satoshis_per_byte)
-        if fee > self.MAX_FEE:
-            raise GlacierExcessiveFee("Calculated fee ({}) is too high. Must be under {}".format(fee, self.MAX_FEE))
-        return fee
+        self.fee = satoshi_to_btc(size * self.fee_basis_satoshis_per_byte)
+        if self.fee > self.MAX_FEE:
+            raise GlacierExcessiveFee("Calculated fee ({}) is too high. Must be under {}".format(self.fee, self.MAX_FEE))
+        return self.fee
 
 
 class PsbtWithdrawalXact(BaseWithdrawalXact):
@@ -652,6 +653,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         source_address, redeem_script = self._find_source_address()
         super().__init__(source_address, redeem_script)
         self.destinations = self._find_output_addresses()
+        self.fee = self.psbt['fee']
 
     def _input_iter(self):
         """
@@ -1066,7 +1068,10 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
                 print("{0} BTC going back to cold storage address {1}".format(value, address))
             else:
                 print("{0} BTC going to destination address {1}".format(value, address))
-        print("Fee amount: {0}".format(xact.unspent_total() - sum(addresses.values())))
+        # Sanity check that our fee calculation worked as expected
+        if xact.fee != xact.unspent_total() - sum(addresses.values()):
+            raise Exception("something went wrong in our fee calculation")  # pragma: no cover
+        print("Fee amount: {0}".format(xact.fee))
 
     def withdraw_interactive(self):
         """
