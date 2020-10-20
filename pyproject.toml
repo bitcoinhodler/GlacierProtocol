@@ -1,0 +1,55 @@
+# TidyPy is a Python lint tool. https://pypi.org/project/tidypy/
+# This file controls what checks to apply to our code.
+
+[tool.tidypy]
+# This file doesn't belong to us
+exclude = [ "base58.py" ]
+
+[tool.tidypy.bandit]
+disabled = [
+    # "The input method in Python 2 will read from standard input,
+    # evaluate and run the resulting string as python source
+    # code. This is similar, though in many ways worse, then using
+    # eval. On Python 2, use raw_input instead, input is safe in
+    # Python 3." We're using Python 3, so this check is inapplicable.
+    "B322",
+]
+
+[tool.tidypy.pycodestyle]
+disabled = [
+    # E501 is 79-char max line length. GlacierScript has way too many
+    # long lines to make this cleanup cost-effective. Maybe we revisit
+    # this later when the rest is clean. See also line-too-long below.
+    "E501",
+]
+
+[tool.tidypy.pydocstyle]
+disabled = [
+    # D212 and D213 have to do with multi-line docstrings: should they
+    # start on the same line or next? I chose next line to be
+    # consistent with what most of GlacierScript uses.
+    "D212",
+    # D200 says "One-line docstring should fit on one line with quotes"
+    # but that's not how glacierscript does it, and disabling this makes
+    # the code more consistent with D213 for multi-line docstrings.
+    "D200",
+    # D203 says "1 blank line required before class docstring" but
+    # that just feels extraneous to me, especially with D213.
+    "D203",
+]
+
+[tool.tidypy.pylint]
+disabled = [
+    # 100-char max line length. GlacierScript has way too many long
+    # lines to make this cleanup cost-effective. Maybe we revisit this
+    # later when the rest is clean. See also E501 above.
+    "line-too-long",
+]
+
+
+[tool.tidypy.secrets]
+disabled = [
+    # We have lots of high-entropy strings. They are not secrets.
+    "HexHighEntropyString",
+    "Base64HighEntropyString",
+]

@@ -10,7 +10,7 @@ set -e
 touch transaction-01.png transaction-02.png transaction-03.png
 
 
-../../glacierscript.py --testnet=$1 create-withdrawal-data 2>&1 << INPUT
+$GLACIERSCRIPT --testnet=$1 create-withdrawal-data 2>&1 << INPUT
 y
 y
 y

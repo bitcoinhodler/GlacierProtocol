@@ -3,7 +3,7 @@ set -e
 
 # First transaction input has a matching UTXO but second does not
 
-../../glacierscript.py --testnet=$1 create-withdrawal-data << INPUT
+$GLACIERSCRIPT --testnet=$1 create-withdrawal-data << INPUT
 y
 y
 y

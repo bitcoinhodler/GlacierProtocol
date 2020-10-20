@@ -22,6 +22,15 @@ all-tests := $(sort $(addsuffix .test, $(basename $(wildcard t/*.run))))
 # Force parallel even when user was too lazy to type -j4
 MAKEFLAGS += --jobs=4
 
+# Run `make COVERAGE=1` to enable coverage.py coverage collection.
+# Only works when running all tests.
+ifdef COVERAGE
+coverfile = $(addsuffix .cov, $(notdir $(basename $<)))
+export GLACIERSCRIPT=env COVERAGE_FILE=../../coverage/$(coverfile) coverage run ../../glacierscript.py
+else
+export GLACIERSCRIPT=../../glacierscript.py
+endif
+
 # I need a unique port number for each bitcoind launched. Start with
 # one higher than standard testnet port 18332, in case user already
 # has a testnet daemon running.
@@ -52,6 +61,15 @@ define cleanup_bitcoind =
 endef
 
 test : $(all-tests)
+ifdef COVERAGE
+	@cd coverage && \
+	   coverage combine *.cov && \
+	   coverage html \
+	      --directory=../coverage-report \
+	      "--omit=**/base58.py"
+	@echo HTML coverage report generated in coverage-report/index.html
+	#@rm -rf coverage
+endif
 	@rmdir testrun
 	@echo "Success, all tests passed."
 
@@ -81,3 +99,8 @@ prereqs:
 	@which bitcoind > /dev/null || (echo 'Error: unable to find bitcoind'; exit 1)
 	@which zbarimg > /dev/null || (echo 'Error: unable to find zbarimg (from package zbar-tools)'; exit 1)
 	@which qrencode > /dev/null || (echo 'Error: unable to find qrencode'; exit 1)
+ifdef COVERAGE
+	@which coverage > /dev/null || (echo 'Error: unable to find coverage (Maybe "pip3 install coverage"?)'; exit 1)
+	@rm -rf coverage
+	@mkdir -p coverage
+endif
