@@ -141,7 +141,7 @@ def bitcoin_cli_json(*args):
     """
     Run `bitcoin-cli`, parse output as JSON
     """
-    return json.loads(bitcoin_cli_checkoutput(*args))
+    return json.loads(bitcoin_cli_checkoutput(*args), parse_float=Decimal)
 
 
 def bitcoind_call(*args):
@@ -423,6 +423,13 @@ def get_fee_interactive(xact, destinations):
 #
 ################################################################################################
 
+# From https://stackoverflow.com/a/3885198 modified to dump as string, so no floats ever involved
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, Decimal):
+            return str(o)
+        return super().default(o)
+
 class WithdrawalXact:
     """
     Class for constructing a withdrawal transaction
@@ -461,11 +468,11 @@ class WithdrawalXact:
         """
         ensure_bitcoind_running()
 
-        prev_txs = json.dumps(self._inputs)
+        prev_txs = json.dumps(self._inputs, cls=DecimalEncoder)
         tx_unsigned_hex = bitcoin_cli_checkoutput(
             "createrawtransaction",
             prev_txs,
-            json.dumps(destinations)).strip()
+            json.dumps(destinations, cls=DecimalEncoder)).strip()
 
         signed_tx = bitcoin_cli_json(
             "signrawtransactionwithwallet",
@@ -476,7 +483,7 @@ class WithdrawalXact:
         """
         Return the total amount of BTC available to spend from the input UTXOs
         """
-        return sum(Decimal(utxo["amount"]).quantize(SATOSHI_PLACES) for utxo in self._inputs)
+        return sum(utxo["amount"] for utxo in self._inputs).quantize(SATOSHI_PLACES)
 
     def add_input_xact(self, hex_tx):
         """
@@ -913,20 +920,16 @@ def withdraw_interactive():
 
         change_amount = input_amount - withdrawal_amount - fee
 
-        # less than a satoshi due to weird floating point imprecision
-        if change_amount < 1e-8:
-            change_amount = 0
-
         if change_amount > 0:
             print("{0} being returned to cold storage address address {1}.".format(change_amount, xact.source_address))
-            addresses[xact.source_address] = str(change_amount)
+            addresses[xact.source_address] = change_amount
         else:
             del addresses[xact.source_address]
             fee = xact.calculate_fee(addresses) # Recompute fee with no change output
             withdrawal_amount = input_amount - fee
             print("With no change output, the transaction fee is reduced, and {0} BTC will be sent to your destination.".format(withdrawal_amount))
 
-        addresses[dest_address] = str(withdrawal_amount)
+        addresses[dest_address] = withdrawal_amount
 
         # check data
         print("\nIs this data correct?")
