@@ -61,9 +61,7 @@ your bitcoins.
 
 * (no-floats) Avoid any floating point for BTC values
 
-# What's coming soon?
-
-* tidypy (built on no-floats): clean up source code using linters from
+* (tidypy) Clean up source code using linters from
   [TidyPy](https://pypi.org/project/tidypy/)
 
   * Run `tidypy check` to run linter
@@ -75,6 +73,8 @@ your bitcoins.
 
   * Still several lint failures; I'm not sure of the best way to fix
     them
+
+# What's coming soon?
 
 * regtest (built on tidypy): switch developer tests from testnet to
   regtest ([#72](https://github.com/GlacierProtocol/GlacierProtocol/issues/72))
