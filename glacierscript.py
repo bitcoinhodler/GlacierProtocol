@@ -294,6 +294,18 @@ def hex_private_key_to_WIF_private_key(hex_key):
     return wif_key.decode('ascii')
 
 
+
+################################################################################################
+#
+# Local exception classes
+#
+################################################################################################
+
+class GlacierExcessiveFee(Exception):
+    """
+    Raised when transaction fee is determined to be excessive.
+    """
+
 ################################################################################################
 #
 # Bitcoin helper functions
@@ -371,162 +383,7 @@ def addmultisigaddress(m, pubkeys, address_type='p2sh-segwit'):
     return bitcoin_cli_json("addmultisigaddress", str(m), pubkey_string, "", address_type)
 
 
-def validate_address(source_address, redeem_script):
-    """
-    Given a source cold storage address and redemption script,
-    make sure the redeem script is valid and matches the address.
-    """
-    decoded_script = bitcoin_cli_json("decodescript", redeem_script)
-    if decoded_script["type"] != "multisig":
-        print("ERROR: Unrecognized redemption script. Doublecheck for typos. Exiting...")
-        sys.exit()
-    ok_addresses = [decoded_script["p2sh"]]
-    if "segwit" in decoded_script:
-        ok_addresses.append(decoded_script["segwit"]["p2sh-segwit"])
-        ok_addresses.extend(decoded_script["segwit"]["addresses"])
-    if source_address not in ok_addresses:
-        print("ERROR: Redemption script does not match cold storage address. Doublecheck for typos. Exiting...")
-        sys.exit()
-
-
-def get_utxos(tx, address):
-    """
-    Given a transaction, find all the outputs that were sent to an address
-    returns => List<Dictionary> list of UTXOs in bitcoin core format
-
-    tx - <Dictionary> in bitcoin core format
-    address - <string>
-    """
-    utxos = []
-
-    for output in tx["vout"]:
-        if "addresses" not in output["scriptPubKey"]:
-            # In Bitcoin Core versions older than v0.16, native segwit outputs have no address decoded
-            continue
-        out_addresses = output["scriptPubKey"]["addresses"]
-        amount_btc = output["value"]
-        if address in out_addresses:
-            utxos.append(output)
-
-    return utxos
-
-
-def create_unsigned_transaction(source_address, destinations, redeem_script, input_txs):
-    """
-    Returns a hex string representing an unsigned bitcoin transaction
-    returns => <string>
-
-    source_address: <string> input_txs will be filtered for utxos to this source address
-    destinations: {address <string>: amount<string>} dictionary mapping destination addresses to amount in BTC
-    redeem_script: <string>
-    input_txs: List<dict> List of input transactions in dictionary form (bitcoind decoded format)
-    """
-    ensure_bitcoind_running()
-
-    # prune destination addresses sent 0 btc
-    destinations = OrderedDict((key, val) for key, val in destinations.items() if val != '0')
-
-    # For each UTXO used as input, we need the txid and vout index to generate a transaction
-    inputs = []
-    for tx in input_txs:
-        utxos = get_utxos(tx, source_address)
-        txid = tx["txid"]
-
-        for utxo in utxos:
-            inputs.append(OrderedDict([
-                ("txid", txid),
-                ("vout", int(utxo["n"]))
-            ]))
-
-    tx_unsigned_hex = bitcoin_cli_checkoutput(
-        "createrawtransaction",
-        json.dumps(inputs),
-        json.dumps(destinations)).strip()
-
-    return tx_unsigned_hex
-
-
-def teach_address_to_wallet(source_address, redeem_script):
-    """
-    Teaches the bitcoind wallet about our multisig address, so it can
-    use that knowledge to sign the transaction we're about to create.
-
-    source_address: <string> multisig address
-    redeem_script: <string>
-    """
-
-    # If address is p2wsh-in-p2sh, then the user-provided
-    # redeem_script is actually witnessScript, and I need to get the
-    # redeemScript from `decodescript`.
-
-    decoded_script = bitcoin_cli_json("decodescript", redeem_script)
-
-    import_this = {
-        "scriptPubKey": { "address": source_address },
-        "timestamp": "now",
-        "watchonly": True # to avoid warning about "Some private keys are missing[...]"
-    }
-    if decoded_script["p2sh"] == source_address:
-        import_this["redeemscript"] = redeem_script
-    else:
-        # segwit (either p2wsh or p2sh-in-p2wsh)
-        import_this["witnessscript"] = redeem_script
-        if source_address == decoded_script["segwit"]["p2sh-segwit"]:
-            import_this["redeemscript"] = decoded_script["segwit"]["hex"]
-    results = bitcoin_cli_json("importmulti", json.dumps([import_this]))
-    if not all(result["success"] for result in results) or \
-       any("warnings" in result for result in results):
-        raise Exception("Problem importing address to wallet")
-
-
-def find_pubkeys(source_address):
-    """
-    Return a list of the pubkeys associated with the supplied multisig address.
-
-    Assumes this address has already been imported to the wallet using `importmulti`
-
-    source_address: <string> multisig address
-    """
-    out = bitcoin_cli_json("getaddressinfo", source_address)
-    if "pubkeys" in out:
-        return out["pubkeys"] # for non-segwit addresses
-    else:
-        return out["embedded"]["pubkeys"] # for segwit addresses
-
-
-def sign_transaction(source_address, redeem_script, unsigned_hex, input_txs):
-    """
-    Creates a signed transaction
-    output => dictionary {"hex": transaction <string>, "complete": <boolean>}
-
-    source_address: <string> input_txs will be filtered for utxos to this source address
-    redeem_script: <string>
-    unsigned_hex: <string> The unsigned transaction, in hex format
-    input_txs: List<dict> A list of input transactions to use (bitcoind decoded format)
-    """
-
-    # For each UTXO used as input, we need the txid, vout index, scriptPubKey, amount, and redeemScript
-    # to generate a signature
-    inputs = []
-    for tx in input_txs:
-        utxos = get_utxos(tx, source_address)
-        txid = tx["txid"]
-        for utxo in utxos:
-            inputs.append({
-                "txid": txid,
-                "vout": int(utxo["n"]),
-                "amount": utxo["value"],
-                "scriptPubKey": utxo["scriptPubKey"]["hex"],
-                "redeemScript": redeem_script
-            })
-
-    signed_tx = bitcoin_cli_json(
-        "signrawtransactionwithwallet",
-        unsigned_hex, json.dumps(inputs))
-    return signed_tx
-
-
-def get_fee_interactive(source_address, destinations, redeem_script, input_txs):
+def get_fee_interactive(xact, destinations):
     """
     Returns a recommended transaction fee, given market fee data provided by the user interactively
     Because fees tend to be a function of transaction size, we build the transaction in order to
@@ -534,36 +391,20 @@ def get_fee_interactive(source_address, destinations, redeem_script, input_txs):
     return => <Decimal> fee value
 
     Parameters:
-      source_address: <string> input_txs will be filtered for utxos to this source address
+      xact: WithdrawalXact object
       destinations: {address <string>: amount<string>} dictionary mapping destination addresses to amount in BTC
-      redeem_script: String
-      input_txs: List<dict> List of input transactions in dictionary form (bitcoind decoded format)
-      fee_basis_satoshis_per_byte: <int> optional basis for fee calculation
     """
-
-    MAX_FEE = .005  # in btc.  hardcoded limit to protect against user typos
 
     ensure_bitcoind_running()
 
     approve = False
     while not approve:
         print("\nEnter fee rate.")
-        fee_basis_satoshis_per_byte = int(input("Satoshis per vbyte: "))
-
-        unsigned_tx = create_unsigned_transaction(
-            source_address, destinations, redeem_script, input_txs)
-
-        signed_tx = sign_transaction(source_address,
-                                     redeem_script, unsigned_tx, input_txs)
-
-        decoded_tx = bitcoin_cli_json("decoderawtransaction", signed_tx["hex"])
-        size = decoded_tx["vsize"]
-
-        fee = size * fee_basis_satoshis_per_byte
-        fee = satoshi_to_btc(fee)
-
-        if fee > MAX_FEE:
-            print("Calculated fee ({}) is too high. Must be under {}".format(fee, MAX_FEE))
+        xact.fee_basis_satoshis_per_byte = int(input("Satoshis per vbyte: "))
+        try:
+            fee = xact.calculate_fee(destinations)
+        except GlacierExcessiveFee as e:
+            print(e)
         else:
             print("\nBased on the provided rate, the fee will be {} bitcoin.".format(fee))
             confirm = yes_no_interactive()
@@ -574,6 +415,194 @@ def get_fee_interactive(source_address, destinations, redeem_script, input_txs):
                 print("\nFee calculation aborted. Starting over...")
 
     return fee
+
+
+################################################################################################
+#
+# Withdrawal transaction construction class
+#
+################################################################################################
+
+class WithdrawalXact:
+    """
+    Class for constructing a withdrawal transaction
+
+    Attributes:
+    source_address: <string> input_txs will be filtered for utxos to this source address
+    redeem_script: <string>
+    """
+
+    MAX_FEE = .005  # in btc.  hardcoded limit to protect against user typos
+
+    def __init__(self, source_address, redeem_script):
+        self.source_address = source_address
+        self.redeem_script = redeem_script
+        self._seen_txhashes = set()  # only for detecting duplicates
+        self._inputs = []
+        self.keys = []
+        self._validate_address()
+        self._teach_address_to_wallet()
+        self._pubkeys = self._find_pubkeys()
+
+    def add_key(self, key):
+        self.keys.append(key)
+        # Teach the wallet about this key
+        pubkey = get_pubkey_for_wif_privkey(key)
+        if pubkey not in self._pubkeys:
+            print("ERROR: that key does not belong to this source address, exiting...")
+            sys.exit()
+
+    def create_signed_transaction(self, destinations):
+        """
+        Returns a hex string representing a signed bitcoin transaction
+        returns => <string>
+
+        destinations: {address <string>: amount<string>} dictionary mapping destination addresses to amount in BTC
+        """
+        ensure_bitcoind_running()
+
+        prev_txs = json.dumps(self._inputs)
+        tx_unsigned_hex = bitcoin_cli_checkoutput(
+            "createrawtransaction",
+            prev_txs,
+            json.dumps(destinations)).strip()
+
+        signed_tx = bitcoin_cli_json(
+            "signrawtransactionwithwallet",
+            tx_unsigned_hex, prev_txs)
+        return signed_tx
+
+    def unspent_total(self):
+        """
+        Return the total amount of BTC available to spend from the input UTXOs
+        """
+        return sum(Decimal(utxo["amount"]).quantize(SATOSHI_PLACES) for utxo in self._inputs)
+
+    def add_input_xact(self, hex_tx):
+        """
+        Look for outputs in the supplied transaction which match our cold storage address.
+        Save them for later use in constructing the withdrawal.
+
+        hex_tx (string): hex-encoded transaction whose outputs we want to spend
+        """
+        # For each UTXO used as input, we need the txid, vout index, scriptPubKey, amount, and redeemScript
+        # to generate a signature
+        tx = bitcoin_cli_json("decoderawtransaction", hex_tx)
+        if tx['hash'] in self._seen_txhashes:
+            print("ERROR: duplicated input transactions, exiting...")
+            sys.exit()
+        self._seen_txhashes.add(tx['hash'])
+
+        utxos = self._get_utxos(tx)
+        if len(utxos) == 0:
+            print("\nTransaction data not found for source address: {}".format(self.source_address))
+            sys.exit()
+
+        txid = tx["txid"]
+        for utxo in utxos:
+            self._inputs.append(OrderedDict([
+                ("txid", txid),
+                ("vout", int(utxo["n"])),
+                ("amount", utxo["value"]),
+                ("scriptPubKey", utxo["scriptPubKey"]["hex"]),
+                ("redeemScript", self.redeem_script),
+            ]))
+
+    def _teach_address_to_wallet(self):
+        """
+        Teaches the bitcoind wallet about our multisig address, so it can
+        use that knowledge to sign the transaction we're about to create.
+        """
+
+        # If address is p2wsh-in-p2sh, then the user-provided
+        # redeem_script is actually witnessScript, and I need to get the
+        # redeemScript from `decodescript`.
+
+        decoded_script = bitcoin_cli_json("decodescript", self.redeem_script)
+
+        import_this = {
+            "scriptPubKey": { "address": self.source_address },
+            "timestamp": "now",
+            "watchonly": True # to avoid warning about "Some private keys are missing[...]"
+        }
+        if decoded_script["p2sh"] == self.source_address:
+            import_this["redeemscript"] = self.redeem_script
+        else:
+            # segwit (either p2wsh or p2sh-in-p2wsh)
+            import_this["witnessscript"] = self.redeem_script
+            if self.source_address == decoded_script["segwit"]["p2sh-segwit"]:
+                import_this["redeemscript"] = decoded_script["segwit"]["hex"]
+        results = bitcoin_cli_json("importmulti", json.dumps([import_this]))
+        if not all(result["success"] for result in results) or \
+           any("warnings" in result for result in results):
+            raise Exception("Problem importing address to wallet")
+
+    def _find_pubkeys(self):
+        """
+        Return a list of the pubkeys associated with our source address.
+
+        Assumes that source_address has already been imported to the wallet using `importmulti`
+        """
+        out = bitcoin_cli_json("getaddressinfo", self.source_address)
+        if "pubkeys" in out:
+            return out["pubkeys"] # for non-segwit addresses
+        else:
+            return out["embedded"]["pubkeys"] # for segwit addresses
+
+    def _validate_address(self):
+        """
+        Given our source cold storage address and redemption script,
+        make sure the redeem script is valid and matches the address.
+        """
+        decoded_script = bitcoin_cli_json("decodescript", self.redeem_script)
+        if decoded_script["type"] != "multisig":
+            print("ERROR: Unrecognized redemption script. Doublecheck for typos. Exiting...")
+            sys.exit()
+        ok_addresses = [decoded_script["p2sh"]]
+        if "segwit" in decoded_script:
+            ok_addresses.append(decoded_script["segwit"]["p2sh-segwit"])
+            ok_addresses.extend(decoded_script["segwit"]["addresses"])
+        if self.source_address not in ok_addresses:
+            print("ERROR: Redemption script does not match cold storage address. Doublecheck for typos. Exiting...")
+            sys.exit()
+
+    def _get_utxos(self, tx):
+        """
+        Given a transaction, find all the outputs that were sent to an address
+        returns => List<Dictionary> list of UTXOs in bitcoin core format
+
+        tx - <Dictionary> in bitcoin core format
+        """
+        utxos = []
+
+        for output in tx["vout"]:
+            if "addresses" not in output["scriptPubKey"]:
+                # In Bitcoin Core versions older than v0.16, native segwit outputs have no address decoded
+                continue
+            out_addresses = output["scriptPubKey"]["addresses"]
+            amount_btc = output["value"]
+            if self.source_address in out_addresses:
+                utxos.append(output)
+
+        return utxos
+
+    def calculate_fee(self, destinations):
+        """
+        Given a list of destinations, calculate the total fee in BTC at the given basis
+        returbs => Decimal total fee in BTC
+
+        destinations - <Dictionary> pairs of {addresss:amount} to send
+        """
+        signed_tx = self.create_signed_transaction(destinations)
+
+        decoded_tx = bitcoin_cli_json("decoderawtransaction", signed_tx["hex"])
+        size = decoded_tx["vsize"]
+
+        fee = satoshi_to_btc(size * self.fee_basis_satoshis_per_byte)
+        if fee > self.MAX_FEE:
+            raise GlacierExcessiveFee("Calculated fee ({}) is too high. Must be under {}".format(fee, self.MAX_FEE))
+        return fee
+
 
 
 ################################################################################################
@@ -825,22 +854,16 @@ def withdraw_interactive():
         addresses[source_address] = 0
 
         redeem_script = input("\nRedemption script for source cold storage address: ")
-
-        validate_address(source_address, redeem_script)
-        teach_address_to_wallet(source_address, redeem_script)
-        pubkeys = find_pubkeys(source_address)
+        xact = WithdrawalXact(source_address, redeem_script)
 
         dest_address = input("\nDestination address: ")
         addresses[dest_address] = 0
 
         num_tx = int(input("\nHow many unspent transactions will you be using for this withdrawal? "))
 
-        txs = []
-        utxos = []
-        utxo_sum = Decimal(0).quantize(SATOSHI_PLACES)
 
-        while len(txs) < num_tx:
-            print("\nPlease paste raw transaction #{} (hexadecimal format) with unspent outputs at the source address".format(len(txs) + 1))
+        for txcount in range(num_tx):
+            print("\nPlease paste raw transaction #{} (hexadecimal format) with unspent outputs at the source address".format(txcount + 1))
             print("OR")
             print("input a filename located in the current directory which contains the raw transaction data")
             print("(If the transaction data is over ~4000 characters long, you _must_ use a file.):")
@@ -849,45 +872,25 @@ def withdraw_interactive():
             if os.path.isfile(hex_tx):
                 hex_tx = open(hex_tx).read().strip()
 
-            tx = bitcoin_cli_json("decoderawtransaction", hex_tx)
-            if tx in txs:
-                print("ERROR: duplicated input transactions, exiting...")
-                sys.exit()
+            xact.add_input_xact(hex_tx)
 
-            txs.append(tx)
-            utxos += get_utxos(tx, source_address)
+        print("\nTransaction data found for source address.")
 
-        if len(utxos) == 0:
-            print("\nTransaction data not found for source address: {}".format(source_address))
-            sys.exit()
-        else:
-            print("\nTransaction data found for source address.")
+        utxo_sum = xact.unspent_total()
 
-            for utxo in utxos:
-                value = Decimal(utxo["value"]).quantize(SATOSHI_PLACES)
-                utxo_sum += value
-
-            print("TOTAL unspent amount for this raw transaction: {} BTC".format(utxo_sum))
+        print("TOTAL unspent amount for this raw transaction: {} BTC".format(utxo_sum))
 
         print("\nHow many private keys will you be signing this transaction with? ")
         key_count = int(input("#: "))
 
-        keys = []
-        while len(keys) < key_count:
-            key = input("Key #{0}: ".format(len(keys) + 1))
-            keys.append(key)
-            # Teach the wallet about this key
-            pubkey = get_pubkey_for_wif_privkey(key)
-            if pubkey not in pubkeys:
-                print("ERROR: that key does not belong to this source address, exiting...")
-                sys.exit()
-
+        for key_idx in range(key_count):
+            key = input("Key #{0}: ".format(key_idx + 1))
+            xact.add_key(key)
 
         ###### fees, amount, and change #######
 
         input_amount = utxo_sum
-        fee = get_fee_interactive(
-            source_address, addresses, redeem_script, txs)
+        fee = get_fee_interactive(xact, addresses)
         # Got this far
         if fee > input_amount:
             print("ERROR: Your fee is greater than the sum of your unspent transactions.  Try using larger unspent transactions. Exiting...")
@@ -915,10 +918,15 @@ def withdraw_interactive():
             change_amount = 0
 
         if change_amount > 0:
-            print("{0} being returned to cold storage address address {1}.".format(change_amount, source_address))
+            print("{0} being returned to cold storage address address {1}.".format(change_amount, xact.source_address))
+            addresses[xact.source_address] = str(change_amount)
+        else:
+            del addresses[xact.source_address]
+            fee = xact.calculate_fee(addresses) # Recompute fee with no change output
+            withdrawal_amount = input_amount - fee
+            print("With no change output, the transaction fee is reduced, and {0} BTC will be sent to your destination.".format(withdrawal_amount))
 
         addresses[dest_address] = str(withdrawal_amount)
-        addresses[source_address] = str(change_amount)
 
         # check data
         print("\nIs this data correct?")
@@ -926,13 +934,13 @@ def withdraw_interactive():
 
         print("{0} BTC in unspent supplied transactions".format(input_amount))
         for address, value in addresses.items():
-            if address == source_address:
+            if address == xact.source_address:
                 print("{0} BTC going back to cold storage address {1}".format(value, address))
             else:
                 print("{0} BTC going to destination address {1}".format(value, address))
         print("Fee amount: {0}".format(fee))
         print("\nSigning with private keys: ")
-        for key in keys:
+        for key in xact.keys:
             print("{}".format(key))
 
         print("\n")
@@ -946,11 +954,7 @@ def withdraw_interactive():
     #### Calculate Transaction ####
     print("\nCalculating transaction...\n")
 
-    unsigned_tx = create_unsigned_transaction(
-        source_address, addresses, redeem_script, txs)
-
-    signed_tx = sign_transaction(source_address,
-                                 redeem_script, unsigned_tx, txs)
+    signed_tx = xact.create_signed_transaction(addresses)
 
     print("\nSufficient private keys to execute transaction?")
     print(signed_tx["complete"])
