@@ -31,6 +31,9 @@ import segwit_addr
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import glacierscript  # noqa:pylint:wrong-import-position
 import bitcoin_cli    # noqa:pylint:wrong-import-position
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'trim-psbt'))
+import trim_psbt
+
 
 # Vars that glacierscript expects (ugh)
 bitcoin_cli.cli_args = ["-regtest", "-datadir=bitcoin-online-data"]
@@ -116,7 +119,7 @@ def recreate_psbt(txdata):
     ).strip()
     bitcoin_cli.checkoutput("lockunspent", 'false', glacierscript.jsonstr(newinputs))
     results = bitcoin_cli.json("walletprocesspsbt", createpsbt, 'false', 'ALL', 'false')
-    results_psbt = results['psbt']
+    results_psbt = trim_psbt.strip(results['psbt'])
     if results_psbt != txdata['psbt']:
         actual = bitcoin_cli.json("decodepsbt", results_psbt)
         expected = bitcoin_cli.json("decodepsbt", txdata['psbt'])
