@@ -37,11 +37,8 @@ your bitcoins.
   issue
   [#78](https://github.com/GlacierProtocol/GlacierProtocol/issues/78).
 
-# What's coming soon?
-
-* validate-keys: make sure if user provides more
-  keys than needed, they are really the correct keys for this
-  wallet. [PR
+* Make sure if user provides more keys than needed, they are really
+  the correct keys for this wallet. [PR
   #73](https://github.com/GlacierProtocol/GlacierProtocol/pull/73)
 
   * Ensure if user enters address that doesn't correspond to redeem
@@ -50,6 +47,8 @@ your bitcoins.
 
   * Add a test for extra keys using both legacy and segwit. Issue
     [#20](https://github.com/GlacierProtocol/GlacierProtocol/issues/20)
+
+# What's coming soon?
 
 * dup-input (built on validate-keys): Ensure if user enters same input
   transaction twice, we don't quietly generate an invalid withdrawal
