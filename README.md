@@ -25,20 +25,22 @@ your bitcoins.
 
 ## Features
 
-* Added `--p2wsh` flag to create native segwit deposit
+*Merged branch names in parentheses.*
+
+* (p2wsh) Added `--p2wsh` flag to create native segwit deposit
   addresses. [PR
   #76](https://github.com/GlacierProtocol/GlacierProtocol/pull/76)
 
 ## Bug fixes
 
-* Split withdrawal transaction into multiple QR codes if it gets too
-  large for one. [PR
+* (fix-large-withdrawal) Split withdrawal transaction into multiple QR
+  codes if it gets too large for one. [PR
   #79](https://github.com/GlacierProtocol/GlacierProtocol/pull/79),
   issue
   [#78](https://github.com/GlacierProtocol/GlacierProtocol/issues/78).
 
-* Make sure if user provides more keys than needed, they are really
-  the correct keys for this wallet. [PR
+* (validate-keys) Make sure if user provides more keys than needed,
+  they are really the correct keys for this wallet. [PR
   #73](https://github.com/GlacierProtocol/GlacierProtocol/pull/73)
 
   * Ensure if user enters address that doesn't correspond to redeem
@@ -48,16 +50,16 @@ your bitcoins.
   * Add a test for extra keys using both legacy and segwit. Issue
     [#20](https://github.com/GlacierProtocol/GlacierProtocol/issues/20)
 
-* Ensure if user enters same input transaction twice, we don't quietly
-  generate an invalid withdrawal transaction. Issue
+* (dup-inputs) Ensure if user enters same input transaction twice, we
+  don't quietly generate an invalid withdrawal transaction. Issue
   [#75](https://github.com/GlacierProtocol/GlacierProtocol/issues/75)
 
-# What's coming soon?
-
-* fix-fee (built on dup-input): correct transaction fee when no change made.
-  Issue [#19](https://github.com/GlacierProtocol/GlacierProtocol/issues/19)
+* (fix-fee) Correct transaction fee when no change made. Issue
+  [#19](https://github.com/GlacierProtocol/GlacierProtocol/issues/19)
 
   * Also contains some major refactoring to make the actual fix easy.
+
+# What's coming soon?
 
 * no-floats (built on fix-fee): avoid any floating point for BTC values
 
