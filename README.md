@@ -48,12 +48,11 @@ your bitcoins.
   * Add a test for extra keys using both legacy and segwit. Issue
     [#20](https://github.com/GlacierProtocol/GlacierProtocol/issues/20)
 
-# What's coming soon?
-
-* dup-input (built on validate-keys): Ensure if user enters same input
-  transaction twice, we don't quietly generate an invalid withdrawal
-  transaction. Issue
+* Ensure if user enters same input transaction twice, we don't quietly
+  generate an invalid withdrawal transaction. Issue
   [#75](https://github.com/GlacierProtocol/GlacierProtocol/issues/75)
+
+# What's coming soon?
 
 * fix-fee (built on dup-input): correct transaction fee when no change made.
   Issue [#19](https://github.com/GlacierProtocol/GlacierProtocol/issues/19)
