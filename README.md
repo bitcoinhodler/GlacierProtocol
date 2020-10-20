@@ -61,6 +61,11 @@ issue](https://github.com/GlacierProtocol/GlacierProtocol/issues/38).
 
 * (no-floats) Avoid any floating point for BTC values
 
+* (subparsers) Use python argparse's subparsers
+  ([#63](https://github.com/GlacierProtocol/GlacierProtocol/issues/63))
+
+  * Also solves [#69](https://github.com/GlacierProtocol/GlacierProtocol/issues/69)
+
 ## Improvements for Glacier developers
 
 * (tidypy) Clean up source code using linters from
@@ -87,11 +92,6 @@ issue](https://github.com/GlacierProtocol/GlacierProtocol/issues/38).
     GlacierScript as an automated part of the developer tests.
 
 # What's coming soon?
-
-* subparsers (built on regtest): use python argparse's subparsers
-  ([#63](https://github.com/GlacierProtocol/GlacierProtocol/issues/63))
-
-  * Also solves [#69](https://github.com/GlacierProtocol/GlacierProtocol/issues/69)
 
 * psbt (built on subparsers): adding PSBT withdrawal support (part of
   [#54](https://github.com/GlacierProtocol/GlacierProtocol/issues/54))
