@@ -59,9 +59,9 @@ your bitcoins.
 
   * Also contains some major refactoring to make the actual fix easy.
 
-# What's coming soon?
+* (no-floats) Avoid any floating point for BTC values
 
-* no-floats (built on fix-fee): avoid any floating point for BTC values
+# What's coming soon?
 
 * tidypy (built on no-floats): clean up source code using linters from
   [TidyPy](https://pypi.org/project/tidypy/)
