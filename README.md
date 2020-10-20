@@ -1,19 +1,35 @@
-# Glacier
-Glacier is a protocol for secure cold storage of bitcoins.
-[https://www.glacierprotocol.org](https://www.glacierprotocol.org)
+# HodlerGlacier
+Glacier was a protocol for secure cold storage of bitcoins.
 
 This is BitcoinHodler's fork of the [canonical
-repo](https://github.com/GlacierProtocol/GlacierProtocol) and contains
-the following branches, most of which I plan to (eventually) submit as
-Pull Requests:
+repo](https://github.com/GlacierProtocol/GlacierProtocol) which as of
+October 2020 is abandoned and broken.
 
-## Awaiting review & merge
+# How can I withdraw my Glacier coins?
 
-* p2wsh: add `--p2wsh` flag to create native segwit deposit
+Don't use this repo unless you know me personally.
+
+Instead, use the [0.94
+release](https://github.com/GlacierProtocol/GlacierProtocol/releases)
+but hand-modify the doc according to [this
+gist](https://gist.github.com/bitcoinhodler/8be823fae7b46e924caa594abdde3bd0)
+in order to fix [this
+issue](https://github.com/GlacierProtocol/GlacierProtocol/issues/38).
+
+# Who is this repo for?
+
+Nobody except myself and those who know me and trust me. I could steal
+your bitcoins.
+
+# What's changed from the upstream Glacier project?
+
+* Added `--p2wsh` flag to create native segwit deposit
   addresses. [PR
   #76](https://github.com/GlacierProtocol/GlacierProtocol/pull/76)
 
-* validate-keys (built on p2wsh): make sure if user provides more
+# What's coming soon?
+
+* validate-keys: make sure if user provides more
   keys than needed, they are really the correct keys for this
   wallet. [PR
   #73](https://github.com/GlacierProtocol/GlacierProtocol/pull/73)
@@ -30,8 +46,6 @@ Pull Requests:
   #79](https://github.com/GlacierProtocol/GlacierProtocol/pull/79),
   issue
   [#78](https://github.com/GlacierProtocol/GlacierProtocol/issues/78).
-
-## Ready for upstreaming
 
 * dup-input (built on validate-keys): Ensure if user enters same input
   transaction twice, we don't quietly generate an invalid withdrawal
@@ -76,8 +90,6 @@ Pull Requests:
 * psbt (built on subparsers): adding PSBT withdrawal support (part of
   [#54](https://github.com/GlacierProtocol/GlacierProtocol/issues/54))
 
-## In progress
-
 * corrupted-psbts: New developer tests to demonstrate that
   GlacierScript will not generate valid transactions from maliciously
   malformed PSBTs
@@ -89,7 +101,7 @@ Pull Requests:
   for transaction construction and signing; also see
   [glacier-psbt](https://github.com/bitcoinhodler/glacier-psbt)
 
-## Future
+# Future
 
 Now that PSBT signing is in place, I need to design and document the
 online node flow to create the PSBTs for signing.
