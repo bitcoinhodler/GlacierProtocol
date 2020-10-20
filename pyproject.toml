@@ -2,8 +2,9 @@
 # This file controls what checks to apply to our code.
 
 [tool.tidypy]
-# This file doesn't belong to us
-exclude = [ "base58.py" ]
+# These files don't belong to us, except tx.json, which is machine-generated
+# so no need to lint
+exclude = [ "base58.py", "t/atomic_write.py", "t/segwit_addr.py", "t/tx.json" ]
 
 [tool.tidypy.bandit]
 disabled = [

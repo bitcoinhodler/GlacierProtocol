@@ -5,7 +5,7 @@ set -e
 # Test erroneously passes even before my segwit changes
 # Key 3 was: cNYaH3onqrdMffpznhMMmrHn34fuTU59w5j8LM3H42VPcUsLeXy5
 
-$GLACIERSCRIPT --testnet=$1 create-withdrawal-data << INPUT
+$GLACIERSCRIPT --regtest=$1 create-withdrawal-data << INPUT
 y
 y
 y
@@ -21,9 +21,4 @@ mp1KQzUoDf9div7jjgon3UuqLThMSo3tmF
 cSfvoUsWWZ81M4qGYciPHdNxHXQxPEsXBdGWjYdchpisPabtiKVQ
 cPWVKeCBjnv833Kayc6nczBbG4YqqbCucup3n5D68WPzBEfceBAQ
 cNYaH3onqrdMffpznhMMmrHn34fuTU59w5j8LM3H42VPcUsLeXy5
-cRoydfinDRzzRQJp5niqJWukSYTfPJQM6ytqGN6nzonaz1mafgwD
-10
-y
-0.00000400
-y
 INPUT

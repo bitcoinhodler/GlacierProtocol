@@ -1,0 +1,145 @@
+#!/usr/bin/env python3
+r"""
+Smart diff of test's actual vs golden (expected) output.
+
+Diff two test files ("golden" or expected output vs "out" or actual output),
+where the golden file may have embedded regexps using <> syntax, e.g.:
+    bitcoin-cli -rpcport=<\d+> -datadir=bitcoin-test-data getnetworkinfo
+
+We take each line of the golden.re file and turn it into a regexp,
+then attempt to match the remainder of the outfile. We do it this way
+so that in case of no match, we can report which line number of the
+golden failed to match. (If we try to make the entire file into one
+big regexp, we get only boolean: match or no match, which makes it
+very difficult to diagnose mismatches.)
+
+This makes it dangerous to end a line with a regexp: because regexps
+are greedy, ending a line in .* will match the remainder of the
+outfile, and the next line of the golden will mismatch.
+
+Perhaps there's a better way to do this? What if we treated every
+line of the golden as an optional group like "(line)?" Then check
+that every group was a match. The first one not matching is the line
+number of the mismatch.
+"""
+
+import argparse
+import re
+import sys
+
+
+def make_regexp(line):
+    """
+    Convert line, possibly with <> embedded regexps, into one big regexp.
+
+    Returns a compiled regular expression object.
+    """
+    exp = re.compile(r"""
+                         (?P<front>     # front: before any regexp
+                           [^<]*          # no <
+                         )              # end front
+                         (?P<bracketed> # optional regexp
+                           <              # opening of regexp
+                           (?P<regexp>    # group for regexp
+                             [^>]+           # the regexp itself (cannot contain >, even escaped)
+                           )              # end group for regexp
+                           >              # end of regexp
+                         )?             # end bracketed
+                     """, flags=re.VERBOSE)
+    startpos = 0
+    output = ""
+    while startpos < len(line):
+        match = exp.match(line, startpos)
+        if not match:
+            raise RuntimeError("How did I not match anything here?")
+        if match.end() <= startpos:  # catch runaways
+            raise RuntimeError("Did not expect 0-length match here; perhaps you have an unclosed <regexp>?")
+        output += re.escape(match.group("front"))
+        if match.group("bracketed"):
+            output += match.group("regexp")
+        startpos = match.end()
+    return re.compile(output, flags=re.MULTILINE | re.DOTALL)
+
+
+def test_make_regexp(line, expected):
+    """
+    Given a line from golden and an expected pattern, make sure make_regexp does the right thing.
+
+    This is only for testing this one function in this script.
+    """
+    print("Testing", line)
+    pat = make_regexp(line).pattern
+    if pat != expected:
+        raise RuntimeError("Expected {}, got {}".format(expected, pat))
+
+
+def self_test():
+    """
+    Run some self-checking tests of make_regexp().
+    """
+    # Simple line with no regexps
+    test_make_regexp("This is just a normal line with * and stuff",
+                     r"This\ is\ just\ a\ normal\ line\ with\ \*\ and\ stuff")
+    # One regexp in middle
+    test_make_regexp("Beginning <[0-9a-f]{4}> end",
+                     r"Beginning\ [0-9a-f]{4}\ end")
+    # One regexp at end
+    test_make_regexp("Beginning <[0-9a-f]{4}>",
+                     r"Beginning\ [0-9a-f]{4}")
+    # Two regexp in middle
+    test_make_regexp("Beginning <[0-9a-f]{4}> + foo + <[abc]?> * end",
+                     r"Beginning\ [0-9a-f]{4}\ \+\ foo\ \+\ [abc]?\ \*\ end")
+    # Two regexp, one at end
+    test_make_regexp("Beginning <[0-9a-f]{4}> + foo + <[abc]?>",
+                     r"Beginning\ [0-9a-f]{4}\ \+\ foo\ \+\ [abc]?")
+    # One regexp at beginning
+    test_make_regexp("<[0-9a-f]{4}> end",
+                     r"[0-9a-f]{4}\ end")
+    # Entire line is a regexp
+    test_make_regexp("<[0-9a-f]{4}>",
+                     r"[0-9a-f]{4}")
+
+
+def get_cmdline_args():
+    """
+    Return args from parsing command line.
+    """
+    parser = argparse.ArgumentParser()
+    parser.add_argument('golden_filename', help="input1: expected output")
+    parser.add_argument('out_filename', help="input2: actual output")
+    parser.add_argument('--selftest', action='store_true', help="run this program's self-test")
+    return parser.parse_args()
+
+
+def main():
+    """
+    Run main program.
+    """
+    args = get_cmdline_args()
+    if args.selftest:
+        self_test()
+        print("All tests passed.")
+        sys.exit(0)
+
+    with open(args.out_filename, 'rt') as out:
+        out_contents = out.read()
+
+    with open(args.golden_filename, 'rt') as golden:
+        for golden_linenum, golden_line in enumerate(golden, start=1):
+            golden_regexp = make_regexp(golden_line)
+            match = golden_regexp.match(out_contents)
+            if match:
+                # Good! Chop off the part of out_contents that matched; continue on.
+                out_contents = out_contents[match.end():]
+            else:
+                # Bad! Print appropriate error message
+                sys.stderr.write("Line {} of {} failed to match {}\n".format(golden_linenum, args.golden_filename, args.out_filename))
+                sys.exit(1)
+
+    # Make sure out_contents has nothing extra!
+    if out_contents:
+        sys.stderr.write("{} has extra contents beyond the end of {}\n".format(args.out_filename, args.golden_filename))
+        sys.exit(1)
+
+
+main()

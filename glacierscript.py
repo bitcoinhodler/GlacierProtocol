@@ -34,6 +34,7 @@ GlacierScript depends on the following command-line applications:
 # standard Python libraries
 import argparse
 from collections import OrderedDict
+import contextlib
 from decimal import Decimal
 import glob
 from hashlib import sha256, md5
@@ -246,7 +247,7 @@ class GlacierExcessiveFee(Exception):
 ################################################################################################
 
 
-def ensure_bitcoind_running():
+def ensure_bitcoind_running(*extra_args):
     """
     Start bitcoind (if it's not already running) and ensure it's functioning properly.
     """
@@ -254,7 +255,7 @@ def ensure_bitcoind_running():
     # message (to /dev/null) and exit.
     #
     # -connect=0.0.0.0 because we're doing local operations only (and have no network connection anyway)
-    bitcoin_cli.bitcoind_call("-daemon", "-connect=0.0.0.0")
+    bitcoin_cli.bitcoind_call("-daemon", "-connect=0.0.0.0", *extra_args)
 
     # verify bitcoind started up and is functioning correctly
     times = 0
@@ -321,7 +322,7 @@ def addmultisigaddress(nrequired, pubkeys, address_type='p2sh-segwit'):
     nrequired: <int> number of multisig keys required for withdrawal
     pubkeys: List<string> hex pubkeys for each of the N keys
     """
-    pubkey_string = json.dumps(pubkeys)
+    pubkey_string = jsonstr(pubkeys)
     return bitcoin_cli.json("addmultisigaddress", str(nrequired), pubkey_string, "", address_type)
 
 
@@ -358,12 +359,6 @@ def get_fee_interactive(xact, destinations):
     return fee
 
 
-################################################################################################
-#
-# Withdrawal transaction construction class
-#
-################################################################################################
-
 # From https://stackoverflow.com/a/3885198 modified to dump as string, so no floats ever involved
 class DecimalEncoder(json.JSONEncoder):
     """
@@ -378,6 +373,21 @@ class DecimalEncoder(json.JSONEncoder):
             return str(o)
         return super().default(o)  # pragma: no cover
 
+
+def jsonstr(thing):
+    """
+    Return a JSON string representation of thing.
+
+    Decimal values are encoded as strings to avoid any floating point imprecision.
+    """
+    return json.dumps(thing, cls=DecimalEncoder)
+
+
+################################################################################################
+#
+# Withdrawal transaction construction class
+#
+################################################################################################
 
 class WithdrawalXact:
     """
@@ -427,11 +437,11 @@ class WithdrawalXact:
         """
         ensure_bitcoind_running()
 
-        prev_txs = json.dumps(self._inputs, cls=DecimalEncoder)
+        prev_txs = jsonstr(self._inputs)
         tx_unsigned_hex = bitcoin_cli.checkoutput(
             "createrawtransaction",
             prev_txs,
-            json.dumps(destinations, cls=DecimalEncoder)).strip()
+            jsonstr(destinations)).strip()
 
         signed_tx = bitcoin_cli.json(
             "signrawtransactionwithwallet",
@@ -500,7 +510,7 @@ class WithdrawalXact:
             import_this["witnessscript"] = self.redeem_script
             if self.source_address == decoded_script["segwit"]["p2sh-segwit"]:
                 import_this["redeemscript"] = decoded_script["segwit"]["hex"]
-        results = bitcoin_cli.json("importmulti", json.dumps([import_this]))
+        results = bitcoin_cli.json("importmulti", jsonstr([import_this]))
         if not all(result["success"] for result in results) or \
            any("warnings" in result for result in results):
             raise Exception("Problem importing address to wallet")  # pragma: no cover
@@ -966,6 +976,34 @@ def withdraw_interactive():
     write_and_verify_qr_code("transaction", "transaction.png", signed_tx["hex"].upper())
 
 
+def set_network_params(testnet, regtest):
+    """
+    Set global vars cli_args and wif_prefix based on which network we are targeting.
+
+    testnet: integer: port for testnet RPC, or None if not testnet
+    regtest: integer: port for regtest RPC, or None if not regtest
+    """
+    global wif_prefix
+    if testnet:
+        network = 'testnet'
+    elif regtest:
+        network = 'regtest'
+    else:
+        network = 'mainnet'
+
+    bitcoin_cli.cli_args = {
+        'mainnet': [],
+        'testnet': ["-testnet", "-rpcport={}".format(testnet), "-datadir=../bitcoin-data/{}".format(testnet)],
+        'regtest': ["-regtest", "-rpcport={}".format(regtest), "-datadir=../bitcoin-data/{}".format(regtest)],
+    }[network]
+
+    wif_prefix = {
+        'mainnet': "80",
+        'testnet': "EF",
+        'regtest': "EF",
+    }[network]
+
+
 ################################################################################################
 #
 # main function
@@ -995,14 +1033,13 @@ def main():
     parser.add_argument(
         "--p2wsh", action="store_true", help="Generate p2wsh (native segwit) deposit address, instead of p2wsh-in-p2sh")
     parser.add_argument('--testnet', type=int, help=argparse.SUPPRESS)
+    parser.add_argument('--regtest', type=int, help=argparse.SUPPRESS)
     parser.add_argument('-v', '--verbose', action='store_true', help='increase output verbosity')
     args = parser.parse_args()
 
     bitcoin_cli.verbose_mode = args.verbose
-    bitcoin_cli.cli_args = ["-testnet", "-rpcport={}".format(args.testnet), "-datadir=bitcoin-test-data"] if args.testnet else []
 
-    global wif_prefix
-    wif_prefix = "EF" if args.testnet else "80"
+    set_network_params(args.testnet, args.regtest)
 
     if args.program == "entropy":
         entropy(args.num_keys, args.rng)
@@ -1014,5 +1051,19 @@ def main():
         withdraw_interactive()
 
 
+@contextlib.contextmanager
+def subprocess_catcher():
+    """
+    Catch any subprocess errors and show process output before re-raising.
+    """
+    try:
+        yield
+    except subprocess.CalledProcessError as exc:
+        if hasattr(exc, 'output'):
+            print("Output from subprocess:", exc.output, file=sys.stderr)
+        raise
+
+
 if __name__ == "__main__":
-    main()
+    with subprocess_catcher():
+        main()
