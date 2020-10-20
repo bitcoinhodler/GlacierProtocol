@@ -23,9 +23,19 @@ your bitcoins.
 
 # What's changed from the upstream Glacier project?
 
+## Features
+
 * Added `--p2wsh` flag to create native segwit deposit
   addresses. [PR
   #76](https://github.com/GlacierProtocol/GlacierProtocol/pull/76)
+
+## Bug fixes
+
+* Split withdrawal transaction into multiple QR codes if it gets too
+  large for one. [PR
+  #79](https://github.com/GlacierProtocol/GlacierProtocol/pull/79),
+  issue
+  [#78](https://github.com/GlacierProtocol/GlacierProtocol/issues/78).
 
 # What's coming soon?
 
@@ -40,12 +50,6 @@ your bitcoins.
 
   * Add a test for extra keys using both legacy and segwit. Issue
     [#20](https://github.com/GlacierProtocol/GlacierProtocol/issues/20)
-
-* fix-large-withdrawal: Split withdrawal transaction into multiple QR
-  codes if it gets too large for one. [PR
-  #79](https://github.com/GlacierProtocol/GlacierProtocol/pull/79),
-  issue
-  [#78](https://github.com/GlacierProtocol/GlacierProtocol/issues/78).
 
 * dup-input (built on validate-keys): Ensure if user enters same input
   transaction twice, we don't quietly generate an invalid withdrawal
