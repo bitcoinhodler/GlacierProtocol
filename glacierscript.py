@@ -264,10 +264,36 @@ def ensure_bitcoind_running(*extra_args):
         if bitcoin_cli.call("getnetworkinfo") == 0:
             # getaddressinfo API changed in v0.18.0
             require_minimum_bitcoind_version(180000)
+            create_default_wallet()
             return
         time.sleep(0.5)
 
     raise Exception("Timeout while starting bitcoin server")  # pragma: no cover
+
+
+def create_default_wallet():
+    """
+    Ensure the default wallet exists and is loaded.
+
+    Since v0.21, Bitcoin Core will not create a default wallet when
+    started for the first time.
+    """
+    loaded_wallets = bitcoin_cli.json("listwallets")
+    if "" in loaded_wallets:
+        return  # default wallet already loaded
+    all_wallets = bitcoin_cli.json("listwalletdir")
+    # {
+    #     "wallets": [
+    #         {
+    #             "name": ""
+    #         }
+    #     ]
+    # }
+    found = any(w["name"] == "" for w in all_wallets["wallets"])
+    cmd = "loadwallet" if found else "createwallet"
+    loaded_wallet = bitcoin_cli.json(cmd, "")
+    if len(loaded_wallet["warning"]):
+        raise Exception("problem running {} on default wallet".format(cmd))  # pragma: no cover
 
 
 def require_minimum_bitcoind_version(min_version):
@@ -298,8 +324,7 @@ def get_pubkey_for_wif_privkey(privkey):
 
     label = hash_sha256(privkey)
 
-    ensure_bitcoind_running()
-    bitcoin_cli.checkcall("importprivkey", privkey, label)
+    bitcoin_cli.checkoutput("importprivkey", privkey, label)
     addresses = bitcoin_cli.json("getaddressesbylabel", label)
 
     # getaddressesbylabel returns multiple addresses associated with
@@ -337,8 +362,6 @@ def get_fee_interactive(xact, destinations):
     xact: WithdrawalXact object
     destinations: {address <string>: amount<string>} dictionary mapping destination addresses to amount in BTC
     """
-    ensure_bitcoind_running()
-
     approve = False
     while not approve:
         print("\nEnter fee rate.")
@@ -435,8 +458,6 @@ class WithdrawalXact:
 
         destinations: {address <string>: amount<string>} dictionary mapping destination addresses to amount in BTC
         """
-        ensure_bitcoind_running()
-
         prev_txs = jsonstr(self._inputs)
         tx_unsigned_hex = bitcoin_cli.checkoutput(
             "createrawtransaction",

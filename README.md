@@ -66,6 +66,10 @@ issue](https://github.com/GlacierProtocol/GlacierProtocol/issues/38).
 
   * Also solves [#69](https://github.com/GlacierProtocol/GlacierProtocol/issues/69)
 
+* (default-wallet) Create default wallet for bitcoind if one doesn't
+  yet exist. Needed for compatibility with future Bitcoin Core 0.21
+  release. See [#15454](https://github.com/bitcoin/bitcoin/pull/15454).
+
 ## Improvements for Glacier developers
 
 * (tidypy) Clean up source code using linters from
