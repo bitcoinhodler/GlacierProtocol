@@ -47,15 +47,6 @@ def call(*args):
     return retcode
 
 
-def checkcall(*args):
-    """
-    Run `bitcoin-cli`, ensure no error.
-    """
-    cmd_list, retcode, output = _run_subprocess("bitcoin-cli", *args)
-    if retcode != 0:
-        raise subprocess.CalledProcessError(retcode, cmd_list, output=output)
-
-
 def checkoutput(*args):
     """
     Run `bitcoin-cli`, fail if OS return code nonzero, return output.

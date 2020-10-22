@@ -299,7 +299,7 @@ def get_pubkey_for_wif_privkey(privkey):
     label = hash_sha256(privkey)
 
     ensure_bitcoind_running()
-    bitcoin_cli.checkcall("importprivkey", privkey, label)
+    bitcoin_cli.checkoutput("importprivkey", privkey, label)
     addresses = bitcoin_cli.json("getaddressesbylabel", label)
 
     # getaddressesbylabel returns multiple addresses associated with
