@@ -324,7 +324,6 @@ def get_pubkey_for_wif_privkey(privkey):
 
     label = hash_sha256(privkey)
 
-    ensure_bitcoind_running()
     bitcoin_cli.checkoutput("importprivkey", privkey, label)
     addresses = bitcoin_cli.json("getaddressesbylabel", label)
 
@@ -363,8 +362,6 @@ def get_fee_interactive(xact, destinations):
     xact: WithdrawalXact object
     destinations: {address <string>: amount<string>} dictionary mapping destination addresses to amount in BTC
     """
-    ensure_bitcoind_running()
-
     approve = False
     while not approve:
         print("\nEnter fee rate.")
@@ -461,8 +458,6 @@ class WithdrawalXact:
 
         destinations: {address <string>: amount<string>} dictionary mapping destination addresses to amount in BTC
         """
-        ensure_bitcoind_running()
-
         prev_txs = jsonstr(self._inputs)
         tx_unsigned_hex = bitcoin_cli.checkoutput(
             "createrawtransaction",
