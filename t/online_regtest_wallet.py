@@ -99,7 +99,8 @@ def recreate_psbt(txdata):
     """
     # Obviously we aren't creating a withdrawal, but constructing
     # this object does all the heavy lifting of decoding & importing:
-    xact = glacierscript.PsbtWithdrawalXact(txdata['psbt'])
+    rawpsbt = txdata['psbt']
+    xact = glacierscript.PsbtWithdrawalXact(rawpsbt)
     psbt = xact.psbt
     newinputs = []  # for the 'inputs' argument to `createpsbt`
     for index, inp in enumerate(psbt['inputs']):
