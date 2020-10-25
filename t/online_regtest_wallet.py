@@ -116,13 +116,14 @@ def recreate_psbt(txdata):
     ).strip()
     bitcoin_cli.checkoutput("lockunspent", 'false', glacierscript.jsonstr(newinputs))
     results = bitcoin_cli.json("walletprocesspsbt", createpsbt, 'false', 'ALL', 'false')
-    if results['psbt'] != txdata['psbt']:
-        actual = bitcoin_cli.json("decodepsbt", results['psbt'])
+    results_psbt = results['psbt']
+    if results_psbt != txdata['psbt']:
+        actual = bitcoin_cli.json("decodepsbt", results_psbt)
         expected = bitcoin_cli.json("decodepsbt", txdata['psbt'])
         print("Expected PSBT:", file=sys.stderr)
         pprint.pprint(expected, stream=sys.stderr)
         print("Actual PSBT constructed:", file=sys.stderr)
-        print(results['psbt'], file=sys.stderr)
+        print(results_psbt, file=sys.stderr)
         pprint.pprint(actual, stream=sys.stderr)
         raise RuntimeError("Did not create expected PSBT for " + txdata['file'])
 
