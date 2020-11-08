@@ -32,6 +32,7 @@ GlacierScript depends on the following command-line applications:
 """
 
 # standard Python libraries
+from abc import ABCMeta, abstractmethod
 import argparse
 from collections import OrderedDict
 import contextlib
@@ -240,6 +241,12 @@ class GlacierExcessiveFee(Exception):
     Raised when transaction fee is determined to be excessive.
     """
 
+
+class GlacierFatal(Exception):
+    """
+    Raised when fatal error is detected.
+    """
+
 ################################################################################################
 #
 # Bitcoin helper functions
@@ -262,8 +269,9 @@ def ensure_bitcoind_running(*extra_args):
     while times <= 20:
         times += 1
         if bitcoin_cli.call("getnetworkinfo") == 0:
-            # getaddressinfo API changed in v0.18.0
-            require_minimum_bitcoind_version(180000)
+            # We need to support PSBTs that have both witness and non-witness data.
+            # See https://github.com/bitcoin/bitcoin/pull/19215
+            require_minimum_bitcoind_version(200100)
             create_default_wallet()
             return
         time.sleep(0.5)
@@ -305,8 +313,7 @@ def require_minimum_bitcoind_version(min_version):
     networkinfo = bitcoin_cli.json("getnetworkinfo")
 
     if int(networkinfo["version"]) < min_version:
-        print("ERROR: Your bitcoind version is too old. You have {}, I need {} or newer. Exiting...".format(networkinfo["version"], min_version))  # pragma: no cover
-        sys.exit()  # pragma: no cover
+        raise GlacierFatal("Your bitcoind version is too old. You have {}, I need {} or newer".format(networkinfo["version"], min_version))  # pragma: no cover
 
 
 def get_pubkey_for_wif_privkey(privkey):
@@ -412,9 +419,100 @@ def jsonstr(thing):
 #
 ################################################################################################
 
-class WithdrawalXact:
+class BaseWithdrawalXact:
+    """Class representing withdrawal transaction, either via input TXs or PSBT."""
+
+    def __init__(self, source_address, redeem_script):
+        """
+        Construct a new withdrawal.
+        """
+        self.source_address = source_address
+        self.redeem_script = redeem_script
+        self.keys = []
+        self.segwit = self._validate_address()
+        self._teach_address_to_wallet()
+        self.sigsrequired, self._pubkeys = self._find_pubkeys()
+
+    def add_key(self, key):
+        """
+        Use the (WIF format) private key for signing this withdrawal.
+        """
+        self.keys.append(key)
+        # Teach the wallet about this key
+        pubkey = get_pubkey_for_wif_privkey(key)
+        if pubkey not in self._pubkeys:
+            raise GlacierFatal("that key does not belong to this source address")
+
+    def _validate_address(self):
+        """
+        Validate the supplied cold storage address and redemption script.
+
+        Given our source cold storage address and redemption script,
+        make sure the redeem script is valid and matches the address.
+
+        Returns True iff address is segwit (either p2wsh-in-p2sh or p2wsh).
+        """
+        decoded_script = bitcoin_cli.json("decodescript", self.redeem_script)
+        if decoded_script["type"] != "multisig":
+            raise GlacierFatal("Unrecognized redemption script. Doublecheck for typos")
+        if self.source_address == decoded_script["p2sh"]:
+            return False
+        if "segwit" in decoded_script:
+            if self.source_address in [decoded_script["segwit"]["p2sh-segwit"],
+                                       *decoded_script["segwit"]["addresses"]]:
+                return True
+        raise GlacierFatal("Redemption script does not match cold storage address. Doublecheck for typos")
+
+    def _teach_address_to_wallet(self):
+        """
+        Teach the bitcoind wallet about our multisig address.
+
+        So it can use that knowledge to sign the transaction we're
+        about to create.
+
+        PSBT doesn't really need this for signing, but it enables me
+        to get the pubkeys (via getaddressinfo) which enables me to
+        validate every key entered by the user.
+
+        """
+        # If address is p2wsh-in-p2sh, then the user-provided
+        # redeem_script is actually witnessScript, and I need to get the
+        # redeemScript from `decodescript`.
+
+        decoded_script = bitcoin_cli.json("decodescript", self.redeem_script)
+
+        import_this = {
+            "scriptPubKey": {"address": self.source_address},
+            "timestamp": "now",
+            "watchonly": True  # to avoid warning about "Some private keys are missing[...]"
+        }
+        if decoded_script["p2sh"] == self.source_address:
+            import_this["redeemscript"] = self.redeem_script
+        else:
+            # segwit (either p2wsh or p2sh-in-p2wsh)
+            import_this["witnessscript"] = self.redeem_script
+            if self.source_address == decoded_script["segwit"]["p2sh-segwit"]:
+                import_this["redeemscript"] = decoded_script["segwit"]["hex"]
+        results = bitcoin_cli.json("importmulti", jsonstr([import_this]))
+        if not all(result["success"] for result in results) or \
+           any("warnings" in result for result in results):
+            raise Exception("Problem importing address to wallet")  # pragma: no cover
+
+    def _find_pubkeys(self):
+        """
+        Return (sigsrequired, pubkeys) associated with our source address.
+
+        Assumes that source_address has already been imported to the wallet using `importmulti`
+        """
+        out = bitcoin_cli.json("getaddressinfo", self.source_address)
+        if "pubkeys" not in out:
+            out = out["embedded"]  # for p2sh-segwit
+        return (out["sigsrequired"], out["pubkeys"])
+
+
+class ManualWithdrawalXact(BaseWithdrawalXact):
     """
-    Class for constructing a withdrawal transaction.
+    Class for constructing a withdrawal transaction from manually provided UTXOs.
 
     Attributes
     ----------
@@ -429,32 +527,17 @@ class WithdrawalXact:
         """
         Construct a new withdrawal from the specified source address.
         """
-        self.source_address = source_address
-        self.redeem_script = redeem_script
+        super().__init__(source_address, redeem_script)
         self._seen_txhashes = set()  # only for detecting duplicates
         self._inputs = []
-        self.keys = []
-        self._validate_address()
-        self._teach_address_to_wallet()
-        self._pubkeys = self._find_pubkeys()
         self.fee_basis_satoshis_per_byte = None
-
-    def add_key(self, key):
-        """
-        Use the (WIF format) private key for signing this withdrawal.
-        """
-        self.keys.append(key)
-        # Teach the wallet about this key
-        pubkey = get_pubkey_for_wif_privkey(key)
-        if pubkey not in self._pubkeys:
-            print("ERROR: that key does not belong to this source address, exiting...")
-            sys.exit()
 
     def create_signed_transaction(self, destinations):
         """
         Return a hex string representing a signed bitcoin transaction.
 
-        returns => <string>
+        returns => <dict> from signrawtransactionwithwallet, with keys
+        'hex' and 'complete'
 
         destinations: {address <string>: amount<string>} dictionary mapping destination addresses to amount in BTC
         """
@@ -488,14 +571,12 @@ class WithdrawalXact:
         # to generate a signature
         xact = bitcoin_cli.json("decoderawtransaction", hex_tx)
         if xact['hash'] in self._seen_txhashes:
-            print("ERROR: duplicated input transactions, exiting...")
-            sys.exit()
+            raise GlacierFatal("duplicated input transactions")
         self._seen_txhashes.add(xact['hash'])
 
         utxos = self._get_utxos(xact)
         if not utxos:
-            print("\nTransaction data not found for source address: {}".format(self.source_address))
-            sys.exit()
+            raise GlacierFatal("transaction data not found for source address: {}".format(self.source_address))
 
         txid = xact["txid"]
         for utxo in utxos:
@@ -506,65 +587,6 @@ class WithdrawalXact:
                 ("scriptPubKey", utxo["scriptPubKey"]["hex"]),
                 ("redeemScript", self.redeem_script),
             ]))
-
-    def _teach_address_to_wallet(self):
-        """
-        Teach the bitcoind wallet about our multisig address.
-
-        So it can use that knowledge to sign the transaction we're about to create.
-        """
-        # If address is p2wsh-in-p2sh, then the user-provided
-        # redeem_script is actually witnessScript, and I need to get the
-        # redeemScript from `decodescript`.
-
-        decoded_script = bitcoin_cli.json("decodescript", self.redeem_script)
-
-        import_this = {
-            "scriptPubKey": {"address": self.source_address},
-            "timestamp": "now",
-            "watchonly": True  # to avoid warning about "Some private keys are missing[...]"
-        }
-        if decoded_script["p2sh"] == self.source_address:
-            import_this["redeemscript"] = self.redeem_script
-        else:
-            # segwit (either p2wsh or p2sh-in-p2wsh)
-            import_this["witnessscript"] = self.redeem_script
-            if self.source_address == decoded_script["segwit"]["p2sh-segwit"]:
-                import_this["redeemscript"] = decoded_script["segwit"]["hex"]
-        results = bitcoin_cli.json("importmulti", jsonstr([import_this]))
-        if not all(result["success"] for result in results) or \
-           any("warnings" in result for result in results):
-            raise Exception("Problem importing address to wallet")  # pragma: no cover
-
-    def _find_pubkeys(self):
-        """
-        Return a list of the pubkeys associated with our source address.
-
-        Assumes that source_address has already been imported to the wallet using `importmulti`
-        """
-        out = bitcoin_cli.json("getaddressinfo", self.source_address)
-        if "pubkeys" in out:
-            return out["pubkeys"]  # for non-segwit addresses
-        return out["embedded"]["pubkeys"]  # for segwit addresses
-
-    def _validate_address(self):
-        """
-        Validate the supplied cold storage address and redemption script.
-
-        Given our source cold storage address and redemption script,
-        make sure the redeem script is valid and matches the address.
-        """
-        decoded_script = bitcoin_cli.json("decodescript", self.redeem_script)
-        if decoded_script["type"] != "multisig":
-            print("ERROR: Unrecognized redemption script. Doublecheck for typos. Exiting...")
-            sys.exit()
-        ok_addresses = [decoded_script["p2sh"]]
-        if "segwit" in decoded_script:
-            ok_addresses.append(decoded_script["segwit"]["p2sh-segwit"])
-            ok_addresses.extend(decoded_script["segwit"]["addresses"])
-        if self.source_address not in ok_addresses:
-            print("ERROR: Redemption script does not match cold storage address. Doublecheck for typos. Exiting...")
-            sys.exit()
 
     def _get_utxos(self, xact):
         """
@@ -603,6 +625,170 @@ class WithdrawalXact:
         if fee > self.MAX_FEE:
             raise GlacierExcessiveFee("Calculated fee ({}) is too high. Must be under {}".format(fee, self.MAX_FEE))
         return fee
+
+
+class PsbtWithdrawalXact(BaseWithdrawalXact):
+    """
+    Class for constructing a withdrawal transaction from PSBT.
+
+    Attributes
+    ----------
+    psbt_raw: <string> base64-encoded input PSBT from user
+    psbt: <object> output of `decodepsbt`
+    destinations: <OrderedDict> address => amount for each output
+    source_address: <string> our cold storage address
+    redeem_script: <string>
+    keys: <list of strings>: private keys to sign with
+
+    """
+
+    def __init__(self, psbt_raw):
+        """
+        Construct transaction based on the provided base64 psbt.
+        """
+        self.psbt_raw = psbt_raw
+        self.psbt = bitcoin_cli.json("decodepsbt", self.psbt_raw)
+        self.sanity_check_psbt()
+        source_address, redeem_script = self._find_source_address()
+        super().__init__(source_address, redeem_script)
+        self.destinations = self._find_output_addresses()
+
+    def _input_iter(self):
+        """
+        Iterate over (address, amount) for each input.
+        """
+        for index, inp in enumerate(self.psbt['inputs']):
+            if 'witness_utxo' in inp:
+                addr = inp['witness_utxo']['scriptPubKey']['address']
+                amount = inp['witness_utxo']['amount']
+            else:
+                inp0_n = self.psbt['tx']['vin'][index]['vout']
+                vout = inp['non_witness_utxo']['vout'][inp0_n]
+                addr = vout['scriptPubKey']['addresses'][0]
+                amount = vout['value']
+            yield addr, amount
+
+    def _find_source_address(self):
+        """
+        Analyze PSBT and return our detected address and redeem script.
+        """
+        inp0 = self.psbt['inputs'][0]
+        script = inp0['witness_script']['hex'] if 'witness_script' in inp0 \
+            else inp0['redeem_script']['hex']
+        myaddr, _ = next(self._input_iter())
+        return myaddr, script
+
+    def _find_output_addresses(self):
+        """
+        Analyze PSBT and return OrderedDict of (address:amount) pairs.
+        """
+        out = OrderedDict()
+        for vout in self.psbt['tx']['vout']:
+            addr = vout['scriptPubKey']['addresses'][0]
+            out[addr] = vout['value']
+        return out
+
+    def unspent_total(self):
+        """
+        Return the total amount of BTC available to spend from the input UTXOs.
+        """
+        return sum(amount for _, amount in self._input_iter())
+
+    def create_signed_transaction(self, destinations):
+        """
+        Return a hex string representing a signed bitcoin transaction.
+
+        returns => <dict> from signrawtransactionwithwallet, with keys
+        'hex' and 'complete'
+
+        destinations: {address <string>: amount<string>} dictionary
+        mapping destination addresses to amount in BTC
+
+        The destinations param is a holdover from
+        ManualWithdrawalXact, and should match self.destinations.
+        """
+        if destinations != self.destinations:
+            raise GlacierFatal("unable to change destinations of PSBT")  # pragma: no cover
+        prcs = bitcoin_cli.json("walletprocesspsbt", self.psbt_raw)
+        if not prcs['complete']:
+            raise GlacierFatal("Expected PSBT to be complete by now")  # pragma: no cover
+        final = bitcoin_cli.json('finalizepsbt', prcs['psbt'])
+        return {'hex': final['hex'], 'complete': True}
+
+    def sanity_check_psbt(self):
+        """
+        Make sure psbt is as we expect.
+
+        This is perhaps overly defensive, but I want to make sure we
+        don't sign anything we don't completely understand.
+
+        We want to avoid an attack of this nature:
+
+        https://medium.com/shiftcrypto/a-remote-theft-attack-on-trezor-model-t-44127cd7fb5a
+
+        """
+        # Number of inputs must match inputs in tx.
+        if len(self.psbt['inputs']) != len(self.psbt['tx']['vin']):
+            raise GlacierFatal("Invalid PSBT, inputs don't match tx")
+
+        # Every input must be populated with utxo info.
+        for inp in self.psbt['inputs']:
+            if 'witness_utxo' not in inp and 'non_witness_utxo' not in inp:
+                raise GlacierFatal("expected PSBT to describe every input")
+
+        # Either all inputs must have witness_utxo, or all inputs must
+        # have non_witness_utxo. Because we assume all inputs are from
+        # our one single cold storage address.
+        have_witness = 'witness_utxo' in self.psbt['inputs'][0]
+        for inp in self.psbt['inputs']:
+            if have_witness and 'witness_utxo' not in inp:
+                raise GlacierFatal("expected all inputs to be from same address")
+            if not have_witness and 'non_witness_utxo' not in inp:
+                raise GlacierFatal("expected all inputs to be from same address")
+
+        # Every input must have redeem_script and/or witness_script.
+        # Otherwise we can't possibly sign. And one of them must be of
+        # type multisig.
+        for inp in self.psbt['inputs']:
+            if have_witness and 'witness_script' not in inp:
+                raise GlacierFatal("expected PSBT to include witness_script")
+            if have_witness and inp['witness_script']['type'] != 'multisig':
+                raise GlacierFatal("expected witness_script to be multisig")
+            if not have_witness and 'redeem_script' not in inp:
+                raise GlacierFatal("expected PSBT to include redeem_script")
+            if not have_witness and inp['redeem_script']['type'] != 'multisig':
+                raise GlacierFatal("expected redeem_script to be multisig")
+
+        # Every input must come from same address (so we can assume
+        # it's ours without having to ask user to type in cold storage
+        # address). We need to identify our own address in order to
+        # identify the change output.
+        myaddr, _ = next(self._input_iter())
+        for thisaddr, _ in self._input_iter():
+            if myaddr != thisaddr:
+                raise GlacierFatal("expected all inputs to be from same address")
+
+        # Die if anything unusual or unrecognized. We don't want to
+        # sign something that we don't fully understand.
+        allowed_global_keys = ['fee', 'inputs', 'outputs', 'tx', 'unknown']
+        for key in self.psbt:
+            if key not in allowed_global_keys:
+                raise GlacierFatal("Unknown PSBT key '{}'".format(key))
+
+        if 'unknown' in self.psbt and self.psbt['unknown']:
+            raise GlacierFatal("Unknown global fields in PSBT: {}".format(
+                repr(self.psbt['unknown'])))
+
+        allowed_input_keys = ['redeem_script', 'witness_script',
+                              'witness_utxo', 'non_witness_utxo']
+        for inp in self.psbt['inputs']:
+            for key in inp:
+                if key not in allowed_input_keys:
+                    raise GlacierFatal("Unknown PSBT input key '{}'".format(key))
+
+        # Do I need to check that inputs[0].non_witness_utxo.txid
+        # matches the tx.vin[0].txid? Or will Bitcoin Core do that for
+        # me?
 
 
 ################################################################################################
@@ -696,18 +882,13 @@ def yes_no_interactive():
     """
     Prompt user for a yes/no confirmation and repeat until valid answer is received.
     """
-    def confirm_prompt():
-        return input("Confirm? (y/n): ")
-
-    confirm = confirm_prompt()
-
     while True:
+        confirm = input("Confirm? (y/n): ")
         if confirm.upper() == "Y":
             return True
         if confirm.upper() == "N":
             return False
         print("You must enter y (for yes) or n (for no).")
-        confirm = confirm_prompt()
 
 
 def safety_checklist():
@@ -725,8 +906,7 @@ def safety_checklist():
     for check in checks:
         answer = input(check + " (y/n)?")
         if answer.upper() != "Y":
-            print("\n Safety check failed. Exiting.")
-            sys.exit()
+            raise GlacierFatal("safety check failed")
 
 
 ################################################################################################
@@ -848,153 +1028,212 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
 #
 ################################################################################################
 
-def get_tx_interactive(num):
-    """
-    Prompt user for an unspent transaction to use as an input.
+class BaseWithdrawalBuilder(metaclass=ABCMeta):
+    """Interactively construct a withdrawal transaction, either via input TXs or PSBT."""
 
-    num: index of this input (used only for prompt)
+    @abstractmethod
+    def construct_withdrawal_interactive(self):
+        """
+        Get details from user input and construct *WithdrawalXact object.
 
-    Returns => string with hex transaction
-    """
-    print("\nPlease paste raw transaction #{} (hexadecimal format) with unspent outputs at the source address".format(num))
-    print("OR")
-    print("input a filename located in the current directory which contains the raw transaction data")
-    print("(If the transaction data is over ~4000 characters long, you _must_ use a file.):")
+        Returns => (xact, addresses) where xact is *WithdrawalXact, and
+        addresses is a dict of {address: amount} of destinations.
+        """
 
-    hex_tx = input()
-    if os.path.isfile(hex_tx):
-        hex_tx = open(hex_tx).read().strip()
-    return hex_tx
+    @staticmethod
+    def get_keys(xact):
+        """Prompt user for private keys and add them to the withdrawal transaction."""
+        print("\nHow many private keys will you be signing this transaction "
+              "with (at least {} required)?".format(xact.sigsrequired))
+        key_count = int(input("#: "))
 
+        if key_count < xact.sigsrequired:
+            raise GlacierFatal("not enough private keys to complete transaction (need {})".format(xact.sigsrequired))
 
-def construct_withdrawal_interactive():
-    """
-    Get details from user input and construct WithdrawalXact object.
+        for key_idx in range(key_count):
+            key = input("Key #{0}: ".format(key_idx + 1))
+            xact.add_key(key)
 
-    Returns => (xact, addresses) where xact is WithdrawalXact, and
-    addresses is a dict of {address: amount} of destinations.
-    """
-    addresses = OrderedDict()
-
-    print("\nYou will need to enter several pieces of information to create a withdrawal transaction.")
-    print("\n\n*** PLEASE BE SURE TO ENTER THE CORRECT DESTINATION ADDRESS ***\n")
-
-    source_address = input("\nSource cold storage address: ")
-    addresses[source_address] = 0
-
-    redeem_script = input("\nRedemption script for source cold storage address: ")
-    xact = WithdrawalXact(source_address, redeem_script)
-
-    dest_address = input("\nDestination address: ")
-    addresses[dest_address] = 0
-
-    num_tx = int(input("\nHow many unspent transactions will you be using for this withdrawal? "))
-
-    for txcount in range(num_tx):
-        xact.add_input_xact(get_tx_interactive(txcount + 1))
-
-    print("\nTransaction data found for source address.")
-
-    input_amount = xact.unspent_total()
-
-    print("TOTAL unspent amount for this raw transaction: {} BTC".format(input_amount))
-
-    print("\nHow many private keys will you be signing this transaction with? ")
-    key_count = int(input("#: "))
-
-    for key_idx in range(key_count):
-        key = input("Key #{0}: ".format(key_idx + 1))
-        xact.add_key(key)
-
-    # fees, amount, and change
-
-    fee = get_fee_interactive(xact, addresses)
-    # Got this far
-    if fee > input_amount:
-        print("ERROR: Your fee is greater than the sum of your unspent transactions.  Try using larger unspent transactions. Exiting...")
-        sys.exit()
-
-    print("\nPlease enter the decimal amount (in bitcoin) to withdraw to the destination address.")
-    print("\nExample: For 2.3 bitcoins, enter \"2.3\".")
-    print("\nAfter a fee of {0}, you have {1} bitcoins available to withdraw.".format(fee, input_amount - fee))
-    print("\n*** Technical note for experienced Bitcoin users:  If the withdrawal amount & fee are cumulatively less than the total amount of the unspent transactions, the remainder will be sent back to the same cold storage address as change. ***\n")
-    withdrawal_amount = input(
-        "Amount to send to {0} (leave blank to withdraw all funds stored in these unspent transactions): ".format(dest_address))
-    if withdrawal_amount == "":
-        withdrawal_amount = input_amount - fee
-    else:
-        withdrawal_amount = Decimal(withdrawal_amount).quantize(SATOSHI_PLACES)
-
-    if fee + withdrawal_amount > input_amount:
-        print("Error: fee + withdrawal amount greater than total amount available from unspent transactions")
-        sys.exit()
-
-    change_amount = input_amount - withdrawal_amount - fee
-
-    if change_amount > 0:
-        print("{0} being returned to cold storage address address {1}.".format(change_amount, xact.source_address))
-        addresses[xact.source_address] = change_amount
-    else:
-        del addresses[xact.source_address]
-        fee = xact.calculate_fee(addresses)  # Recompute fee with no change output
-        withdrawal_amount = input_amount - fee
-        print("With no change output, the transaction fee is reduced, and {0} BTC will be sent to your destination.".format(withdrawal_amount))
-
-    addresses[dest_address] = withdrawal_amount
-    return (xact, addresses)
-
-
-def withdraw_interactive():
-    """
-    Construct and sign a transaction to withdraw funds from cold storage.
-
-    All data required for transaction construction is input at the terminal
-    """
-    safety_checklist()
-    ensure_bitcoind_running()
-
-    approve = False
-
-    while not approve:
-        xact, addresses = construct_withdrawal_interactive()
-
-        # check data
-        print("\nIs this data correct?")
-        print("*** WARNING: Incorrect data may lead to loss of funds ***\n")
-
-        print("{0} BTC in unspent supplied transactions".format(xact.unspent_total()))
+    @staticmethod
+    def print_tx(xact, addresses):
+        """
+        Print transaction details in human-readable format.
+        """
+        print("{0} BTC in unspent inputs from cold storage address {1}".format(
+            xact.unspent_total(), xact.source_address))
         for address, value in addresses.items():
             if address == xact.source_address:
                 print("{0} BTC going back to cold storage address {1}".format(value, address))
             else:
                 print("{0} BTC going to destination address {1}".format(value, address))
-        print("Fee amount: {0}".format(xact.unspent_total() - sum(addresses[a] for a in addresses)))
-        print("\nSigning with private keys: ")
-        for key in xact.keys:
-            print("{}".format(key))
-        print("\n")
-        confirm = yes_no_interactive()
+        print("Fee amount: {0}".format(xact.unspent_total() - sum(addresses.values())))
 
-        if confirm:
-            approve = True
+    def withdraw_interactive(self):
+        """
+        Construct and sign a transaction to withdraw funds from cold storage.
+
+        All data required for transaction construction is input at the terminal
+        """
+        safety_checklist()
+        ensure_bitcoind_running()
+
+        approve = False
+
+        while not approve:
+            xact, addresses = self.construct_withdrawal_interactive()
+
+            # check data
+            print("\nIs this data correct?")
+            print("*** WARNING: Incorrect data may lead to loss of funds ***\n")
+            self.print_tx(xact, addresses)
+            print("\nSigning with private keys: ")
+            for key in xact.keys:
+                print("{}".format(key))
+            print("\n")
+            confirm = yes_no_interactive()
+
+            if confirm:
+                approve = True
+            else:
+                print("\nProcess aborted. Starting over....")
+
+        # Calculate Transaction
+        print("\nCalculating transaction...\n")
+
+        signed_tx = xact.create_signed_transaction(addresses)
+
+        if not signed_tx["complete"]:
+            # This should have already been caught by sigsrequired check
+            raise GlacierFatal("not enough private keys to complete transaction")  # pragma: no cover
+
+        print("\nRaw signed transaction (hex):")
+        print(signed_tx["hex"])
+
+        print("\nTransaction fingerprint (md5):")
+        print(hash_md5(signed_tx["hex"]))
+
+        write_and_verify_qr_code("transaction", "transaction.png", signed_tx["hex"].upper())
+
+
+class ManualWithdrawalBuilder(BaseWithdrawalBuilder):
+    """Interactively construct a withdrawal transaction via input TXs."""
+
+    @staticmethod
+    def get_tx_interactive(num):
+        """
+        Prompt user for an unspent transaction to use as an input.
+
+        num: index of this input (used only for prompt)
+
+        Returns => string with hex transaction
+        """
+        print("\nPlease paste raw transaction #{} (hexadecimal format) with unspent outputs at the source address".format(num))
+        print("OR")
+        print("input a filename located in the current directory which contains the raw transaction data")
+        print("(If the transaction data is over ~4000 characters long, you _must_ use a file.):")
+
+        hex_tx = input()
+        if os.path.isfile(hex_tx):
+            hex_tx = open(hex_tx).read().strip()
+        return hex_tx
+
+    def construct_withdrawal_interactive(self):
+        """
+        Get details from user input and construct ManualWithdrawalXact object.
+
+        Returns => (xact, addresses) where xact is ManualWithdrawalXact, and
+        addresses is a dict of {address: amount} of destinations.
+        """
+        addresses = OrderedDict()
+
+        print("\nYou will need to enter several pieces of information to create a withdrawal transaction.")
+        print("\n\n*** PLEASE BE SURE TO ENTER THE CORRECT DESTINATION ADDRESS ***\n")
+
+        source_address = input("\nSource cold storage address: ")
+        addresses[source_address] = 0
+
+        redeem_script = input("\nRedemption script for source cold storage address: ")
+        xact = ManualWithdrawalXact(source_address, redeem_script)
+
+        dest_address = input("\nDestination address: ")
+        addresses[dest_address] = 0
+
+        num_tx = int(input("\nHow many unspent transactions will you be using for this withdrawal? "))
+
+        for txcount in range(num_tx):
+            xact.add_input_xact(self.get_tx_interactive(txcount + 1))
+
+        print("\nTransaction data found for source address.")
+
+        input_amount = xact.unspent_total()
+
+        print("TOTAL unspent amount for this raw transaction: {} BTC".format(input_amount))
+        self.get_keys(xact)
+
+        # fees, amount, and change
+
+        fee = get_fee_interactive(xact, addresses)
+        # Got this far
+        if fee > input_amount:
+            raise GlacierFatal("Your fee is greater than the sum of your unspent transactions.  Try using larger unspent transactions")
+
+        print("\nPlease enter the decimal amount (in bitcoin) to withdraw to the destination address.")
+        print("\nExample: For 2.3 bitcoins, enter \"2.3\".")
+        print("\nAfter a fee of {0}, you have {1} bitcoins available to withdraw.".format(fee, input_amount - fee))
+        print("\n*** Technical note for experienced Bitcoin users:  If the withdrawal amount & fee are cumulatively less than the total amount of the unspent transactions, the remainder will be sent back to the same cold storage address as change. ***\n")
+        withdrawal_amount = input(
+            "Amount to send to {0} (leave blank to withdraw all funds stored in these unspent transactions): ".format(dest_address))
+        if withdrawal_amount == "":
+            withdrawal_amount = input_amount - fee
         else:
-            print("\nProcess aborted. Starting over....")
+            withdrawal_amount = Decimal(withdrawal_amount).quantize(SATOSHI_PLACES)
 
-    # Calculate Transaction
-    print("\nCalculating transaction...\n")
+        if fee + withdrawal_amount > input_amount:
+            raise GlacierFatal("fee + withdrawal amount greater than total amount available from unspent transactions")
 
-    signed_tx = xact.create_signed_transaction(addresses)
+        change_amount = input_amount - withdrawal_amount - fee
 
-    print("\nSufficient private keys to execute transaction?")
-    print(signed_tx["complete"])
+        if change_amount > 0:
+            print("{0} being returned to cold storage address address {1}.".format(change_amount, xact.source_address))
+            addresses[xact.source_address] = change_amount
+        else:
+            del addresses[xact.source_address]
+            fee = xact.calculate_fee(addresses)  # Recompute fee with no change output
+            withdrawal_amount = input_amount - fee
+            print("With no change output, the transaction fee is reduced, and {0} BTC will be sent to your destination.".format(withdrawal_amount))
 
-    print("\nRaw signed transaction (hex):")
-    print(signed_tx["hex"])
+        addresses[dest_address] = withdrawal_amount
+        return (xact, addresses)
 
-    print("\nTransaction fingerprint (md5):")
-    print(hash_md5(signed_tx["hex"]))
 
-    write_and_verify_qr_code("transaction", "transaction.png", signed_tx["hex"].upper())
+class PsbtWithdrawalBuilder(BaseWithdrawalBuilder):
+    """Interactively construct a withdrawal transaction via PSBT."""
+
+    @staticmethod
+    def _load_psbt():
+        """
+        Prompt user for filename, load PSBT from that file.
+        """
+        print("Input a filename located in the current directory which contains the PSBT:")
+        psbt_filename = input()
+        with open(psbt_filename) as psbtfile:
+            psbt = psbtfile.read().strip()
+        return psbt
+
+    def construct_withdrawal_interactive(self):
+        """
+        Get details from user input and construct WithdrawalXact object.
+
+        Returns => (xact, addresses) where xact is WithdrawalXact, and
+        addresses is a dict of {address: amount} of destinations.
+        """
+        psbt_raw = self._load_psbt()
+        xact = PsbtWithdrawalXact(psbt_raw)
+        self.print_tx(xact, xact.destinations)
+        if not yes_no_interactive():
+            raise GlacierFatal("aborting")
+        self.get_keys(xact)
+        return (xact, xact.destinations)
 
 
 def set_network_params(testnet, regtest):
@@ -1067,11 +1306,12 @@ def main():
 
     subs.add_parser('create-withdrawal-data', help="Construct withdrawal transaction")
 
+    subs.add_parser('sign-psbt', help="Sign PSBT (Partially Signed Bitcoin Transaction, BIP 174)")
+
     args = parser.parse_args()
     if not args.program:
         parser.print_usage()
-        print("ERROR: you must specify a subcommand")
-        sys.exit()
+        raise GlacierFatal("you must specify a subcommand")
 
     bitcoin_cli.verbose_mode = args.verbose
 
@@ -1084,13 +1324,20 @@ def main():
         deposit_interactive(args.m, args.n, args.dice, args.rng, args.p2wsh)
 
     if args.program == "create-withdrawal-data":
-        withdraw_interactive()
+        builder = ManualWithdrawalBuilder()
+        builder.withdraw_interactive()
+
+    if args.program == "sign-psbt":
+        builder = PsbtWithdrawalBuilder()
+        builder.withdraw_interactive()
 
 
 @contextlib.contextmanager
 def subprocess_catcher():
     """
     Catch any subprocess errors and show process output before re-raising.
+
+    Catch fatal errors and issue nice error message.
     """
     try:
         yield
@@ -1098,6 +1345,8 @@ def subprocess_catcher():
         if hasattr(exc, 'output'):
             print("Output from subprocess:", exc.output, file=sys.stderr)
         raise
+    except GlacierFatal as exc:
+        raise SystemExit("ERROR: {}. Exiting...".format(exc))
 
 
 if __name__ == "__main__":

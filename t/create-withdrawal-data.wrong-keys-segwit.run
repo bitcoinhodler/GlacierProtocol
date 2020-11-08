@@ -1,10 +1,9 @@
 #!/bin/bash
-set -e
 
 # Test validation of extra keys. 3rd key does not belong to this address.
 
 
-$GLACIERSCRIPT --regtest=$1 create-withdrawal-data << INPUT
+$GLACIERSCRIPT --regtest=$1 create-withdrawal-data << INPUT 2>&1
 y
 y
 y
@@ -21,3 +20,9 @@ cUY5DRXSmpqT7WpBAkjFz6PPxHoPJ2Cw2VNCa7muihpRjAUJVycs
 cQTQEE1ooQHpVi5C4aTcbYPSUMzY2gF1DVdafUsEwnYYaT97UUMy
 cPSsBu9SyNVAS2Evy3m4ELFx7KGnudH3N77Es83nafa2xVWJGRSe
 INPUT
+
+retVal=$?
+if [ $retVal -eq 0 ]; then
+    echo "Error: expected glacierscript.py to fail"
+    exit 1
+fi

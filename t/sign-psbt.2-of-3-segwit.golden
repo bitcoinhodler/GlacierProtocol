@@ -1,0 +1,29 @@
+Are you running this on a computer WITHOUT a network connection of any kind? (y/n)?Have the wireless cards in this computer been physically removed? (y/n)?Are you running on battery power? (y/n)?Are you running on an operating system booted from a USB drive? (y/n)?Is your screen hidden from view of windows, cameras, and other people? (y/n)?Are smartphones and all other nearby devices turned off and in a Faraday bag? (y/n)?Input a filename located in the current directory which contains the PSBT:
+0.20000000 BTC in unspent inputs from cold storage address 2MvQKEWTdtH7uM5C72quuMukWNFkFYjm34N
+0.19998160 BTC going to destination address mxBQD1QAYpwiudaCJdRhE9QSW9cokafJ99
+Fee amount: 0.00001840
+Confirm? (y/n): 
+How many private keys will you be signing this transaction with (at least 2 required)?
+#: Key #1: Key #2: 
+Is this data correct?
+*** WARNING: Incorrect data may lead to loss of funds ***
+
+0.20000000 BTC in unspent inputs from cold storage address 2MvQKEWTdtH7uM5C72quuMukWNFkFYjm34N
+0.19998160 BTC going to destination address mxBQD1QAYpwiudaCJdRhE9QSW9cokafJ99
+Fee amount: 0.00001840
+
+Signing with private keys: 
+cMvAmArzxkXMh8k5FcaRWLBA2SgDSc2U8q1YE5hSLSek1GuyFBP3
+cPSsBu9SyNVAS2Evy3m4ELFx7KGnudH3N77Es83nafa2xVWJGRSe
+
+
+Confirm? (y/n): 
+Calculating transaction...
+
+
+Raw signed transaction (hex):
+0200000000010189bf90eaa48152b062e1aee1343f93d84daa91f4d82e1c2ff50f6d1b088664560100000023220020d017965b0cae52a8b6f6e43b00118be27dae84b825959dcb77ca6b5310e53ea3ffffffff01d0253101000000001976a914b6c7733e23a271e57ca16e5cd885174917968db988ac0400473044022039cc8e4ff6d669c88ecc4fd299f6258e5a759d94fd30e850be6eec47dfbe024b02203328b2589280e2f2583a50c6d3862789d1d82560111fd0602e8c21cf6b287209014730440220412af187f9e8462008b4ac76cfaf19e1420cffa28b3674bda03d1f471266f6d302203d7e1b60da544fc432cf4edf6ea645f8836c645edc379a135552b5f4e12d213001695221035a0cf2b8ad46945154d80b339f730ac0cdbc39a95550a95821adf6df6e6e3c9421038f339e9149fda8496360d689b5d6b4d66f8e64e28b1c89846efd0831512eab882103442945263f31819baf5799dc9595eba49b8f6674dadf21189f717abd630ab15053ae00000000
+
+Transaction fingerprint (md5):
+4a4626e5eb7eb5178159c14c704a789e
+QR code for transaction written to transaction.png

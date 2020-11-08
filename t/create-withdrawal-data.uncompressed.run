@@ -3,7 +3,7 @@ set -e
 
 # Also tests excessive fee correction
 
-$GLACIERSCRIPT --regtest=$1 create-withdrawal-data << INPUT
+$GLACIERSCRIPT --regtest=$1 create-withdrawal-data << INPUT 2>&1
 y
 y
 y

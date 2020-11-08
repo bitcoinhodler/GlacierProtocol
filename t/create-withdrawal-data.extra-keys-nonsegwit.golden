@@ -17,7 +17,7 @@ input a filename located in the current directory which contains the raw transac
 Transaction data found for source address.
 TOTAL unspent amount for this raw transaction: 0.42500000 BTC
 
-How many private keys will you be signing this transaction with? 
+How many private keys will you be signing this transaction with (at least 2 required)?
 #: Key #1: Key #2: Key #3: Key #4: 
 Enter fee rate.
 Satoshis per vbyte: 
@@ -36,7 +36,7 @@ Amount to send to 2N5PvoFj6adLPcqHAD24MxEZxvdQMGBLXow (leave blank to withdraw a
 Is this data correct?
 *** WARNING: Incorrect data may lead to loss of funds ***
 
-0.42500000 BTC in unspent supplied transactions
+0.42500000 BTC in unspent inputs from cold storage address 2NAVkgszAvjZZwWpHpbCaxSaNqCCXPD8Bts
 0.42496290 BTC going to destination address 2N5PvoFj6adLPcqHAD24MxEZxvdQMGBLXow
 Fee amount: 0.00003710
 
@@ -50,9 +50,6 @@ cRoydfinDRzzRQJp5niqJWukSYTfPJQM6ytqGN6nzonaz1mafgwD
 Confirm? (y/n): 
 Calculating transaction...
 
-
-Sufficient private keys to execute transaction?
-True
 
 Raw signed transaction (hex):
 0200000001de3662958a163ff163597c8636a1f8c97f846838c24e60bc99efae44afc2322b01000000fd1e0100473044022074d972450bbca901175b62f0a7c55b3de010dd8a6e0b329acc3dd2dfd92d79450220416a19b77861cd16a72f1d4ee402c34990da51369f7777a97fbbf0e5b9b8758501473044022000cb91f28765978dda66247fb9fdad8536b5dfc40c62aebb6063033b186f5e3d0220793a4befa4e65a0781d7af61ed1909ea418be2f2f186112b20c3e0edf473e864014c8b522103d14ddcfb6817f5579695bbb3eb3e185887bf2942b031e6f716343b8fe7e9e8e221028fcd46f8614b2cbf318096968242a1e22bcfb6d8f2b6dc939c8c27c347b2937b210315acb550120f4cdcb460d5c49080ab508ca4ccd8dedecac22feeac8cd017d4c121022b063ee2f22f9e1982c140fe778672c683111a796dcccdbd47bb65e3d608a98354aeffffffff01227188020000000017a9148546e747c8094376b0a0af44bc5bbb8dd4f0218d8700000000

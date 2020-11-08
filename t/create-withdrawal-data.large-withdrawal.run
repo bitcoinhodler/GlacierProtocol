@@ -10,7 +10,7 @@ set -e
 touch transaction-01.png transaction-02.png transaction-03.png
 
 
-$GLACIERSCRIPT --regtest=$1 create-withdrawal-data << INPUT
+$GLACIERSCRIPT --regtest=$1 create-withdrawal-data << INPUT 2>&1
 y
 y
 y

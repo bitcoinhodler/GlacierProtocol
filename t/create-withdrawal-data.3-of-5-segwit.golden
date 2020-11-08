@@ -17,7 +17,7 @@ input a filename located in the current directory which contains the raw transac
 Transaction data found for source address.
 TOTAL unspent amount for this raw transaction: 0.20000000 BTC
 
-How many private keys will you be signing this transaction with? 
+How many private keys will you be signing this transaction with (at least 3 required)?
 #: Key #1: Key #2: Key #3: 
 Enter fee rate.
 Satoshis per vbyte: 
@@ -36,7 +36,7 @@ Amount to send to mxBQD1QAYpwiudaCJdRhE9QSW9cokafJ99 (leave blank to withdraw al
 Is this data correct?
 *** WARNING: Incorrect data may lead to loss of funds ***
 
-0.20000000 BTC in unspent supplied transactions
+0.20000000 BTC in unspent inputs from cold storage address 2MvdcuGhBWhwiHjTr7XUSydtv5FmMge93jS
 0.19997810 BTC going to destination address mxBQD1QAYpwiudaCJdRhE9QSW9cokafJ99
 Fee amount: 0.00002190
 
@@ -49,9 +49,6 @@ cUv81BVz1JWuA9uwECPvfsoyA1TqmFJBJaQUPYrxkdf44zQSiTZY
 Confirm? (y/n): 
 Calculating transaction...
 
-
-Sufficient private keys to execute transaction?
-True
 
 Raw signed transaction (hex):
 02000000000101372c41d7ce6da98e3f8f44862b813ce9dd03b4ff2a48faa2edec5e070911862e04000000232200208e03bd637ebfec049d19df78d90085141eacbd14034793155f3822fd58d3dc5effffffff0172243101000000001976a914b6c7733e23a271e57ca16e5cd885174917968db988ac050047304402206577e8bd38e434e7369f33752198646876d4f65dd1e2353184b76dbb3064ce3a02200561b134bce4a661fb7771efb46fb104d0c68bf433dfaef3ac8ec02df84661da0147304402201214dfef3feb80005bd3af6814467090d3728747360556e23b353755f0985606022064af2c719fab928318f7c13c2768c6965738b0323d3656463dd17e16e4b120740147304402203c52dc4a245290b435b95db3d6504e22fcd60c319265506b43717e002d85310c02201706a9e06daaf42d5977ac833a73b01e6e307798f419b31379add24734338fb601ad53210320849607eed265c09f51cda0e972426558276384870651250aa4e8638c334ced2102766c70472a8a3de751d126eddac8436338f8447b1967b5aa3b12a2b9a6e712e921039080ddc448e7fe4985676a7d2d6567dfc2febb8207a6f29b9737233f4c3b44d62103fa2d2c07653afb0a73340ee9e6b10ff0d4624c93b01127e9a69efbed48468e0121029669b79d7e05f20ca7aa418edc839da904467253c9e47194cb83e69ee418315155ae00000000

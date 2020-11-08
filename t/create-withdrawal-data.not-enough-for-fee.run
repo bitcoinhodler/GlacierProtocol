@@ -1,11 +1,10 @@
 #!/bin/bash
-set -e
 
 # Note: the unspent tx used here doesn't actually exist in our regtest
 # blockchain, but it doesn't need to because we never actually spend
 # it.
 
-$GLACIERSCRIPT --regtest=$1 create-withdrawal-data << INPUT
+$GLACIERSCRIPT --regtest=$1 create-withdrawal-data << INPUT 2>&1
 y
 y
 y
@@ -25,3 +24,9 @@ n
 15
 y
 INPUT
+
+retVal=$?
+if [ $retVal -eq 0 ]; then
+    echo "Error: expected glacierscript.py to fail"
+    exit 1
+fi

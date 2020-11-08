@@ -17,7 +17,7 @@ input a filename located in the current directory which contains the raw transac
 Transaction data found for source address.
 TOTAL unspent amount for this raw transaction: 0.00005000 BTC
 
-How many private keys will you be signing this transaction with? 
+How many private keys will you be signing this transaction with (at least 2 required)?
 #: Key #1: Key #2: 
 Enter fee rate.
 Satoshis per vbyte: 
@@ -37,4 +37,4 @@ After a fee of 0.00004050, you have 0.00000950 bitcoins available to withdraw.
 
 *** Technical note for experienced Bitcoin users:  If the withdrawal amount & fee are cumulatively less than the total amount of the unspent transactions, the remainder will be sent back to the same cold storage address as change. ***
 
-Amount to send to mp1KQzUoDf9div7jjgon3UuqLThMSo3tmF (leave blank to withdraw all funds stored in these unspent transactions): Error: fee + withdrawal amount greater than total amount available from unspent transactions
+Amount to send to mp1KQzUoDf9div7jjgon3UuqLThMSo3tmF (leave blank to withdraw all funds stored in these unspent transactions): ERROR: fee + withdrawal amount greater than total amount available from unspent transactions. Exiting...

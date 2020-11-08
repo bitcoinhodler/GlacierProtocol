@@ -4,7 +4,7 @@ set -e
 # Make sure all the checks in validate_rng_seed()for bad input data
 # are working as expected
 
-$GLACIERSCRIPT --regtest=$1 create-deposit-data -m 3 -n 5 << INPUT
+$GLACIERSCRIPT --regtest=$1 create-deposit-data -m 3 -n 5 << INPUT 2>&1
 y
 y
 y

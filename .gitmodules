@@ -1,0 +1,3 @@
+[submodule "t/trim-psbt"]
+	path = t/trim-psbt
+	url = git@github.com:bitcoinhodler/trim-psbt.git
