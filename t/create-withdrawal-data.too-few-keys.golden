@@ -17,5 +17,5 @@ input a filename located in the current directory which contains the raw transac
 Transaction data found for source address.
 TOTAL unspent amount for this raw transaction: 0.00050000 BTC
 
-How many private keys will you be signing this transaction with (at least 2 required)?
+How many private keys will you be signing this transaction with (at least 2 required to complete transaction)?
 #: ERROR: not enough private keys to complete transaction (need 2). Exiting...

@@ -3,5 +3,5 @@ Are you running this on a computer WITHOUT a network connection of any kind? (y/
 0.01998100 BTC going to destination address 2NBNqB9wqYYxgcCSeqNrR9RmHc4NsLm7jWe
 Fee amount: 0.00001900
 Confirm? (y/n): 
-How many private keys will you be signing this transaction with (at least 2 required)?
+How many private keys will you be signing this transaction with (at least 2 required to complete transaction)?
 #: Key #1: Key #2: Key #3: ERROR: that key does not belong to this source address. Exiting...

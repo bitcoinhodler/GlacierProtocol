@@ -17,7 +17,7 @@ input a filename located in the current directory which contains the raw transac
 Transaction data found for source address.
 TOTAL unspent amount for this raw transaction: 0.20000000 BTC
 
-How many private keys will you be signing this transaction with (at least 2 required)?
+How many private keys will you be signing this transaction with (at least 2 required to complete transaction)?
 #: Key #1: Key #2: 
 Enter fee rate.
 Satoshis per vbyte: 

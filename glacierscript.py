@@ -1060,7 +1060,7 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
     def get_keys(xact):
         """Prompt user for private keys and add them to the withdrawal transaction."""
         print("\nHow many private keys will you be signing this transaction "
-              "with (at least {} required)?".format(xact.sigsrequired))
+              "with (at least {} required to complete transaction)?".format(xact.sigsrequired))
         key_count = int(input("#: "))
 
         if key_count < xact.sigsrequired:
