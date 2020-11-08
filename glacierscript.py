@@ -269,8 +269,9 @@ def ensure_bitcoind_running(*extra_args):
     while times <= 20:
         times += 1
         if bitcoin_cli.call("getnetworkinfo") == 0:
-            # getaddressinfo API changed in v0.18.0
-            require_minimum_bitcoind_version(180000)
+            # We need to support PSBTs that have both witness and non-witness data.
+            # See https://github.com/bitcoin/bitcoin/pull/19215
+            require_minimum_bitcoind_version(200100)
             create_default_wallet()
             return
         time.sleep(0.5)
