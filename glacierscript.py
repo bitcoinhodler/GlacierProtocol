@@ -1109,7 +1109,6 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
             # This should have already been caught by sigsrequired check
             raise GlacierFatal("not enough private keys to complete transaction")  # pragma: no cover
 
-
         final_decoded = bitcoin_cli.json("decoderawtransaction", signed_tx["hex"])
         feerate_sats_per_vbyte = xact.fee / SATOSHI_PLACES / final_decoded['vsize']
         print("Final fee rate: {} satoshis per vbyte".format(feerate_sats_per_vbyte))
