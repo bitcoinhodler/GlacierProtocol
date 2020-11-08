@@ -4,7 +4,8 @@
 [tool.tidypy]
 # These files don't belong to us, except tx.json, which is machine-generated
 # so no need to lint
-exclude = [ "base58.py", "t/atomic_write.py", "t/segwit_addr.py", "t/tx.json" ]
+exclude = [ "base58.py", "t/atomic_write.py", "t/segwit_addr.py", "t/tx.json",
+            "t/trim-psbt" ]
 
 [tool.tidypy.bandit]
 disabled = [
