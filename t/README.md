@@ -76,7 +76,7 @@ $ make COVERAGE=1; firefox coverage-report/index.html
 | `not-enough-for-fee`       | CWD only | | Fee larger than unspent |
 | `one-wrong-input`          | CWD only | [#23](https://github.com/GlacierProtocol/GlacierProtocol/issues/23)| Unrelated input TX pasted |
 | `p2sh-segwit`              | Both     | | Basic withdrawal from p2wsh-in-p2sh address |
-| `p2wsh`                    | Both     | | Basic withdrawal from p2wsh address |
+| `p2wsh`                    | Both     | | Basic withdrawal from p2wsh address -- also tests PSBT with both witness and non-witness UTXOs |
 | `segwit-inputs`            | Both     | [#14](https://github.com/GlacierProtocol/GlacierProtocol/issues/14)| Inputs with a variety of output types |
 | `too-few-keys`             | Both     | | Not enough private keys provided |
 | `uncompressed`             | Both     | | Basic p2sh with uncompressed keys (original Glacier release) |
