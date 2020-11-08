@@ -1057,15 +1057,17 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
         """
 
     @staticmethod
-    def get_keys(xact):
+    def too_few_keys(sigsrequired):
+        """Inform user they are not providing enough keys."""
+        raise GlacierFatal("not enough private keys to complete transaction (need {})".format(sigsrequired))
+
+    def get_keys(self, xact):
         """Prompt user for private keys and add them to the withdrawal transaction."""
         print("\nHow many private keys will you be signing this transaction "
               "with (at least {} required to complete transaction)?".format(xact.sigsrequired))
         key_count = int(input("#: "))
-
         if key_count < xact.sigsrequired:
-            raise GlacierFatal("not enough private keys to complete transaction (need {})".format(xact.sigsrequired))
-
+            self.too_few_keys(xact.sigsrequired)
         for key_idx in range(key_count):
             key = input("Key #{0}: ".format(key_idx + 1))
             xact.add_key(key)
