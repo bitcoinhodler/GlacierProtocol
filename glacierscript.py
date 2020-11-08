@@ -1044,6 +1044,15 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
 #
 ################################################################################################
 
+class FinalOutput:
+    """Represent either completed transaction or sequential-signed PSBT."""
+
+    def __init__(self, *, rawxact=None):
+        """Construct new object."""
+        self.rawxact = rawxact
+        self.complete = True
+
+
 class BaseWithdrawalBuilder(metaclass=ABCMeta):
     """Interactively construct a withdrawal transaction, either via input TXs or PSBT."""
 
@@ -1121,18 +1130,19 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
         print("\nCalculating transaction...\n")
 
         signed_tx = xact.create_signed_transaction(addresses)
+        final = FinalOutput(rawxact=signed_tx["hex"])
 
-        final_decoded = bitcoin_cli.json("decoderawtransaction", signed_tx["hex"])
+        final_decoded = bitcoin_cli.json("decoderawtransaction", final.rawxact)
         feerate_sats_per_vbyte = xact.fee / SATOSHI_PLACES / final_decoded['vsize']
         print("Final fee rate: {} satoshis per vbyte".format(feerate_sats_per_vbyte))
 
         print("\nRaw signed transaction (hex):")
-        print(signed_tx["hex"])
+        print(final.rawxact)
 
         print("\nTransaction fingerprint (md5):")
-        print(hash_md5(signed_tx["hex"]))
+        print(hash_md5(final.rawxact))
 
-        write_and_verify_qr_code("transaction", "transaction.png", signed_tx["hex"].upper())
+        write_and_verify_qr_code("transaction", "transaction.png", final.rawxact.upper())
 
 
 class ManualWithdrawalBuilder(BaseWithdrawalBuilder):
