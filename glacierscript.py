@@ -300,7 +300,7 @@ def create_default_wallet():
     found = any(w["name"] == "" for w in all_wallets["wallets"])
     cmd = "loadwallet" if found else "createwallet"
     loaded_wallet = bitcoin_cli.json(cmd, "")
-    if len(loaded_wallet["warning"]):
+    if loaded_wallet["warning"]:
         raise Exception("problem running {} on default wallet".format(cmd))  # pragma: no cover
 
 
@@ -802,7 +802,7 @@ def decode_one_qr(filename):
     Decode a QR code from an image file, and return the decoded string.
     """
     zresults = subprocess.run(["zbarimg", "--set", "*.enable=0", "--set", "qr.enable=1",
-                              "--quiet", "--raw", filename], check=True, stdout=subprocess.PIPE)
+                               "--quiet", "--raw", filename], check=True, stdout=subprocess.PIPE)
     return zresults.stdout.decode('ascii').strip()
 
 
@@ -855,7 +855,7 @@ def write_and_verify_qr_code(name, filename, data):
         idx = 1
         filenames = []
         intdata = data
-        while len(intdata) > 0:
+        while intdata:
             thisdata = intdata[0:MAX_QR_LEN]
             intdata = intdata[MAX_QR_LEN:]
             thisfile = "{}-{:02d}{}".format(base, idx, ext)
@@ -1108,7 +1108,6 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
         if not signed_tx["complete"]:
             # This should have already been caught by sigsrequired check
             raise GlacierFatal("not enough private keys to complete transaction")  # pragma: no cover
-
 
         final_decoded = bitcoin_cli.json("decoderawtransaction", signed_tx["hex"])
         feerate_sats_per_vbyte = xact.fee / SATOSHI_PLACES / final_decoded['vsize']
