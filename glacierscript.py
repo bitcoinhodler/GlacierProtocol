@@ -855,7 +855,7 @@ def write_and_verify_qr_code(name, filename, data):
         idx = 1
         filenames = []
         intdata = data
-        while len(intdata) > 0:
+        while intdata:
             thisdata = intdata[0:MAX_QR_LEN]
             intdata = intdata[MAX_QR_LEN:]
             thisfile = "{}-{:02d}{}".format(base, idx, ext)
