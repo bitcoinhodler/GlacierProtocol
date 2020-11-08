@@ -300,7 +300,7 @@ def create_default_wallet():
     found = any(w["name"] == "" for w in all_wallets["wallets"])
     cmd = "loadwallet" if found else "createwallet"
     loaded_wallet = bitcoin_cli.json(cmd, "")
-    if len(loaded_wallet["warning"]):
+    if loaded_wallet["warning"]:
         raise Exception("problem running {} on default wallet".format(cmd))  # pragma: no cover
 
 
