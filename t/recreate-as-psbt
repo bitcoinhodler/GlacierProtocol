@@ -18,7 +18,7 @@ fi
 set -e
 
 mkdir -p testrun/online
-(cd testrun/online && ../../t/online_regtest_wallet.py recreate-as-psbt --no-trim ../../t/create-withdrawal-data.$1.run)
+(cd testrun/online && ../../t/online_regtest_wallet.py recreate-as-psbt ../../t/create-withdrawal-data.$1.run)
 
 make t/sign-psbt.$1.test || /bin/true
 
