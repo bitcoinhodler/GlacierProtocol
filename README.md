@@ -31,6 +31,9 @@ issue](https://github.com/GlacierProtocol/GlacierProtocol/issues/38).
   addresses. [PR
   #76](https://github.com/GlacierProtocol/GlacierProtocol/pull/76)
 
+* (psbt) Added PSBT withdrawal support (part of
+  [#54](https://github.com/GlacierProtocol/GlacierProtocol/issues/54))
+
 ## Bug fixes
 
 * (fix-large-withdrawal) Split withdrawal transaction into multiple QR
@@ -96,9 +99,6 @@ issue](https://github.com/GlacierProtocol/GlacierProtocol/issues/38).
     GlacierScript as an automated part of the developer tests.
 
 # What's coming soon?
-
-* psbt (built on subparsers): adding PSBT withdrawal support (part of
-  [#54](https://github.com/GlacierProtocol/GlacierProtocol/issues/54))
 
 * corrupted-psbts: New developer tests to demonstrate that
   GlacierScript will not generate valid transactions from maliciously
