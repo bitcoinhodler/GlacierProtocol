@@ -4,7 +4,6 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), 'trim-psbt'))
 from bitcoin import psbt
 from bitcoin.networks import NETWORKS
-from binascii import unhexlify, hexlify
 # base64 encoding
 from binascii import a2b_base64, b2a_base64
 
