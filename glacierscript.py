@@ -432,6 +432,7 @@ class BaseWithdrawalXact:
         self.segwit = self._validate_address()
         self._teach_address_to_wallet()
         self.sigsrequired, self._pubkeys = self._find_pubkeys()
+        self.fee = None  # not yet known
 
     def add_key(self, key):
         """
@@ -621,10 +622,10 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
         decoded_tx = bitcoin_cli.json("decoderawtransaction", signed_tx["hex"])
         size = decoded_tx["vsize"]
 
-        fee = satoshi_to_btc(size * self.fee_basis_satoshis_per_byte)
-        if fee > self.MAX_FEE:
-            raise GlacierExcessiveFee("Calculated fee ({}) is too high. Must be under {}".format(fee, self.MAX_FEE))
-        return fee
+        self.fee = satoshi_to_btc(size * self.fee_basis_satoshis_per_byte)
+        if self.fee > self.MAX_FEE:
+            raise GlacierExcessiveFee("Calculated fee ({}) is too high. Must be under {}".format(self.fee, self.MAX_FEE))
+        return self.fee
 
 
 class PsbtWithdrawalXact(BaseWithdrawalXact):
@@ -652,6 +653,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         source_address, redeem_script = self._find_source_address()
         super().__init__(source_address, redeem_script)
         self.destinations = self._find_output_addresses()
+        self.fee = self.psbt['fee']
 
     def _input_iter(self):
         """
@@ -727,9 +729,8 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         https://medium.com/shiftcrypto/a-remote-theft-attack-on-trezor-model-t-44127cd7fb5a
 
         """
-        # Number of inputs must match inputs in tx.
-        if len(self.psbt['inputs']) != len(self.psbt['tx']['vin']):
-            raise GlacierFatal("Invalid PSBT, inputs don't match tx")
+        # decodepsbt has already checked that the length of psbt['inputs']
+        # matches length of psbt['tx']['vin'].
 
         # Every input must be populated with utxo info.
         for inp in self.psbt['inputs']:
@@ -763,10 +764,8 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         # it's ours without having to ask user to type in cold storage
         # address). We need to identify our own address in order to
         # identify the change output.
-        myaddr, _ = next(self._input_iter())
-        for thisaddr, _ in self._input_iter():
-            if myaddr != thisaddr:
-                raise GlacierFatal("expected all inputs to be from same address")
+        if len(set(addr for addr, _ in self._input_iter())) > 1:
+            raise GlacierFatal("expected all inputs to be from same address")
 
         # Die if anything unusual or unrecognized. We don't want to
         # sign something that we don't fully understand.
@@ -786,9 +785,10 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
                 if key not in allowed_input_keys:
                     raise GlacierFatal("Unknown PSBT input key '{}'".format(key))
 
-        # Do I need to check that inputs[0].non_witness_utxo.txid
-        # matches the tx.vin[0].txid? Or will Bitcoin Core do that for
-        # me?
+        # Bitcoin-cli's decodepsbt will check that
+        # inputs[0].non_witness_utxo.txid matches the tx.vin[0].txid,
+        # so I don't need to do that here. See
+        # t/sign-psbt.corrupted-value-nonsegwit.run.
 
 
 ################################################################################################
@@ -1066,7 +1066,10 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
                 print("{0} BTC going back to cold storage address {1}".format(value, address))
             else:
                 print("{0} BTC going to destination address {1}".format(value, address))
-        print("Fee amount: {0}".format(xact.unspent_total() - sum(addresses.values())))
+        # Sanity check that our fee calculation worked as expected
+        if xact.fee != xact.unspent_total() - sum(addresses.values()):
+            raise Exception("something went wrong in our fee calculation")  # pragma: no cover
+        print("Fee amount: {0}".format(xact.fee))
 
     def withdraw_interactive(self):
         """
@@ -1105,6 +1108,11 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
         if not signed_tx["complete"]:
             # This should have already been caught by sigsrequired check
             raise GlacierFatal("not enough private keys to complete transaction")  # pragma: no cover
+
+
+        final_decoded = bitcoin_cli.json("decoderawtransaction", signed_tx["hex"])
+        feerate_sats_per_vbyte = xact.fee / SATOSHI_PLACES / final_decoded['vsize']
+        print("Final fee rate: {} satoshis per vbyte".format(feerate_sats_per_vbyte))
 
         print("\nRaw signed transaction (hex):")
         print(signed_tx["hex"])
