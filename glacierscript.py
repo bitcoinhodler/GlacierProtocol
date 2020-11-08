@@ -1047,10 +1047,14 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
 class FinalOutput:
     """Represent either completed transaction or sequential-signed PSBT."""
 
-    def __init__(self, *, rawxact=None):
+    def __init__(self, xact, *, rawxact=None):
         """Construct new object."""
+        self.xact = xact
         self.rawxact = rawxact
-        self.complete = True
+
+    def feerate_sats_per_vbyte(self):
+        final_decoded = bitcoin_cli.json("decoderawtransaction", self.rawxact)
+        return self.xact.fee / SATOSHI_PLACES / final_decoded['vsize']
 
 
 class BaseWithdrawalBuilder(metaclass=ABCMeta):
@@ -1130,11 +1134,8 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
         print("\nCalculating transaction...\n")
 
         signed_tx = xact.create_signed_transaction(addresses)
-        final = FinalOutput(rawxact=signed_tx["hex"])
-
-        final_decoded = bitcoin_cli.json("decoderawtransaction", final.rawxact)
-        feerate_sats_per_vbyte = xact.fee / SATOSHI_PLACES / final_decoded['vsize']
-        print("Final fee rate: {} satoshis per vbyte".format(feerate_sats_per_vbyte))
+        final = FinalOutput(xact, rawxact=signed_tx["hex"])
+        print("Final fee rate: {} satoshis per vbyte".format(final.feerate_sats_per_vbyte()))
 
         print("\nRaw signed transaction (hex):")
         print(final.rawxact)
