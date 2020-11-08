@@ -422,14 +422,14 @@ def jsonstr(thing):
 class FinalOutput:
     """Represent either completed transaction or sequential-signed PSBT."""
 
-    def __init__(self, xact, *, rawxact=None):
+    def __init__(self, *, fee, rawxact=None):
         """Construct new object."""
-        self.xact = xact
+        self.fee = fee
         self.rawxact = rawxact
 
     def feerate_sats_per_vbyte(self):
         final_decoded = bitcoin_cli.json("decoderawtransaction", self.rawxact)
-        return self.xact.fee / SATOSHI_PLACES / final_decoded['vsize']
+        return self.fee / SATOSHI_PLACES / final_decoded['vsize']
 
     def __str__(self):
         """Return string formatted for console output."""
@@ -589,7 +589,7 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
     def create_final_output(self, destinations):
         """Return FinalOutput object with withdrawal transaction."""
         signed_tx = self.create_signed_transaction(destinations)
-        return FinalOutput(self, rawxact=signed_tx["hex"])
+        return FinalOutput(fee=self.fee, rawxact=signed_tx["hex"])
 
     def unspent_total(self):
         """
@@ -753,7 +753,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         if not prcs['complete']:
             raise GlacierFatal("Expected PSBT to be complete by now")  # pragma: no cover
         final = bitcoin_cli.json('finalizepsbt', prcs['psbt'])
-        return FinalOutput(self, rawxact=final['hex'])
+        return FinalOutput(fee=self.fee, rawxact=final['hex'])
 
     def sanity_check_psbt(self):
         """
