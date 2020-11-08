@@ -586,6 +586,11 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
             tx_unsigned_hex, prev_txs)
         return signed_tx
 
+    def create_final_output(self, destinations):
+        """Return FinalOutput object with withdrawal transaction."""
+        signed_tx = self.create_signed_transaction(destinations)
+        return FinalOutput(self, rawxact=signed_tx["hex"])
+
     def unspent_total(self):
         """
         Return the total amount of BTC available to spend from the input UTXOs.
@@ -729,9 +734,9 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         """
         return sum(amount for _, amount in self._input_iter())
 
-    def create_signed_transaction(self, destinations):
+    def create_final_output(self, destinations):
         """
-        Return a hex string representing a signed bitcoin transaction.
+        Return a FinalOutput object describing the withdrawal transaction.
 
         returns => <dict> from signrawtransactionwithwallet, with keys
         'hex' and 'complete'
@@ -748,7 +753,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         if not prcs['complete']:
             raise GlacierFatal("Expected PSBT to be complete by now")  # pragma: no cover
         final = bitcoin_cli.json('finalizepsbt', prcs['psbt'])
-        return {'hex': final['hex'], 'complete': True}
+        return FinalOutput(self, rawxact=final['hex'])
 
     def sanity_check_psbt(self):
         """
@@ -1153,8 +1158,7 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
         # Calculate Transaction
         print("\nCalculating transaction...\n")
 
-        signed_tx = xact.create_signed_transaction(addresses)
-        final = FinalOutput(xact, rawxact=signed_tx["hex"])
+        final = xact.create_final_output(addresses)
         print("Final fee rate: {} satoshis per vbyte".format(final.feerate_sats_per_vbyte()))
 
         print()
