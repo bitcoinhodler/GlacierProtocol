@@ -1060,6 +1060,16 @@ class FinalOutput:
         """Return string formatted for console output."""
         return "Raw signed transaction (hex):\n" + self.rawxact
 
+    def value_to_hash(self):
+        """Return string to hash for transaction validation."""
+        return self.rawxact
+
+    def qr_string(self):
+        """Return string to convert to QR code."""
+        # Raw hex values are case-insensitive, and QR codes are more
+        # efficient when all upper-case.
+        return self.rawxact.upper()
+
 
 class BaseWithdrawalBuilder(metaclass=ABCMeta):
     """Interactively construct a withdrawal transaction, either via input TXs or PSBT."""
@@ -1145,9 +1155,9 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
         print(final)
 
         print("\nTransaction fingerprint (md5):")
-        print(hash_md5(final.rawxact))
+        print(hash_md5(final.value_to_hash()))
 
-        write_and_verify_qr_code("transaction", "transaction.png", final.rawxact.upper())
+        write_and_verify_qr_code("transaction", "transaction.png", final.qr_string())
 
 
 class ManualWithdrawalBuilder(BaseWithdrawalBuilder):
