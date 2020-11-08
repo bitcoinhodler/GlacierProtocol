@@ -802,7 +802,7 @@ def decode_one_qr(filename):
     Decode a QR code from an image file, and return the decoded string.
     """
     zresults = subprocess.run(["zbarimg", "--set", "*.enable=0", "--set", "qr.enable=1",
-                              "--quiet", "--raw", filename], check=True, stdout=subprocess.PIPE)
+                               "--quiet", "--raw", filename], check=True, stdout=subprocess.PIPE)
     return zresults.stdout.decode('ascii').strip()
 
 
