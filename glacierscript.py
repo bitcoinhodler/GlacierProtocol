@@ -419,8 +419,28 @@ def jsonstr(thing):
 #
 ################################################################################################
 
-class FinalOutput:
+class FinalOutput(metaclass=ABCMeta):
     """Represent either completed transaction or sequential-signed PSBT."""
+
+    @abstractmethod
+    def feerate_sats_per_vbyte(self):
+        """Return fee rate in satoshis per byte."""
+
+    @abstractmethod
+    def __str__(self):
+        """Return string formatted for console output."""
+
+    @abstractmethod
+    def value_to_hash(self):
+        """Return string to hash for transaction validation."""
+
+    @abstractmethod
+    def qr_string(self):
+        """Return string to convert to QR code."""
+
+
+class RawTransactionFinalOutput(FinalOutput):
+    """Represent completed raw transaction."""
 
     def __init__(self, *, fee, rawxact=None):
         """Construct new object."""
@@ -428,6 +448,7 @@ class FinalOutput:
         self.rawxact = rawxact
 
     def feerate_sats_per_vbyte(self):
+        """Return fee rate in satoshis per byte."""
         final_decoded = bitcoin_cli.json("decoderawtransaction", self.rawxact)
         return self.fee / SATOSHI_PLACES / final_decoded['vsize']
 
@@ -589,7 +610,7 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
     def create_final_output(self, destinations):
         """Return FinalOutput object with withdrawal transaction."""
         signed_tx = self.create_signed_transaction(destinations)
-        return FinalOutput(fee=self.fee, rawxact=signed_tx["hex"])
+        return RawTransactionFinalOutput(fee=self.fee, rawxact=signed_tx["hex"])
 
     def unspent_total(self):
         """
@@ -753,7 +774,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         if not prcs['complete']:
             raise GlacierFatal("Expected PSBT to be complete by now")  # pragma: no cover
         final = bitcoin_cli.json('finalizepsbt', prcs['psbt'])
-        return FinalOutput(fee=self.fee, rawxact=final['hex'])
+        return RawTransactionFinalOutput(fee=self.fee, rawxact=final['hex'])
 
     def sanity_check_psbt(self):
         """
