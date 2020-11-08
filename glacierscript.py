@@ -1056,10 +1056,9 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
         addresses is a dict of {address: amount} of destinations.
         """
 
-    @staticmethod
-    def too_few_keys(sigsrequired):
+    @abstractmethod
+    def too_few_keys(self, sigsrequired):
         """Inform user they are not providing enough keys."""
-        raise GlacierFatal("not enough private keys to complete transaction (need {})".format(sigsrequired))
 
     def get_keys(self, xact):
         """Prompt user for private keys and add them to the withdrawal transaction."""
@@ -1142,6 +1141,11 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
 
 class ManualWithdrawalBuilder(BaseWithdrawalBuilder):
     """Interactively construct a withdrawal transaction via input TXs."""
+
+    @staticmethod
+    def too_few_keys(sigsrequired):
+        """Inform user they are not providing enough keys."""
+        raise GlacierFatal("not enough private keys to complete transaction (need {})".format(sigsrequired))
 
     @staticmethod
     def get_tx_interactive(num):
@@ -1233,6 +1237,12 @@ class ManualWithdrawalBuilder(BaseWithdrawalBuilder):
 
 class PsbtWithdrawalBuilder(BaseWithdrawalBuilder):
     """Interactively construct a withdrawal transaction via PSBT."""
+
+    @staticmethod
+    def too_few_keys(sigsrequired):
+        """Inform user they are not providing enough keys."""
+        # HACK remember that we're not expecting a complete transaction
+        raise GlacierFatal("not enough private keys to complete transaction (need {})".format(sigsrequired))
 
     @staticmethod
     def _load_psbt():
