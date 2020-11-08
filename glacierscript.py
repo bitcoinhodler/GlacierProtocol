@@ -1056,6 +1056,10 @@ class FinalOutput:
         final_decoded = bitcoin_cli.json("decoderawtransaction", self.rawxact)
         return self.xact.fee / SATOSHI_PLACES / final_decoded['vsize']
 
+    def __str__(self):
+        """Return string formatted for console output."""
+        return "Raw signed transaction (hex):\n" + self.rawxact
+
 
 class BaseWithdrawalBuilder(metaclass=ABCMeta):
     """Interactively construct a withdrawal transaction, either via input TXs or PSBT."""
@@ -1137,8 +1141,8 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
         final = FinalOutput(xact, rawxact=signed_tx["hex"])
         print("Final fee rate: {} satoshis per vbyte".format(final.feerate_sats_per_vbyte()))
 
-        print("\nRaw signed transaction (hex):")
-        print(final.rawxact)
+        print()
+        print(final)
 
         print("\nTransaction fingerprint (md5):")
         print(hash_md5(final.rawxact))
