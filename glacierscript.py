@@ -415,6 +415,39 @@ def jsonstr(thing):
 
 ################################################################################################
 #
+# Final output representation
+#
+################################################################################################
+
+class FinalOutput:
+    """Represent either completed transaction or sequential-signed PSBT."""
+
+    def __init__(self, xact, *, rawxact=None):
+        """Construct new object."""
+        self.xact = xact
+        self.rawxact = rawxact
+
+    def feerate_sats_per_vbyte(self):
+        final_decoded = bitcoin_cli.json("decoderawtransaction", self.rawxact)
+        return self.xact.fee / SATOSHI_PLACES / final_decoded['vsize']
+
+    def __str__(self):
+        """Return string formatted for console output."""
+        return "Raw signed transaction (hex):\n" + self.rawxact
+
+    def value_to_hash(self):
+        """Return string to hash for transaction validation."""
+        return self.rawxact
+
+    def qr_string(self):
+        """Return string to convert to QR code."""
+        # Raw hex values are case-insensitive, and QR codes are more
+        # efficient when all upper-case.
+        return self.rawxact.upper()
+
+
+################################################################################################
+#
 # Withdrawal transaction construction class
 #
 ################################################################################################
@@ -1043,33 +1076,6 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
 # Main "withdraw" function
 #
 ################################################################################################
-
-class FinalOutput:
-    """Represent either completed transaction or sequential-signed PSBT."""
-
-    def __init__(self, xact, *, rawxact=None):
-        """Construct new object."""
-        self.xact = xact
-        self.rawxact = rawxact
-
-    def feerate_sats_per_vbyte(self):
-        final_decoded = bitcoin_cli.json("decoderawtransaction", self.rawxact)
-        return self.xact.fee / SATOSHI_PLACES / final_decoded['vsize']
-
-    def __str__(self):
-        """Return string formatted for console output."""
-        return "Raw signed transaction (hex):\n" + self.rawxact
-
-    def value_to_hash(self):
-        """Return string to hash for transaction validation."""
-        return self.rawxact
-
-    def qr_string(self):
-        """Return string to convert to QR code."""
-        # Raw hex values are case-insensitive, and QR codes are more
-        # efficient when all upper-case.
-        return self.rawxact.upper()
-
 
 class BaseWithdrawalBuilder(metaclass=ABCMeta):
     """Interactively construct a withdrawal transaction, either via input TXs or PSBT."""
