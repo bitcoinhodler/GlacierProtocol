@@ -109,9 +109,10 @@ class PsbtCreator(metaclass=ABCMeta):
 
     """
 
-    def __init__(self, xact):
+    def __init__(self, xact, trim):
         """Create new instance."""
         self.xact = xact
+        self.trim = trim
 
     @abstractmethod
     def gen_witness_tuples(self):
@@ -161,7 +162,7 @@ class PsbtCreator(metaclass=ABCMeta):
         ).strip()
         bitcoin_cli.checkoutput("lockunspent", 'false', glacierscript.jsonstr(newinputs))
         results = bitcoin_cli.json("walletprocesspsbt", createpsbt, 'false', 'ALL', 'false')
-        return trim_psbt.strip(results['psbt'])
+        return trim_psbt.strip(results['psbt']) if self.trim else results['psbt']
 
 
 class PsbtPsbtCreator(PsbtCreator):
@@ -177,12 +178,12 @@ class PsbtPsbtCreator(PsbtCreator):
 
     """
 
-    def __init__(self, rawpsbt):
+    def __init__(self, rawpsbt, trim):
         """Create new instance; rawpsbt is base64 string."""
         self.rawpsbt = rawpsbt
         # Obviously we aren't creating a withdrawal, but constructing
         # this object does all the heavy lifting of decoding & importing:
-        super().__init__(glacierscript.PsbtWithdrawalXact(self.rawpsbt))
+        super().__init__(glacierscript.PsbtWithdrawalXact(self.rawpsbt), trim)
         self.psbt = self.xact.psbt
 
     def gen_witness_tuples(self):
@@ -215,7 +216,7 @@ class TxlistPsbtCreator(PsbtCreator):
 
     """
 
-    def __init__(self, filename, prf, decoded_tx):
+    def __init__(self, filename, prf, decoded_tx, trim):
         """
         Create new instance.
 
@@ -228,7 +229,7 @@ class TxlistPsbtCreator(PsbtCreator):
         # Start a withdrawal transaction just so it can figure out the
         # address details -- namely, segwit or not.
         super().__init__(glacierscript.ManualWithdrawalXact(
-            prf.cold_storage_address, prf.redeem_script))
+            prf.cold_storage_address, prf.redeem_script), trim)
 
     def gen_witness_tuples(self):
         """Generate tuples of (amount, dest, sequence) for each input."""
@@ -258,7 +259,7 @@ def recreate_psbt(txdata):
     Make sure it matches what we got last time we started.
     """
     rawpsbt = txdata['psbt']
-    results_psbt = PsbtPsbtCreator(rawpsbt).build_psbt()
+    results_psbt = PsbtPsbtCreator(rawpsbt, txdata['trim']).build_psbt()
     if results_psbt != txdata['psbt']:
         actual = bitcoin_cli.json("decodepsbt", results_psbt)
         expected = bitcoin_cli.json("decodepsbt", txdata['psbt'])
@@ -614,7 +615,7 @@ class TxFile():
         except StopIteration:
             return None
 
-    def put(self, filename, *, cold_storage_address=None, txs=None, psbt=None):
+    def put(self, filename, *, cold_storage_address=None, txs=None, psbt=None, trim=None):
         """
         Replace the TX structures for the specified filename with txs.
 
@@ -632,6 +633,8 @@ class TxFile():
             new['txs'] = txs
         if psbt:
             new['psbt'] = psbt
+        if trim is not None:
+            new['trim'] = trim
         old = self.get(filename)
         if old:
             old['obsolete'] = True
@@ -926,8 +929,9 @@ class SignPsbtRunfile(ParsedRunfile):
         tx_from_json = txjson.get(self.filename)
         if not tx_from_json \
            or tx_from_json['psbt'] != self.psbt:
-            self.psbt = PsbtPsbtCreator(self.psbt).build_psbt()
-            txjson.put(self.filename, psbt=self.psbt)
+            trim = True
+            self.psbt = PsbtPsbtCreator(self.psbt, trim).build_psbt()
+            txjson.put(self.filename, psbt=self.psbt, trim=trim)
         self.save()
 
     def write_file_to(self, outfile):
@@ -986,7 +990,8 @@ def recreate_as_psbt(args):
         raise RuntimeError("I can only convert tests that successfully created a withdrawal") from exc
     decoded_tx = bitcoin_cli.json("decoderawtransaction", rawtx)
 
-    psbt = TxlistPsbtCreator(args.runfile, prf, decoded_tx).build_psbt()
+    trim = not args.no_trim
+    psbt = TxlistPsbtCreator(args.runfile, prf, decoded_tx, trim).build_psbt()
 
     # Now that we have our raw PSBT, write that to a *.psbt file, and write
     # out a new runfile (make sure it's +x).
@@ -997,7 +1002,7 @@ def recreate_as_psbt(args):
     goldenfilename = destfilename.replace(".run", ".golden")
 
     txjson = TxFile()
-    txjson.put(destfilename, psbt=psbt)
+    txjson.put(destfilename, psbt=psbt, trim=trim)
 
     with open(destfilename, 'wt') as dest:
         print(begin, file=dest, end='')  # beginning_of_file already has a newline
@@ -1109,6 +1114,8 @@ def main():
         longer interesting).
         """),
         formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser_recreate.add_argument('--no-trim', action='store_true',
+                                 help='Do not trim non-witness UTXO from PSBT')
     parser_recreate.set_defaults(program=recreate_as_psbt)
     parser_recreate.add_argument('runfile')
 
