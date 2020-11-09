@@ -784,7 +784,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         """
         if destinations != self.destinations:
             raise GlacierFatal("unable to change destinations of PSBT")  # pragma: no cover
-        prcs = bitcoin_cli.json("walletprocesspsbt", self.psbt_raw)
+        prcs = bitcoin_cli.json("walletprocesspsbt", self.psbt_raw, 'true', 'ALL', 'false')
         if expect_complete != prcs['complete']:
             if expect_complete:
                 raise GlacierFatal("Expected PSBT to be complete by now")  # pragma: no cover

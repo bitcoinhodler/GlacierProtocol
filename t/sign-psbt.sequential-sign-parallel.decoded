@@ -54,29 +54,7 @@
         "asm": "2 03d14ddcfb6817f5579695bbb3eb3e185887bf2942b031e6f716343b8fe7e9e8e2 028fcd46f8614b2cbf318096968242a1e22bcfb6d8f2b6dc939c8c27c347b2937b 0315acb550120f4cdcb460d5c49080ab508ca4ccd8dedecac22feeac8cd017d4c1 022b063ee2f22f9e1982c140fe778672c683111a796dcccdbd47bb65e3d608a983 4 OP_CHECKMULTISIG",
         "hex": "522103d14ddcfb6817f5579695bbb3eb3e185887bf2942b031e6f716343b8fe7e9e8e221028fcd46f8614b2cbf318096968242a1e22bcfb6d8f2b6dc939c8c27c347b2937b210315acb550120f4cdcb460d5c49080ab508ca4ccd8dedecac22feeac8cd017d4c121022b063ee2f22f9e1982c140fe778672c683111a796dcccdbd47bb65e3d608a98354ae",
         "type": "multisig"
-      },
-      "bip32_derivs": [
-        {
-          "pubkey": "022b063ee2f22f9e1982c140fe778672c683111a796dcccdbd47bb65e3d608a983",
-          "master_fingerprint": "99d700ce",
-          "path": "m"
-        },
-        {
-          "pubkey": "028fcd46f8614b2cbf318096968242a1e22bcfb6d8f2b6dc939c8c27c347b2937b",
-          "master_fingerprint": "be98eb3b",
-          "path": "m"
-        },
-        {
-          "pubkey": "0315acb550120f4cdcb460d5c49080ab508ca4ccd8dedecac22feeac8cd017d4c1",
-          "master_fingerprint": "ad851236",
-          "path": "m"
-        },
-        {
-          "pubkey": "03d14ddcfb6817f5579695bbb3eb3e185887bf2942b031e6f716343b8fe7e9e8e2",
-          "master_fingerprint": "473e6d0a",
-          "path": "m"
-        }
-      ]
+      }
     }
   ],
   "outputs": [
@@ -142,29 +120,7 @@
         "asm": "2 03d14ddcfb6817f5579695bbb3eb3e185887bf2942b031e6f716343b8fe7e9e8e2 028fcd46f8614b2cbf318096968242a1e22bcfb6d8f2b6dc939c8c27c347b2937b 0315acb550120f4cdcb460d5c49080ab508ca4ccd8dedecac22feeac8cd017d4c1 022b063ee2f22f9e1982c140fe778672c683111a796dcccdbd47bb65e3d608a983 4 OP_CHECKMULTISIG",
         "hex": "522103d14ddcfb6817f5579695bbb3eb3e185887bf2942b031e6f716343b8fe7e9e8e221028fcd46f8614b2cbf318096968242a1e22bcfb6d8f2b6dc939c8c27c347b2937b210315acb550120f4cdcb460d5c49080ab508ca4ccd8dedecac22feeac8cd017d4c121022b063ee2f22f9e1982c140fe778672c683111a796dcccdbd47bb65e3d608a98354ae",
         "type": "multisig"
-      },
-      "bip32_derivs": [
-        {
-          "pubkey": "022b063ee2f22f9e1982c140fe778672c683111a796dcccdbd47bb65e3d608a983",
-          "master_fingerprint": "99d700ce",
-          "path": "m"
-        },
-        {
-          "pubkey": "028fcd46f8614b2cbf318096968242a1e22bcfb6d8f2b6dc939c8c27c347b2937b",
-          "master_fingerprint": "be98eb3b",
-          "path": "m"
-        },
-        {
-          "pubkey": "0315acb550120f4cdcb460d5c49080ab508ca4ccd8dedecac22feeac8cd017d4c1",
-          "master_fingerprint": "ad851236",
-          "path": "m"
-        },
-        {
-          "pubkey": "03d14ddcfb6817f5579695bbb3eb3e185887bf2942b031e6f716343b8fe7e9e8e2",
-          "master_fingerprint": "473e6d0a",
-          "path": "m"
-        }
-      ]
+      }
     }
   ],
   "outputs": [
