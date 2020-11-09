@@ -423,10 +423,6 @@ class FinalOutput(metaclass=ABCMeta):
     """Represent either completed transaction or sequential-signed PSBT."""
 
     @abstractmethod
-    def feerate_sats_per_vbyte(self):
-        """Return fee rate in satoshis per byte."""
-
-    @abstractmethod
     def __str__(self):
         """Return string formatted for console output."""
 
@@ -476,16 +472,9 @@ class PsbtFinalOutput(FinalOutput):
         self.fee = fee
         self.psbt = psbt
 
-    def feerate_sats_per_vbyte(self):
-        """Return fee rate in satoshis per byte."""
-        final_decoded = bitcoin_cli.json("decodepsbt", self.psbt)
-        # HACK this is not right. The tx.vsize doesn't include any signatures.
-        return self.fee / SATOSHI_PLACES / final_decoded['tx']['vsize']
-
     def __str__(self):
         """Return string formatted for console output."""
-        return "Final fee rate: {} satoshis per vbyte\n\n".format(self.feerate_sats_per_vbyte()) \
-            + "Incomplete PSBT (base64):\n" + self.psbt
+        return "Incomplete PSBT (base64):\n" + self.psbt
 
     def value_to_hash(self):
         """Return string to hash for transaction validation."""
