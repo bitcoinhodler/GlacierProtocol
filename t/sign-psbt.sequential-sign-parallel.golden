@@ -28,3 +28,36 @@ cHNidP8BAFICAAAAARI/F50gD6aWY69w2SC2oBlHV7V8lL/7Hx5WopBIgavwAQAAAAD/////AQxKTAAA
 Transaction fingerprint (md5):
 89dd16a109fbc08be9683c91f4d1fa4f
 QR code for transaction written to transaction.png
+First glacierscript run complete. Deleting wallet...
+Bitcoin Core stopping
+Running glacierscript again for the second signature...
+Are you running this on a computer WITHOUT a network connection of any kind? (y/n)?Have the wireless cards in this computer been physically removed? (y/n)?Are you running on battery power? (y/n)?Are you running on an operating system booted from a USB drive? (y/n)?Is your screen hidden from view of windows, cameras, and other people? (y/n)?Are smartphones and all other nearby devices turned off and in a Faraday bag? (y/n)?Input a filename located in the current directory which contains the PSBT:
+0.05000000 BTC in unspent inputs from cold storage address bcrt1qvhyx836sxvwvq0hmfkk2y9l8jfw0lpl4a89fjf6kgg6turtz0r5q2wgvlj
+0.04999692 BTC going to destination address bcrt1q5sgvwe9v3ksjk4u2qcp87y0q9urm0cwnrkhp23
+Fee amount: 0.00000308
+Confirm? (y/n): 
+How many private keys will you be signing this transaction with (at least 2 required to complete transaction)?
+#: Output will be a partially signed bitcoin transaction (PSBT).
+Key #1: 
+Is this data correct?
+*** WARNING: Incorrect data may lead to loss of funds ***
+
+0.05000000 BTC in unspent inputs from cold storage address bcrt1qvhyx836sxvwvq0hmfkk2y9l8jfw0lpl4a89fjf6kgg6turtz0r5q2wgvlj
+0.04999692 BTC going to destination address bcrt1q5sgvwe9v3ksjk4u2qcp87y0q9urm0cwnrkhp23
+Fee amount: 0.00000308
+
+Signing with private keys: 
+cP65UeSDZPiTLB6CBwasWv9oJYEjRgQXhswfwcT9HscEKDcEbgy4
+
+
+Confirm? (y/n): 
+Calculating transaction...
+
+Final fee rate: 3.756097560975609756097560976 satoshis per vbyte
+
+Incomplete PSBT (base64):
+cHNidP8BAFICAAAAARI/F50gD6aWY69w2SC2oBlHV7V8lL/7Hx5WopBIgavwAQAAAAD/////AQxKTAAAAAAAFgAUpBDHZKyNoStXigYCfxHgLwe34dMAAAAAAAEBK0BLTAAAAAAAIgAgZchjx1AzHMA++02sohfnklz/h/XpypknVkI0vg1ieOgiAgKPzUb4YUssvzGAlpaCQqHiK8+22PK23JOcjCfDR7KTe0cwRAIgeT9MpMtHbnBPm29MJhC5MOMNM0i0i53+JPAeGnLb4+8CIDDn2t9BXgdlgUt6iot4n6nT29/jpnjlGGPs72P4ioTYAQEFi1IhA9FN3PtoF/VXlpW7s+s+GFiHvylCsDHm9xY0O4/n6ejiIQKPzUb4YUssvzGAlpaCQqHiK8+22PK23JOcjCfDR7KTeyEDFay1UBIPTNy0YNXEkICrUIykzNje3srCL+6sjNAX1MEhAisGPuLyL54ZgsFA/neGcsaDERp5bczNvUe7ZePWCKmDVK4iBgIrBj7i8i+eGYLBQP53hnLGgxEaeW3Mzb1Hu2Xj1gipgwSZ1wDOIgYCj81G+GFLLL8xgJaWgkKh4ivPttjyttyTnIwnw0eyk3sEvpjrOyIGAxWstVASD0zctGDVxJCAq1CMpMzY3t7Kwi/urIzQF9TBBK2FEjYiBgPRTdz7aBf1V5aVu7PrPhhYh78pQrAx5vcWNDuP5+no4gRHPm0KAAA=
+
+Transaction fingerprint (md5):
+c6c12e477c308e2fd08f01083044fe06
+QR code for transaction written to transaction.png
