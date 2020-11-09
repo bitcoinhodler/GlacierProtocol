@@ -447,7 +447,7 @@ class RawTransactionFinalOutput(FinalOutput):
         """Return string formatted for console output."""
         final_decoded = bitcoin_cli.json("decoderawtransaction", self.rawxact)
         feerate = self.fee / SATOSHI_PLACES / final_decoded['vsize']
-        return "Final fee rate: {} satoshis per vbyte\n\n".format(feerate) \
+        return "Final fee rate: {:0.2f} satoshis per vbyte\n\n".format(feerate) \
             + "Raw signed transaction (hex):\n" + self.rawxact
 
     def value_to_hash(self):
