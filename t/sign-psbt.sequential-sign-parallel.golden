@@ -4,7 +4,8 @@ Are you running this on a computer WITHOUT a network connection of any kind? (y/
 Fee amount: 0.00000308
 Confirm? (y/n): 
 How many private keys will you be signing this transaction with (at least 2 required to complete transaction)?
-#: Key #1: Key #2: 
+#: Output will be a partially signed bitcoin transaction (PSBT).
+Key #1: 
 Is this data correct?
 *** WARNING: Incorrect data may lead to loss of funds ***
 
@@ -14,17 +15,16 @@ Fee amount: 0.00000308
 
 Signing with private keys: 
 cQCrT9Ncs9729ao7jbmAWrD9z7tF64s2yKzmD6nkiLAi9sXVZWAn
-cP65UeSDZPiTLB6CBwasWv9oJYEjRgQXhswfwcT9HscEKDcEbgy4
 
 
 Confirm? (y/n): 
 Calculating transaction...
 
-Final fee rate: 2 satoshis per vbyte
+Final fee rate: 3.756097560975609756097560976 satoshis per vbyte
 
-Raw signed transaction (hex):
-02000000000101123f179d200fa69663af70d920b6a0194757b57c94bffb1f1e56a2904881abf00100000000ffffffff010c4a4c0000000000160014a410c764ac8da12b578a06027f11e02f07b7e1d3040047304402201712b767bb1b93bef79502f3ddea27fdffecc18c91c47a226fa5ad62fb97797c02206b384dade4b7f881d47aa90d5d3b91ea008a006b05594f8a2f632d50bf2e990b014730440220793f4ca4cb476e704f9b6f4c2610b930e30d3348b48b9dfe24f01e1a72dbe3ef022030e7dadf415e0765814b7a8a8b789fa9d3dbdfe3a678e51863ecef63f88a84d8018b522103d14ddcfb6817f5579695bbb3eb3e185887bf2942b031e6f716343b8fe7e9e8e221028fcd46f8614b2cbf318096968242a1e22bcfb6d8f2b6dc939c8c27c347b2937b210315acb550120f4cdcb460d5c49080ab508ca4ccd8dedecac22feeac8cd017d4c121022b063ee2f22f9e1982c140fe778672c683111a796dcccdbd47bb65e3d608a98354ae00000000
+Incomplete PSBT (base64):
+cHNidP8BAFICAAAAARI/F50gD6aWY69w2SC2oBlHV7V8lL/7Hx5WopBIgavwAQAAAAD/////AQxKTAAAAAAAFgAUpBDHZKyNoStXigYCfxHgLwe34dMAAAAAAAEBK0BLTAAAAAAAIgAgZchjx1AzHMA++02sohfnklz/h/XpypknVkI0vg1ieOgiAgPRTdz7aBf1V5aVu7PrPhhYh78pQrAx5vcWNDuP5+no4kcwRAIgFxK3Z7sbk773lQLz3eon/f/swYyRxHoib6WtYvuXeXwCIGs4Ta3kt/iB1HqpDV07keoAigBrBVlPii9jLVC/LpkLAQEFi1IhA9FN3PtoF/VXlpW7s+s+GFiHvylCsDHm9xY0O4/n6ejiIQKPzUb4YUssvzGAlpaCQqHiK8+22PK23JOcjCfDR7KTeyEDFay1UBIPTNy0YNXEkICrUIykzNje3srCL+6sjNAX1MEhAisGPuLyL54ZgsFA/neGcsaDERp5bczNvUe7ZePWCKmDVK4iBgIrBj7i8i+eGYLBQP53hnLGgxEaeW3Mzb1Hu2Xj1gipgwSZ1wDOIgYCj81G+GFLLL8xgJaWgkKh4ivPttjyttyTnIwnw0eyk3sEvpjrOyIGAxWstVASD0zctGDVxJCAq1CMpMzY3t7Kwi/urIzQF9TBBK2FEjYiBgPRTdz7aBf1V5aVu7PrPhhYh78pQrAx5vcWNDuP5+no4gRHPm0KAAA=
 
 Transaction fingerprint (md5):
-5d25a759fcf822cbbe9ce98957246683
+89dd16a109fbc08be9683c91f4d1fa4f
 QR code for transaction written to transaction.png

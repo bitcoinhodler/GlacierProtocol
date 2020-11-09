@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Create two single-signature PSBTs from the same input PSBT,
+# which will be combined by online_regtest_walley.py.
+
 $GLACIERSCRIPT --regtest=$1 sign-psbt << INPUT 2>&1
 y
 y
@@ -10,8 +13,10 @@ y
 y
 ../../t/sign-psbt.sequential-sign-parallel.psbt
 y
-2
+1
 cQCrT9Ncs9729ao7jbmAWrD9z7tF64s2yKzmD6nkiLAi9sXVZWAn
-cP65UeSDZPiTLB6CBwasWv9oJYEjRgQXhswfwcT9HscEKDcEbgy4
 y
 INPUT
+
+# Second key:
+# cP65UeSDZPiTLB6CBwasWv9oJYEjRgQXhswfwcT9HscEKDcEbgy4
