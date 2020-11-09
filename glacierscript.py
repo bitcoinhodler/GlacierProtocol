@@ -454,7 +454,8 @@ class RawTransactionFinalOutput(FinalOutput):
 
     def __str__(self):
         """Return string formatted for console output."""
-        return "Raw signed transaction (hex):\n" + self.rawxact
+        return "Final fee rate: {} satoshis per vbyte\n\n".format(self.feerate_sats_per_vbyte()) \
+            + "Raw signed transaction (hex):\n" + self.rawxact
 
     def value_to_hash(self):
         """Return string to hash for transaction validation."""
@@ -478,11 +479,13 @@ class PsbtFinalOutput(FinalOutput):
     def feerate_sats_per_vbyte(self):
         """Return fee rate in satoshis per byte."""
         final_decoded = bitcoin_cli.json("decodepsbt", self.psbt)
+        # HACK this is not right. The tx.vsize doesn't include any signatures.
         return self.fee / SATOSHI_PLACES / final_decoded['tx']['vsize']
 
     def __str__(self):
         """Return string formatted for console output."""
-        return "Incomplete PSBT (base64):\n" + self.psbt
+        return "Final fee rate: {} satoshis per vbyte\n\n".format(self.feerate_sats_per_vbyte()) \
+            + "Incomplete PSBT (base64):\n" + self.psbt
 
     def value_to_hash(self):
         """Return string to hash for transaction validation."""
@@ -1214,9 +1217,6 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
         print("\nCalculating transaction...\n")
 
         final = xact.create_final_output(addresses, self.expect_complete)
-        print("Final fee rate: {} satoshis per vbyte".format(final.feerate_sats_per_vbyte()))
-
-        print()
         print(final)
 
         print("\nTransaction fingerprint (md5):")
