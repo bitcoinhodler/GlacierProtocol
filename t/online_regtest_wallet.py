@@ -506,12 +506,6 @@ def confirm_raw_tx(xact):
         raise ValueError("somehow my xact did not get mined?")
 
 
-class NoTransactionFound(Exception):
-    """
-    Raised when we cannot find a withdrawal transaction in the file we're searching.
-    """
-
-
 def submit(args):
     """
     Given a golden output file, submit it to our blockchain.
@@ -522,16 +516,15 @@ def submit(args):
     can see the changes.
     """
     infile = args.goldenfile
-    try:
-        found = find_withdrawal_tx(infile)
-        if 'rawtx' in found:
-            if len(found['rawtx']) != 1:
-                raise RuntimeError("How did we find more than one rawtx?")
-            confirm_raw_tx(found['rawtx'][0])
-            decoded_tx = bitcoin_cli.checkoutput("decoderawtransaction", found['rawtx'][0])
-        elif 'psbt' in found:
-            raise NotImplementedError("code this up soon")
-    except NoTransactionFound:
+    found = find_withdrawal_tx(infile)
+    if 'rawtx' in found:
+        if len(found['rawtx']) != 1:
+            raise RuntimeError("How did we find more than one rawtx?")
+        confirm_raw_tx(found['rawtx'][0])
+        decoded_tx = bitcoin_cli.checkoutput("decoderawtransaction", found['rawtx'][0])
+    elif 'psbt' in found:
+        raise NotImplementedError("code this up soon")
+    else:
         decoded_tx = "No transaction found\n"
     write_decoded_tx(infile, decoded_tx)
 
@@ -546,7 +539,7 @@ def find_withdrawal_tx(infile):
      "rawtx": <list of strings> raw hex transaction, or
      "psbt": <list of strings> sequential-signed PSBTs
 
-    Raises NoTransactionFound if unable to find either.
+    Returns empty dict if unable to find either.
     """
     with open(infile, 'rt') as infh:
         # Find line following "Raw signed transaction (hex):"
@@ -558,8 +551,6 @@ def find_withdrawal_tx(infile):
                  match = None
             if line == "Raw signed transaction (hex):\n":
                 match = 'rawtx'
-    if not found:
-        raise NoTransactionFound()
     return found
 
 
@@ -998,11 +989,10 @@ def recreate_as_psbt(args):
     # I also need to see the Glacier-created withdrawal transaction so
     # I can see what the outputs should be.
     goldenfile = args.runfile.replace('.run', '.golden')
-    try:
-        found = find_withdrawal_tx(goldenfile)
-    except NoTransactionFound as exc:
-        raise RuntimeError("I can only convert tests that successfully created a withdrawal") from exc
+    found = find_withdrawal_tx(goldenfile)
     if 'rawtx' not in found:
+        raise RuntimeError("I can only convert tests that successfully created a withdrawal") from exc
+    if 'psbt' in found:
         raise RuntimeError("How can a create-withdrawal-data test have output PSBTs?")
     if len(found['rawtx']) != 1:
         raise RuntimeError("How can a create-withdrawal-data test have more than one output transaction?")
