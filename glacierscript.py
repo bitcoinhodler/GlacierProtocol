@@ -467,9 +467,8 @@ class RawTransactionFinalOutput(FinalOutput):
 class PsbtFinalOutput(FinalOutput):
     """Represent incompletely-signed PSBT."""
 
-    def __init__(self, *, fee, psbt):
+    def __init__(self, *, psbt):
         """Construct new object."""
-        self.fee = fee
         self.psbt = psbt
 
     def __str__(self):
@@ -796,7 +795,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         if expect_complete:
             final = bitcoin_cli.json('finalizepsbt', prcs['psbt'])
             return RawTransactionFinalOutput(fee=self.fee, rawxact=final['hex'])
-        return PsbtFinalOutput(fee=self.fee, psbt=prcs['psbt'])
+        return PsbtFinalOutput(psbt=prcs['psbt'])
 
     def sanity_check_psbt(self):
         """
