@@ -523,7 +523,8 @@ def submit(args):
         confirm_raw_tx(found['rawtx'][0])
         decoded_tx = bitcoin_cli.checkoutput("decoderawtransaction", found['rawtx'][0])
     elif 'psbt' in found:
-        raise NotImplementedError("code this up soon")
+        # HACK need to combine the psbts and confirm in the blockchain
+        decoded_tx = "\n".join(bitcoin_cli.checkoutput("decodepsbt", p) for p in found['psbt'])
     else:
         decoded_tx = "No transaction found\n"
     write_decoded_tx(infile, decoded_tx)
@@ -551,6 +552,8 @@ def find_withdrawal_tx(infile):
                  match = None
             if line == "Raw signed transaction (hex):\n":
                 match = 'rawtx'
+            if line == "Incomplete PSBT (base64):\n":
+                match = 'psbt'
     return found
 
 
