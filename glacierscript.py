@@ -442,7 +442,7 @@ class FinalOutput(metaclass=ABCMeta):
 class RawTransactionFinalOutput(FinalOutput):
     """Represent completed raw transaction."""
 
-    def __init__(self, *, fee, rawxact=None):
+    def __init__(self, *, fee, rawxact):
         """Construct new object."""
         self.fee = fee
         self.rawxact = rawxact
@@ -465,6 +465,32 @@ class RawTransactionFinalOutput(FinalOutput):
         # Raw hex values are case-insensitive, and QR codes are more
         # efficient when all upper-case.
         return self.rawxact.upper()
+
+
+class PsbtFinalOutput(FinalOutput):
+    """Represent incompletely-signed PSBT."""
+
+    def __init__(self, *, fee, psbt):
+        """Construct new object."""
+        self.fee = fee
+        self.psbt = psbt
+
+    def feerate_sats_per_vbyte(self):
+        """Return fee rate in satoshis per byte."""
+        final_decoded = bitcoin_cli.json("decodepsbt", self.psbt)
+        return self.fee / SATOSHI_PLACES / final_decoded['tx']['vsize']
+
+    def __str__(self):
+        """Return string formatted for console output."""
+        return "Incomplete PSBT (base64):\n" + self.psbt
+
+    def value_to_hash(self):
+        """Return string to hash for transaction validation."""
+        return self.psbt
+
+    def qr_string(self):
+        """Return string to convert to QR code."""
+        return self.psbt
 
 
 ################################################################################################
@@ -607,7 +633,7 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
             tx_unsigned_hex, prev_txs)
         return signed_tx
 
-    def create_final_output(self, destinations):
+    def create_final_output(self, destinations, _expect_complete):
         """Return FinalOutput object with withdrawal transaction."""
         signed_tx = self.create_signed_transaction(destinations)
         return RawTransactionFinalOutput(fee=self.fee, rawxact=signed_tx["hex"])
@@ -755,7 +781,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         """
         return sum(amount for _, amount in self._input_iter())
 
-    def create_final_output(self, destinations):
+    def create_final_output(self, destinations, expect_complete):
         """
         Return a FinalOutput object describing the withdrawal transaction.
 
@@ -771,10 +797,14 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         if destinations != self.destinations:
             raise GlacierFatal("unable to change destinations of PSBT")  # pragma: no cover
         prcs = bitcoin_cli.json("walletprocesspsbt", self.psbt_raw)
-        if not prcs['complete']:
-            raise GlacierFatal("Expected PSBT to be complete by now")  # pragma: no cover
-        final = bitcoin_cli.json('finalizepsbt', prcs['psbt'])
-        return RawTransactionFinalOutput(fee=self.fee, rawxact=final['hex'])
+        if expect_complete != prcs['complete']:
+            if expect_complete:
+                raise GlacierFatal("Expected PSBT to be complete by now")  # pragma: no cover
+            raise GlacierFatal("How is this transaction complete when I didn't have enough keys?")  # pragma: no cover
+        if expect_complete:
+            final = bitcoin_cli.json('finalizepsbt', prcs['psbt'])
+            return RawTransactionFinalOutput(fee=self.fee, rawxact=final['hex'])
+        return PsbtFinalOutput(fee=self.fee, psbt=prcs['psbt'])
 
     def sanity_check_psbt(self):
         """
@@ -1106,6 +1136,10 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
 class BaseWithdrawalBuilder(metaclass=ABCMeta):
     """Interactively construct a withdrawal transaction, either via input TXs or PSBT."""
 
+    def __init__(self):
+        """Create new object."""
+        self.expect_complete = True
+
     @abstractmethod
     def construct_withdrawal_interactive(self):
         """
@@ -1179,7 +1213,7 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
         # Calculate Transaction
         print("\nCalculating transaction...\n")
 
-        final = xact.create_final_output(addresses)
+        final = xact.create_final_output(addresses, self.expect_complete)
         print("Final fee rate: {} satoshis per vbyte".format(final.feerate_sats_per_vbyte()))
 
         print()
@@ -1290,11 +1324,10 @@ class ManualWithdrawalBuilder(BaseWithdrawalBuilder):
 class PsbtWithdrawalBuilder(BaseWithdrawalBuilder):
     """Interactively construct a withdrawal transaction via PSBT."""
 
-    @staticmethod
-    def too_few_keys(sigsrequired):
+    def too_few_keys(self, _sigsrequired):
         """Inform user they are not providing enough keys."""
-        # HACK remember that we're not expecting a complete transaction
-        raise GlacierFatal("not enough private keys to complete transaction (need {})".format(sigsrequired))
+        print("Output will be a partially signed bitcoin transaction (PSBT).")
+        self.expect_complete = False
 
     @staticmethod
     def _load_psbt():
