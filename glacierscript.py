@@ -443,14 +443,11 @@ class RawTransactionFinalOutput(FinalOutput):
         self.fee = fee
         self.rawxact = rawxact
 
-    def feerate_sats_per_vbyte(self):
-        """Return fee rate in satoshis per byte."""
-        final_decoded = bitcoin_cli.json("decoderawtransaction", self.rawxact)
-        return self.fee / SATOSHI_PLACES / final_decoded['vsize']
-
     def __str__(self):
         """Return string formatted for console output."""
-        return "Final fee rate: {} satoshis per vbyte\n\n".format(self.feerate_sats_per_vbyte()) \
+        final_decoded = bitcoin_cli.json("decoderawtransaction", self.rawxact)
+        feerate = self.fee / SATOSHI_PLACES / final_decoded['vsize']
+        return "Final fee rate: {} satoshis per vbyte\n\n".format(feerate) \
             + "Raw signed transaction (hex):\n" + self.rawxact
 
     def value_to_hash(self):
