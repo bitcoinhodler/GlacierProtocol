@@ -523,8 +523,20 @@ def submit(args):
         confirm_raw_tx(found['rawtx'][0])
         decoded_tx = bitcoin_cli.checkoutput("decoderawtransaction", found['rawtx'][0])
     elif 'psbt' in found:
-        # HACK need to combine the psbts and confirm in the blockchain
+        # Combine the psbts and confirm in the blockchain. First I
+        # need the original PSBT for this test, since it has the full
+        # details that the single-signed PSBTs from GlacierScript
+        # might not have anymore.
+        prf = ParsedRunfile.create(infile.replace('.golden', '.run'))
+        unsigned_psbt = prf.psbt
+        all_psbt_string = ", ".join('"' + x + '"' for x in [unsigned_psbt, *found['psbt']])
+        combined = bitcoin_cli.checkoutput('combinepsbt', '[' + all_psbt_string + ']').strip()
+        finalized = bitcoin_cli.json('finalizepsbt', combined)
+        if not finalized['complete']:
+            raise RuntimeError("Expected {} PSBTs to combine to a final signed transaction".format(len(found['psbt'])))
+        confirm_raw_tx(finalized['hex'])
         decoded_tx = "\n".join(bitcoin_cli.checkoutput("decodepsbt", p) for p in found['psbt'])
+        decoded_tx += bitcoin_cli.checkoutput("decoderawtransaction", finalized['hex'])
     else:
         decoded_tx = "No transaction found\n"
     write_decoded_tx(infile, decoded_tx)
