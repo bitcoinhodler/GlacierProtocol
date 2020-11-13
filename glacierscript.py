@@ -1151,13 +1151,13 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
     def too_few_keys(self, sigsrequired):
         """Inform user they are not providing enough keys."""
 
-    def get_keys(self, xact):
+    def get_keys(self, xact, sigsrequired):
         """Prompt user for private keys and add them to the withdrawal transaction."""
         print("\nHow many private keys will you be signing this transaction "
-              "with (at least {} required to complete transaction)?".format(xact.sigsrequired))
+              "with (at least {} required to complete transaction)?".format(sigsrequired))
         key_count = int(input("#: "))
-        if key_count < xact.sigsrequired:
-            self.too_few_keys(xact.sigsrequired)
+        if key_count < sigsrequired:
+            self.too_few_keys(sigsrequired)
         for key_idx in range(key_count):
             key = input("Key #{0}: ".format(key_idx + 1))
             xact.add_key(key)
@@ -1278,7 +1278,7 @@ class ManualWithdrawalBuilder(BaseWithdrawalBuilder):
         input_amount = xact.unspent_total()
 
         print("TOTAL unspent amount for this raw transaction: {} BTC".format(input_amount))
-        self.get_keys(xact)
+        self.get_keys(xact, xact.sigsrequired)
 
         # fees, amount, and change
 
@@ -1347,7 +1347,7 @@ class PsbtWithdrawalBuilder(BaseWithdrawalBuilder):
         self.print_tx(xact, xact.destinations)
         if not yes_no_interactive():
             raise GlacierFatal("aborting")
-        self.get_keys(xact)
+        self.get_keys(xact, xact.sigsrequired)
         return (xact, xact.destinations)
 
 
