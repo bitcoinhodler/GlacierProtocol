@@ -764,7 +764,7 @@ class ParsedRunfile(metaclass=ABCMeta):
             testmode = 'regtest'
             self.modified = True
         cmdline_and_confirm = parser.send(r"""
-                            =\$1 \s""" + self.subcommand + r"""\s \<\< \s INPUT .*\n  # rest of cmdline
+                            =\$1 \s""" + self.subcommand + r"""\s \<\< \s INPUT [^\n]*\n  # rest of cmdline
                             (y\n){6}       # safety confirmations
                         """)
         return (parser, opening + testmode + cmdline_and_confirm)
