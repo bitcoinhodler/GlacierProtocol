@@ -860,6 +860,13 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         if len(set(addr for addr, _ in self._input_iter())) > 1:
             raise GlacierFatal("expected all inputs to be from same address")
 
+        # Each input must have the same set of partial signatures (or
+        # none). Otherwise our calculations about how many additional
+        # signatures required will be inaccurate.
+        if len(set(frozenset(x for x in inp.get('partial_signatures', {}))
+                   for inp in self.psbt['inputs'])) > 1:
+            raise GlacierFatal("expected all inputs to have same partial_signatures")
+
         # Die if anything unusual or unrecognized. We don't want to
         # sign something that we don't fully understand.
         allowed_global_keys = ['fee', 'inputs', 'outputs', 'tx', 'unknown']
