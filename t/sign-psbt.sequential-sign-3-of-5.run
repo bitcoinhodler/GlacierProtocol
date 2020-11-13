@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+
+$GLACIERSCRIPT --regtest=$1 sign-psbt << INPUT 2>&1
+y
+y
+y
+y
+y
+y
+../../t/sign-psbt.sequential-sign-3-of-5.psbt
+y
+3
+cN5pwP2oCxokXYFdRVYczUqLqdA8GYqGWfRjaprrQXgHrS6PTHaD
+cVyhd5Ei9HX2wSny8S2nYYtW2ubiUPhzdx1JUiSTjNicQJYTGLQV
+cUv81BVz1JWuA9uwECPvfsoyA1TqmFJBJaQUPYrxkdf44zQSiTZY
+y
+INPUT
