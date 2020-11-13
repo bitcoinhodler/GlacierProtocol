@@ -932,7 +932,11 @@ def write_and_verify_qr_code(name, filename, data):
     codes. So we split it up manually here.
 
     The theoretical limit of alphanumeric QR codes is 4296 bytes, though
-    somehow qrencode can do up to 4302.
+    somehow qrencode can do up to 4302, and one time it failed with more
+    than 4295.
+
+    Theoretical limit of PSBTs (which must use binary mode) is 2952
+    but qrencode chokes with more than 2937 or 2935.
 
     """
     # Remove any stale files, so we don't confuse user if a previous
@@ -940,7 +944,8 @@ def write_and_verify_qr_code(name, filename, data):
     base, ext = os.path.splitext(filename)
     for deleteme in glob.glob("{}*{}".format(base, ext)):
         os.remove(deleteme)
-    MAX_QR_LEN = 4296
+    all_upper_case = data.upper() == data
+    MAX_QR_LEN = 4200 if all_upper_case else 2800
     if len(data) <= MAX_QR_LEN:
         write_qr_code(filename, data)
         filenames = [filename]
