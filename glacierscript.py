@@ -876,6 +876,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
             'witness_script',
             'witness_utxo',
             'non_witness_utxo',
+            'partial_signatures',
         ]
         for inp in self.psbt['inputs']:
             for key in inp:
