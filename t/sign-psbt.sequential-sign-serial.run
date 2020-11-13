@@ -25,6 +25,14 @@ bitcoin-cli -regtest -rpcport=$1 -datadir=../bitcoin-data/$1 stop
 # So ugly, but without this, I get timeouts restarting bitcoind:
 sleep 5
 rm -rf ../bitcoin-data/$1/regtest/wallets
+
+# Decode the generated transaction-0*.pngs to get the PSBT for the
+# second signature.
+zbarimg --set "*.enable=0" --set qr.enable=1 --quiet --raw transaction-01.png | tr -d '\n' > part2.psbt
+zbarimg --set "*.enable=0" --set qr.enable=1 --quiet --raw transaction-02.png >> part2.psbt
+
+
+
 echo Running glacierscript again for the second signature...
 
 $GLACIERSCRIPT --regtest=$1 sign-psbt << INPUT 2>&1
@@ -34,7 +42,7 @@ y
 y
 y
 y
-../../t/sign-psbt.sequential-sign-serial.psbt
+part2.psbt
 y
 1
 924WjH7yMYyuyhUougBHEu2vThcHRmahF6FsKvNVQBwSGuEyqKm

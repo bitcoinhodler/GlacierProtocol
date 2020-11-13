@@ -85,6 +85,7 @@ $ make COVERAGE=1; firefox coverage-report/index.html
 | `p2wsh`                    | Both     | | Basic withdrawal from p2wsh address -- also tests PSBT with both witness and non-witness UTXOs |
 | `segwit-inputs`            | Both     | [#14](https://github.com/GlacierProtocol/GlacierProtocol/issues/14)| Inputs with a variety of output types |
 | `sequential-sign-parallel` | PSBT only| | Sequential signing (one key at a time), each signing same PSBT |
+| `sequential-sign-serial`   | PSBT only| | Sequential signing (one key at a time), second run signing PSBT created by first |
 | `too-few-keys`             | CWD only | | Not enough private keys provided (PSBT covered under sequential-sign-*) |
 | `uncompressed`             | Both     | | Basic p2sh with uncompressed keys (original Glacier release) |
 | `witness-then-non-witness` | PSBT only| | psbt with 1st input witness, 2nd non-witness |
