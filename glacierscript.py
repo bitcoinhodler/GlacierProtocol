@@ -1354,7 +1354,12 @@ class PsbtWithdrawalBuilder(BaseWithdrawalBuilder):
         self.print_tx(xact, xact.destinations)
         if not yes_no_interactive():
             raise GlacierFatal("aborting")
-        self.get_keys(xact, xact.sigsrequired)
+        # We've already checked (in sanity_check_psbt()) that each
+        # input has the same number of partial signatures, so looking
+        # at only the first one here is safe.
+        sigs_already = len(xact.psbt['inputs'][0].get('partial_signatures', {}))
+        sigsrequired = xact.sigsrequired - sigs_already
+        self.get_keys(xact, sigsrequired)
         return (xact, xact.destinations)
 
 
