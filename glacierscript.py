@@ -871,8 +871,12 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
             raise GlacierFatal("Unknown global fields in PSBT: {}".format(
                 repr(self.psbt['unknown'])))
 
-        allowed_input_keys = ['redeem_script', 'witness_script',
-                              'witness_utxo', 'non_witness_utxo']
+        allowed_input_keys = [
+            'redeem_script',
+            'witness_script',
+            'witness_utxo',
+            'non_witness_utxo',
+        ]
         for inp in self.psbt['inputs']:
             for key in inp:
                 if key not in allowed_input_keys:
