@@ -741,10 +741,11 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         # have non_witness_utxo. Because we assume all inputs are from
         # our one single cold storage address.
         have_witness = 'witness_utxo' in self.psbt['inputs'][0]
+        have_non_witness = 'non_witness_utxo' in self.psbt['inputs'][0]
         for inp in self.psbt['inputs']:
             if have_witness and 'witness_utxo' not in inp:
                 raise GlacierFatal("expected all inputs to be from same address")
-            if not have_witness and 'non_witness_utxo' not in inp:
+            if have_non_witness and 'non_witness_utxo' not in inp:
                 raise GlacierFatal("expected all inputs to be from same address")
 
         # Every input must have redeem_script and/or witness_script.
@@ -759,6 +760,21 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
                 raise GlacierFatal("expected PSBT to include redeem_script")
             if not have_witness and inp['redeem_script']['type'] != 'multisig':
                 raise GlacierFatal("expected redeem_script to be multisig")
+
+        # If we have both witness_utxo and non_witness_utxo, they need
+        # to match.
+        if have_witness and have_non_witness:
+            for index, inp in enumerate(self.psbt['inputs']):
+                witness_script = inp['witness_utxo']['scriptPubKey']['hex']
+                witness_amount = inp['witness_utxo']['amount']
+
+                inp0_n = self.psbt['tx']['vin'][index]['vout']
+                vout = inp['non_witness_utxo']['vout'][inp0_n]
+                non_witness_script = vout['scriptPubKey']['hex']
+                non_witness_amount = vout['value']
+                if witness_script != non_witness_script or \
+                   witness_amount != non_witness_amount:
+                    raise GlacierFatal("witness_utxo did not match non_witness_utxo")
 
         # Every input must come from same address (so we can assume
         # it's ours without having to ask user to type in cold storage
