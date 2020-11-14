@@ -564,8 +564,8 @@ def find_withdrawal_tx(infile):
         found = defaultdict(list)
         for line in infh:
             if match:
-                 found[match].append(line.strip())
-                 match = None
+                found[match].append(line.strip())
+                match = None
             if line == "Raw signed transaction (hex):\n":
                 match = 'rawtx'
             if line == "Incomplete PSBT (base64):\n":
