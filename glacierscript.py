@@ -511,6 +511,7 @@ class BaseWithdrawalXact:
         pubkey = get_pubkey_for_wif_privkey(key)
         if pubkey not in self._pubkeys:
             raise GlacierFatal("that key does not belong to this source address")
+        return pubkey
 
     def _validate_address(self):
         """
@@ -803,6 +804,14 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         # at only the first one here is safe.
         pubkeys = self.psbt['inputs'][0].get('partial_signatures', {})
         return pubkeys.keys()
+
+    def add_key(self, key):
+        """
+        Use the (WIF format) private key for signing this withdrawal.
+        """
+        pubkey = super().add_key(key)
+        if pubkey in self.partial_sig_pubkeys():
+            raise GlacierFatal("this PSBT has already been signed by that key")
 
     def sanity_check_psbt(self):
         """

@@ -35,19 +35,4 @@ Are you running this on a computer WITHOUT a network connection of any kind? (y/
 Fee amount: 0.00003247
 Confirm? (y/n): 
 How many private keys will you be signing this transaction with (at least 1 required to complete transaction)?
-#: Key #1: 
-Is this data correct?
-*** WARNING: Incorrect data may lead to loss of funds ***
-
-0.07230000 BTC in unspent inputs from cold storage address 2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR
-0.07226753 BTC going to destination address bcrt1qrwxllgvtc0ns624dlped894kkfq608jmye2k50
-Fee amount: 0.00003247
-
-Signing with private keys: 
-93VDtjySSuPjgLYyCR6BBTqCuaqu6X728ZfkNEDbgAdVURRd1rS
-
-
-Confirm? (y/n): 
-Calculating transaction...
-
-ERROR: Expected PSBT to be complete by now. Exiting...
+#: Key #1: ERROR: this PSBT has already been signed by that key. Exiting...
