@@ -1,0 +1,62 @@
+#!/bin/bash
+set -e
+
+# Test error handling when I try to sign a partial_signature PSBT with
+# that same key a second time.
+
+$GLACIERSCRIPT --regtest=$1 sign-psbt << INPUT 2>&1
+y
+y
+y
+y
+y
+y
+../../t/sign-psbt.sequential-sign-serial.psbt
+y
+1
+93VDtjySSuPjgLYyCR6BBTqCuaqu6X728ZfkNEDbgAdVURRd1rS
+y
+INPUT
+
+# Ugly: need to delete wallet, otherwise the second signing will still have
+# the first key and will create two signatures.
+echo First glacierscript run complete. Deleting wallet...
+
+# Decode the generated transaction-0*.pngs to get the PSBT for the
+# second signature.
+zbarimg --set "*.enable=0" --set qr.enable=1 --quiet --raw transaction-01.png | tr -d '\n' > part1.psbt
+zbarimg --set "*.enable=0" --set qr.enable=1 --quiet --raw transaction-02.png >> part1.psbt
+
+# Combine this (possibly stripped-down) partial-sig PSBT with the original PSBT
+# to get a partial-sig PSBT that GlacierScript can then complete.
+bitcoin-cli -regtest -rpcport=$1 -datadir=../bitcoin-data/$1 combinepsbt '["'`cat ../../t/sign-psbt.sequential-sign-serial.psbt`'", "'`cat part1.psbt`'"]' > part2.psbt
+
+
+bitcoin-cli -regtest -rpcport=$1 -datadir=../bitcoin-data/$1 stop
+# So ugly, but without this, I get timeouts restarting bitcoind:
+sleep 5
+rm -rf ../bitcoin-data/$1/regtest/wallets
+
+echo Running glacierscript again for the second signature...
+
+set +e
+
+$GLACIERSCRIPT --regtest=$1 sign-psbt << INPUT 2>&1
+y
+y
+y
+y
+y
+y
+part2.psbt
+y
+1
+93VDtjySSuPjgLYyCR6BBTqCuaqu6X728ZfkNEDbgAdVURRd1rS
+y
+INPUT
+
+retVal=$?
+if [ $retVal -eq 0 ]; then
+    echo "Error: expected glacierscript.py to fail"
+    exit 1
+fi

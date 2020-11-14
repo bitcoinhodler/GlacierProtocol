@@ -536,10 +536,11 @@ def submit(args):
         combined = bitcoin_cli.checkoutput('combinepsbt', '[' + all_psbt_string + ']').strip()
         finalized = bitcoin_cli.json('finalizepsbt', combined)
         if not finalized['complete']:
-            raise RuntimeError("Expected {} PSBTs to combine to a final signed transaction".format(len(found['psbt'])))
-        confirm_raw_tx(finalized['hex'])
-        decoded_tx += "online_regtest_wallet.py combined all PSBTs to form final transaction:\n"
-        decoded_tx += bitcoin_cli.checkoutput("decoderawtransaction", finalized['hex'])
+            decoded_tx += "Combining {} PSBTs did not create a completed transaction".format(len(found['psbt']))
+        else:
+            confirm_raw_tx(finalized['hex'])
+            decoded_tx += "online_regtest_wallet.py combined all PSBTs to form final transaction:\n"
+            decoded_tx += bitcoin_cli.checkoutput("decoderawtransaction", finalized['hex'])
     else:
         decoded_tx = "No transaction found\n"
     write_decoded_tx(infile, decoded_tx)
