@@ -794,6 +794,16 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
             return RawTransactionFinalOutput(fee=self.fee, rawxact=final['hex'])
         return PsbtFinalOutput(psbt=prcs['psbt'])
 
+    def partial_sig_pubkeys(self):
+        """
+        Return a list of pubkeys (hex strings) for which we already have signatures.
+        """
+        # We've already checked (in sanity_check_psbt()) that each
+        # input has the same number of partial signatures, so looking
+        # at only the first one here is safe.
+        pubkeys = self.psbt['inputs'][0].get('partial_signatures', {})
+        return pubkeys.keys()
+
     def sanity_check_psbt(self):
         """
         Make sure psbt is as we expect.
@@ -1354,10 +1364,7 @@ class PsbtWithdrawalBuilder(BaseWithdrawalBuilder):
         self.print_tx(xact, xact.destinations)
         if not yes_no_interactive():
             raise GlacierFatal("aborting")
-        # We've already checked (in sanity_check_psbt()) that each
-        # input has the same number of partial signatures, so looking
-        # at only the first one here is safe.
-        sigs_already = len(xact.psbt['inputs'][0].get('partial_signatures', {}))
+        sigs_already = len(xact.partial_sig_pubkeys())
         sigsrequired = xact.sigsrequired - sigs_already
         self.get_keys(xact, sigsrequired)
         return (xact, xact.destinations)
