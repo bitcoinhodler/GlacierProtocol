@@ -27,12 +27,15 @@ issue](https://github.com/GlacierProtocol/GlacierProtocol/issues/38).
 
 *Merged branch names in parentheses.*
 
+* (psbt) Added PSBT withdrawal support (part of
+  [#54](https://github.com/GlacierProtocol/GlacierProtocol/issues/54))
+
+* (sequential-sign) Added sequential PSBT signing, so you never have
+  to bring all keys to one location to sign a transaction.
+
 * (p2wsh) Added `--p2wsh` flag to create native segwit deposit
   addresses. [PR
   #76](https://github.com/GlacierProtocol/GlacierProtocol/pull/76)
-
-* (psbt) Added PSBT withdrawal support (part of
-  [#54](https://github.com/GlacierProtocol/GlacierProtocol/issues/54))
 
 ## Bug fixes
 
