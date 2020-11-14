@@ -564,8 +564,8 @@ def find_withdrawal_tx(infile):
         found = defaultdict(list)
         for line in infh:
             if match:
-                 found[match].append(line.strip())
-                 match = None
+                found[match].append(line.strip())
+                match = None
             if line == "Raw signed transaction (hex):\n":
                 match = 'rawtx'
             if line == "Incomplete PSBT (base64):\n":
@@ -1010,7 +1010,7 @@ def recreate_as_psbt(args):
     goldenfile = args.runfile.replace('.run', '.golden')
     found = find_withdrawal_tx(goldenfile)
     if 'rawtx' not in found:
-        raise RuntimeError("I can only convert tests that successfully created a withdrawal") from exc
+        raise RuntimeError("I can only convert tests that successfully created a withdrawal")
     if 'psbt' in found:
         raise RuntimeError("How can a create-withdrawal-data test have output PSBTs?")
     if len(found['rawtx']) != 1:
