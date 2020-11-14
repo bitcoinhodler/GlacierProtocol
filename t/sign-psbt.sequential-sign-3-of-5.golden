@@ -4,7 +4,8 @@ Are you running this on a computer WITHOUT a network connection of any kind? (y/
 Fee amount: 0.00002190
 Confirm? (y/n): 
 How many private keys will you be signing this transaction with (at least 3 required to complete transaction)?
-#: Key #1: Key #2: Key #3: 
+#: Output will be a partially signed bitcoin transaction (PSBT).
+Key #1: 
 Is this data correct?
 *** WARNING: Incorrect data may lead to loss of funds ***
 
@@ -14,7 +15,66 @@ Fee amount: 0.00002190
 
 Signing with private keys: 
 cN5pwP2oCxokXYFdRVYczUqLqdA8GYqGWfRjaprrQXgHrS6PTHaD
+
+
+Confirm? (y/n): 
+Calculating transaction...
+
+Incomplete PSBT (base64):
+cHNidP8BAFUCAAAAAYGMlEgiY8F0k73Niz3t+UKO1zIEMkSjgsIyKO9zh+fMAQAAAAD/////AXIkMQEAAAAAGXapFLbHcz4jonHlfKFuXNiFF0kXlo25iKwAAAAAAAEBIAAtMQEAAAAAF6kUJSSn4pMppja/TB2N6g3GoIfl2RaHIgIDIISWB+7SZcCfUc2g6XJCZVgnY4SHBlElCqToY4wzTO1HMEQCIEH6VbJ0tEGzIxZlvInk6ZjhWR1BWdmnLcjVNHg0bTSrAiAflIkz23sVxMd5co7ARQD6qDflzcdqNVxNOkLjjnrtAgEBBCIAII4DvWN+v+wEnRnfeNkAhRQerL0UA0eTFV84Iv1Y09xeAQWtUyEDIISWB+7SZcCfUc2g6XJCZVgnY4SHBlElCqToY4wzTO0hAnZscEcqij3nUdEm7drIQ2M4+ER7GWe1qjsSormm5xLpIQOQgN3ESOf+SYVnan0tZWffwv67ggem8puXNyM/TDtE1iED+i0sB2U6+wpzNA7p5rEP8NRiTJOwESfppp777UhGjgEhApZpt51+BfIMp6pBjtyDnakERnJTyeRxlMuD5p7kGDFRVa4AAA==
+
+Transaction fingerprint (md5):
+2191e33534e9eb2cdfffe45a6cde386a
+QR code for transaction written to transaction.png
+First glacierscript run complete. Deleting wallet...
+Bitcoin Core stopping
+Running glacierscript again for the second signature...
+Are you running this on a computer WITHOUT a network connection of any kind? (y/n)?Have the wireless cards in this computer been physically removed? (y/n)?Are you running on battery power? (y/n)?Are you running on an operating system booted from a USB drive? (y/n)?Is your screen hidden from view of windows, cameras, and other people? (y/n)?Are smartphones and all other nearby devices turned off and in a Faraday bag? (y/n)?Input a filename located in the current directory which contains the PSBT:
+0.20000000 BTC in unspent inputs from cold storage address 2MvdcuGhBWhwiHjTr7XUSydtv5FmMge93jS
+0.19997810 BTC going to destination address mxBQD1QAYpwiudaCJdRhE9QSW9cokafJ99
+Fee amount: 0.00002190
+Confirm? (y/n): 
+How many private keys will you be signing this transaction with (at least 2 required to complete transaction)?
+#: Output will be a partially signed bitcoin transaction (PSBT).
+Key #1: 
+Is this data correct?
+*** WARNING: Incorrect data may lead to loss of funds ***
+
+0.20000000 BTC in unspent inputs from cold storage address 2MvdcuGhBWhwiHjTr7XUSydtv5FmMge93jS
+0.19997810 BTC going to destination address mxBQD1QAYpwiudaCJdRhE9QSW9cokafJ99
+Fee amount: 0.00002190
+
+Signing with private keys: 
 cVyhd5Ei9HX2wSny8S2nYYtW2ubiUPhzdx1JUiSTjNicQJYTGLQV
+
+
+Confirm? (y/n): 
+Calculating transaction...
+
+Incomplete PSBT (base64):
+cHNidP8BAFUCAAAAAYGMlEgiY8F0k73Niz3t+UKO1zIEMkSjgsIyKO9zh+fMAQAAAAD/////AXIkMQEAAAAAGXapFLbHcz4jonHlfKFuXNiFF0kXlo25iKwAAAAAAAEBIAAtMQEAAAAAF6kUJSSn4pMppja/TB2N6g3GoIfl2RaHIgIDIISWB+7SZcCfUc2g6XJCZVgnY4SHBlElCqToY4wzTO1HMEQCIEH6VbJ0tEGzIxZlvInk6ZjhWR1BWdmnLcjVNHg0bTSrAiAflIkz23sVxMd5co7ARQD6qDflzcdqNVxNOkLjjnrtAgEiAgP6LSwHZTr7CnM0DunmsQ/w1GJMk7ARJ+mmnvvtSEaOAUcwRAIgCQXwzvVt1BI8BqHTQcj+vHC9TqxLdJLyjy9YllS6aRYCIHzanCic/ObfpHodOI86ibt5blmyW0Ak2EE2kYKmRTzCAQEEIgAgjgO9Y36/7ASdGd942QCFFB6svRQDR5MVXzgi/VjT3F4BBa1TIQMghJYH7tJlwJ9RzaDpckJlWCdjhIcGUSUKpOhjjDNM7SECdmxwRyqKPedR0Sbt2shDYzj4RHsZZ7WqOxKiuabnEukhA5CA3cRI5/5JhWdqfS1lZ9/C/ruCB6bym5c3Iz9MO0TWIQP6LSwHZTr7CnM0DunmsQ/w1GJMk7ARJ+mmnvvtSEaOASEClmm3nX4F8gynqkGO3IOdqQRGclPJ5HGUy4PmnuQYMVFVrgAA
+
+Transaction fingerprint (md5):
+e7c66b9b01414f3e3d46c52a1568d9e2
+QR code for transaction written to transaction.png
+Second glacierscript run complete. Deleting wallet...
+Bitcoin Core stopping
+Running glacierscript again for the third signature...
+Are you running this on a computer WITHOUT a network connection of any kind? (y/n)?Have the wireless cards in this computer been physically removed? (y/n)?Are you running on battery power? (y/n)?Are you running on an operating system booted from a USB drive? (y/n)?Is your screen hidden from view of windows, cameras, and other people? (y/n)?Are smartphones and all other nearby devices turned off and in a Faraday bag? (y/n)?Input a filename located in the current directory which contains the PSBT:
+0.20000000 BTC in unspent inputs from cold storage address 2MvdcuGhBWhwiHjTr7XUSydtv5FmMge93jS
+0.19997810 BTC going to destination address mxBQD1QAYpwiudaCJdRhE9QSW9cokafJ99
+Fee amount: 0.00002190
+Confirm? (y/n): 
+How many private keys will you be signing this transaction with (at least 1 required to complete transaction)?
+#: Key #1: 
+Is this data correct?
+*** WARNING: Incorrect data may lead to loss of funds ***
+
+0.20000000 BTC in unspent inputs from cold storage address 2MvdcuGhBWhwiHjTr7XUSydtv5FmMge93jS
+0.19997810 BTC going to destination address mxBQD1QAYpwiudaCJdRhE9QSW9cokafJ99
+Fee amount: 0.00002190
+
+Signing with private keys: 
 cUv81BVz1JWuA9uwECPvfsoyA1TqmFJBJaQUPYrxkdf44zQSiTZY
 
 

@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# Test 3-step serial sequential signing, where PSBT created by first
+# GlacierScript run is fed to second run, and that PSBT is fed to
+# third run.
+
 $GLACIERSCRIPT --regtest=$1 sign-psbt << INPUT 2>&1
 y
 y
@@ -10,9 +14,74 @@ y
 y
 ../../t/sign-psbt.sequential-sign-3-of-5.psbt
 y
-3
+1
 cN5pwP2oCxokXYFdRVYczUqLqdA8GYqGWfRjaprrQXgHrS6PTHaD
+y
+INPUT
+
+# Ugly: need to delete wallet, otherwise the second signing will still have
+# the first key and will create two signatures.
+echo First glacierscript run complete. Deleting wallet...
+
+# Decode the generated transaction-0*.pngs to get the PSBT for the
+# second signature.
+zbarimg --set "*.enable=0" --set qr.enable=1 --quiet --raw transaction.png > part1-out.psbt
+
+# Combine this (possibly stripped-down) partial-sig PSBT with the original PSBT
+# to get a partial-sig PSBT that GlacierScript can then complete.
+bitcoin-cli -regtest -rpcport=$1 -datadir=../bitcoin-data/$1 combinepsbt '["'`cat ../../t/sign-psbt.sequential-sign-3-of-5.psbt`'", "'`cat part1-out.psbt`'"]' > part2-in.psbt
+
+
+bitcoin-cli -regtest -rpcport=$1 -datadir=../bitcoin-data/$1 stop
+# So ugly, but without this, I get timeouts restarting bitcoind:
+sleep 5
+rm -rf ../bitcoin-data/$1/regtest/wallets
+
+echo Running glacierscript again for the second signature...
+
+$GLACIERSCRIPT --regtest=$1 sign-psbt << INPUT 2>&1
+y
+y
+y
+y
+y
+y
+part2-in.psbt
+y
+1
 cVyhd5Ei9HX2wSny8S2nYYtW2ubiUPhzdx1JUiSTjNicQJYTGLQV
+y
+INPUT
+
+
+echo Second glacierscript run complete. Deleting wallet...
+
+# Decode the generated transaction-0*.pngs to get the PSBT for the
+# second signature.
+zbarimg --set "*.enable=0" --set qr.enable=1 --quiet --raw transaction.png > part2-out.psbt
+
+# Combine this (possibly stripped-down) partial-sig PSBT with the original PSBT
+# to get a partial-sig PSBT that GlacierScript can then complete.
+bitcoin-cli -regtest -rpcport=$1 -datadir=../bitcoin-data/$1 combinepsbt '["'`cat ../../t/sign-psbt.sequential-sign-3-of-5.psbt`'", "'`cat part2-out.psbt`'"]' > part3-in.psbt
+
+
+bitcoin-cli -regtest -rpcport=$1 -datadir=../bitcoin-data/$1 stop
+# So ugly, but without this, I get timeouts restarting bitcoind:
+sleep 5
+rm -rf ../bitcoin-data/$1/regtest/wallets
+
+echo Running glacierscript again for the third signature...
+
+$GLACIERSCRIPT --regtest=$1 sign-psbt << INPUT 2>&1
+y
+y
+y
+y
+y
+y
+part3-in.psbt
+y
+1
 cUv81BVz1JWuA9uwECPvfsoyA1TqmFJBJaQUPYrxkdf44zQSiTZY
 y
 INPUT
