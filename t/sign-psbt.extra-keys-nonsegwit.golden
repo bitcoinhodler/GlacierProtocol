@@ -3,7 +3,7 @@ Are you running this on a computer WITHOUT a network connection of any kind? (y/
 0.42496290 BTC going to destination address 2N5PvoFj6adLPcqHAD24MxEZxvdQMGBLXow
 Fee amount: 0.00003710
 Confirm? (y/n): 
-How many private keys will you be signing this transaction with (at least 2 required)?
+How many private keys will you be signing this transaction with (at least 2 required to complete transaction)?
 #: Key #1: Key #2: Key #3: Key #4: 
 Is this data correct?
 *** WARNING: Incorrect data may lead to loss of funds ***
@@ -22,7 +22,7 @@ cRoydfinDRzzRQJp5niqJWukSYTfPJQM6ytqGN6nzonaz1mafgwD
 Confirm? (y/n): 
 Calculating transaction...
 
-Final fee rate: 10 satoshis per vbyte
+Final fee rate: 10.00 satoshis per vbyte
 
 Raw signed transaction (hex):
 02000000014c95f31df67bd1563ceb600a7c1a5613d9783aa21473b413166275bfbb69e43f01000000fd1e010047304402207c93b46aca78ddd0a7801f51cb65464a03a953a40f7a98311d093da63a7d56b102202c5cdfb36c49ecc7ab302e705d3ce2a4cbfb60d30f15da4cb1c20447c723a43501473044022037ca50526b9d5fcbe6b58334e88b361b8e43d0ef27e28315099265d84e90a64d02207e32224a392befb813025a19ab95ad07b2f9766c3e872dd0aa16ae6e3e6549ab014c8b522103d14ddcfb6817f5579695bbb3eb3e185887bf2942b031e6f716343b8fe7e9e8e221028fcd46f8614b2cbf318096968242a1e22bcfb6d8f2b6dc939c8c27c347b2937b210315acb550120f4cdcb460d5c49080ab508ca4ccd8dedecac22feeac8cd017d4c121022b063ee2f22f9e1982c140fe778672c683111a796dcccdbd47bb65e3d608a98354aeffffffff01227188020000000017a9148546e747c8094376b0a0af44bc5bbb8dd4f0218d8700000000

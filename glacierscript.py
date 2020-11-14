@@ -415,6 +415,74 @@ def jsonstr(thing):
 
 ################################################################################################
 #
+# Final output representation
+#
+################################################################################################
+
+class FinalOutput(metaclass=ABCMeta):
+    """Represent either completed transaction or sequential-signed PSBT."""
+
+    @abstractmethod
+    def __str__(self):
+        """Return string formatted for console output."""
+
+    @abstractmethod
+    def value_to_hash(self):
+        """Return string to hash for transaction validation."""
+
+    @abstractmethod
+    def qr_string(self):
+        """Return string to convert to QR code."""
+
+
+class RawTransactionFinalOutput(FinalOutput):
+    """Represent completed raw transaction."""
+
+    def __init__(self, *, fee, rawxact):
+        """Construct new object."""
+        self.fee = fee
+        self.rawxact = rawxact
+
+    def __str__(self):
+        """Return string formatted for console output."""
+        final_decoded = bitcoin_cli.json("decoderawtransaction", self.rawxact)
+        feerate = self.fee / SATOSHI_PLACES / final_decoded['vsize']
+        return "Final fee rate: {:0.2f} satoshis per vbyte\n\n".format(feerate) \
+            + "Raw signed transaction (hex):\n" + self.rawxact
+
+    def value_to_hash(self):
+        """Return string to hash for transaction validation."""
+        return self.rawxact
+
+    def qr_string(self):
+        """Return string to convert to QR code."""
+        # Raw hex values are case-insensitive, and QR codes are more
+        # efficient when all upper-case.
+        return self.rawxact.upper()
+
+
+class PsbtFinalOutput(FinalOutput):
+    """Represent incompletely-signed PSBT."""
+
+    def __init__(self, *, psbt):
+        """Construct new object."""
+        self.psbt = psbt
+
+    def __str__(self):
+        """Return string formatted for console output."""
+        return "Incomplete PSBT (base64):\n" + self.psbt
+
+    def value_to_hash(self):
+        """Return string to hash for transaction validation."""
+        return self.psbt
+
+    def qr_string(self):
+        """Return string to convert to QR code."""
+        return self.psbt
+
+
+################################################################################################
+#
 # Withdrawal transaction construction class
 #
 ################################################################################################
@@ -443,6 +511,7 @@ class BaseWithdrawalXact:
         pubkey = get_pubkey_for_wif_privkey(key)
         if pubkey not in self._pubkeys:
             raise GlacierFatal("that key does not belong to this source address")
+        return pubkey
 
     def _validate_address(self):
         """
@@ -552,6 +621,11 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
             "signrawtransactionwithwallet",
             tx_unsigned_hex, prev_txs)
         return signed_tx
+
+    def create_final_output(self, destinations, _expect_complete):
+        """Return FinalOutput object with withdrawal transaction."""
+        signed_tx = self.create_signed_transaction(destinations)
+        return RawTransactionFinalOutput(fee=self.fee, rawxact=signed_tx["hex"])
 
     def unspent_total(self):
         """
@@ -696,9 +770,9 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         """
         return sum(amount for _, amount in self._input_iter())
 
-    def create_signed_transaction(self, destinations):
+    def create_final_output(self, destinations, expect_complete):
         """
-        Return a hex string representing a signed bitcoin transaction.
+        Return a FinalOutput object describing the withdrawal transaction.
 
         returns => <dict> from signrawtransactionwithwallet, with keys
         'hex' and 'complete'
@@ -711,11 +785,33 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         """
         if destinations != self.destinations:
             raise GlacierFatal("unable to change destinations of PSBT")  # pragma: no cover
-        prcs = bitcoin_cli.json("walletprocesspsbt", self.psbt_raw)
-        if not prcs['complete']:
-            raise GlacierFatal("Expected PSBT to be complete by now")  # pragma: no cover
-        final = bitcoin_cli.json('finalizepsbt', prcs['psbt'])
-        return {'hex': final['hex'], 'complete': True}
+        prcs = bitcoin_cli.json("walletprocesspsbt", self.psbt_raw, 'true', 'ALL', 'false')
+        if expect_complete != prcs['complete']:
+            if expect_complete:
+                raise GlacierFatal("Expected PSBT to be complete by now")  # pragma: no cover
+            raise GlacierFatal("How is this transaction complete when I didn't have enough keys?")  # pragma: no cover
+        if expect_complete:
+            final = bitcoin_cli.json('finalizepsbt', prcs['psbt'])
+            return RawTransactionFinalOutput(fee=self.fee, rawxact=final['hex'])
+        return PsbtFinalOutput(psbt=prcs['psbt'])
+
+    def partial_sig_pubkeys(self):
+        """
+        Return a list of pubkeys (hex strings) for which we already have signatures.
+        """
+        # We've already checked (in sanity_check_psbt()) that each
+        # input has the same number of partial signatures, so looking
+        # at only the first one here is safe.
+        pubkeys = self.psbt['inputs'][0].get('partial_signatures', {})
+        return pubkeys.keys()
+
+    def add_key(self, key):
+        """
+        Use the (WIF format) private key for signing this withdrawal.
+        """
+        pubkey = super().add_key(key)
+        if pubkey in self.partial_sig_pubkeys():
+            raise GlacierFatal("this PSBT has already been signed by that key")
 
     def sanity_check_psbt(self):
         """
@@ -783,6 +879,13 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         if len(set(addr for addr, _ in self._input_iter())) > 1:
             raise GlacierFatal("expected all inputs to be from same address")
 
+        # Each input must have the same set of partial signatures (or
+        # none). Otherwise our calculations about how many additional
+        # signatures required will be inaccurate.
+        if len(set(frozenset(x for x in inp.get('partial_signatures', {}))
+                   for inp in self.psbt['inputs'])) > 1:
+            raise GlacierFatal("expected all inputs to have same partial_signatures")
+
         # Die if anything unusual or unrecognized. We don't want to
         # sign something that we don't fully understand.
         allowed_global_keys = ['fee', 'inputs', 'outputs', 'tx', 'unknown']
@@ -794,8 +897,13 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
             raise GlacierFatal("Unknown global fields in PSBT: {}".format(
                 repr(self.psbt['unknown'])))
 
-        allowed_input_keys = ['redeem_script', 'witness_script',
-                              'witness_utxo', 'non_witness_utxo']
+        allowed_input_keys = [
+            'redeem_script',
+            'witness_script',
+            'witness_utxo',
+            'non_witness_utxo',
+            'partial_signatures',
+        ]
         for inp in self.psbt['inputs']:
             for key in inp:
                 if key not in allowed_input_keys:
@@ -855,7 +963,11 @@ def write_and_verify_qr_code(name, filename, data):
     codes. So we split it up manually here.
 
     The theoretical limit of alphanumeric QR codes is 4296 bytes, though
-    somehow qrencode can do up to 4302.
+    somehow qrencode can do up to 4302, and one time it failed with more
+    than 4295.
+
+    Theoretical limit of PSBTs (which must use binary mode) is 2952
+    but qrencode chokes with more than 2937 or 2935.
 
     """
     # Remove any stale files, so we don't confuse user if a previous
@@ -863,7 +975,8 @@ def write_and_verify_qr_code(name, filename, data):
     base, ext = os.path.splitext(filename)
     for deleteme in glob.glob("{}*{}".format(base, ext)):
         os.remove(deleteme)
-    MAX_QR_LEN = 4296
+    all_upper_case = data.upper() == data
+    MAX_QR_LEN = 4200 if all_upper_case else 2800
     if len(data) <= MAX_QR_LEN:
         write_qr_code(filename, data)
         filenames = [filename]
@@ -1047,6 +1160,10 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
 class BaseWithdrawalBuilder(metaclass=ABCMeta):
     """Interactively construct a withdrawal transaction, either via input TXs or PSBT."""
 
+    def __init__(self):
+        """Create new object."""
+        self.expect_complete = True
+
     @abstractmethod
     def construct_withdrawal_interactive(self):
         """
@@ -1056,16 +1173,17 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
         addresses is a dict of {address: amount} of destinations.
         """
 
-    @staticmethod
-    def get_keys(xact):
+    @abstractmethod
+    def too_few_keys(self, sigsrequired):
+        """Inform user they are not providing enough keys."""
+
+    def get_keys(self, xact, sigsrequired):
         """Prompt user for private keys and add them to the withdrawal transaction."""
         print("\nHow many private keys will you be signing this transaction "
-              "with (at least {} required)?".format(xact.sigsrequired))
+              "with (at least {} required to complete transaction)?".format(sigsrequired))
         key_count = int(input("#: "))
-
-        if key_count < xact.sigsrequired:
-            raise GlacierFatal("not enough private keys to complete transaction (need {})".format(xact.sigsrequired))
-
+        if key_count < sigsrequired:
+            self.too_few_keys(sigsrequired)
         for key_idx in range(key_count):
             key = input("Key #{0}: ".format(key_idx + 1))
             xact.add_key(key)
@@ -1119,27 +1237,22 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
         # Calculate Transaction
         print("\nCalculating transaction...\n")
 
-        signed_tx = xact.create_signed_transaction(addresses)
-
-        if not signed_tx["complete"]:
-            # This should have already been caught by sigsrequired check
-            raise GlacierFatal("not enough private keys to complete transaction")  # pragma: no cover
-
-        final_decoded = bitcoin_cli.json("decoderawtransaction", signed_tx["hex"])
-        feerate_sats_per_vbyte = xact.fee / SATOSHI_PLACES / final_decoded['vsize']
-        print("Final fee rate: {} satoshis per vbyte".format(feerate_sats_per_vbyte))
-
-        print("\nRaw signed transaction (hex):")
-        print(signed_tx["hex"])
+        final = xact.create_final_output(addresses, self.expect_complete)
+        print(final)
 
         print("\nTransaction fingerprint (md5):")
-        print(hash_md5(signed_tx["hex"]))
+        print(hash_md5(final.value_to_hash()))
 
-        write_and_verify_qr_code("transaction", "transaction.png", signed_tx["hex"].upper())
+        write_and_verify_qr_code("transaction", "transaction.png", final.qr_string())
 
 
 class ManualWithdrawalBuilder(BaseWithdrawalBuilder):
     """Interactively construct a withdrawal transaction via input TXs."""
+
+    @staticmethod
+    def too_few_keys(sigsrequired):
+        """Inform user they are not providing enough keys."""
+        raise GlacierFatal("not enough private keys to complete transaction (need {})".format(sigsrequired))
 
     @staticmethod
     def get_tx_interactive(num):
@@ -1191,7 +1304,7 @@ class ManualWithdrawalBuilder(BaseWithdrawalBuilder):
         input_amount = xact.unspent_total()
 
         print("TOTAL unspent amount for this raw transaction: {} BTC".format(input_amount))
-        self.get_keys(xact)
+        self.get_keys(xact, xact.sigsrequired)
 
         # fees, amount, and change
 
@@ -1232,6 +1345,11 @@ class ManualWithdrawalBuilder(BaseWithdrawalBuilder):
 class PsbtWithdrawalBuilder(BaseWithdrawalBuilder):
     """Interactively construct a withdrawal transaction via PSBT."""
 
+    def too_few_keys(self, _sigsrequired):
+        """Inform user they are not providing enough keys."""
+        print("Output will be a partially signed bitcoin transaction (PSBT).")
+        self.expect_complete = False
+
     @staticmethod
     def _load_psbt():
         """
@@ -1255,7 +1373,9 @@ class PsbtWithdrawalBuilder(BaseWithdrawalBuilder):
         self.print_tx(xact, xact.destinations)
         if not yes_no_interactive():
             raise GlacierFatal("aborting")
-        self.get_keys(xact)
+        sigs_already = len(xact.partial_sig_pubkeys())
+        sigsrequired = xact.sigsrequired - sigs_already
+        self.get_keys(xact, sigsrequired)
         return (xact, xact.destinations)
 
 

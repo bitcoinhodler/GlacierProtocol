@@ -17,7 +17,7 @@ input a filename located in the current directory which contains the raw transac
 Transaction data found for source address.
 TOTAL unspent amount for this raw transaction: 0.20000000 BTC
 
-How many private keys will you be signing this transaction with (at least 3 required)?
+How many private keys will you be signing this transaction with (at least 3 required to complete transaction)?
 #: Key #1: Key #2: Key #3: 
 Enter fee rate.
 Satoshis per vbyte: 
@@ -49,7 +49,7 @@ cVV1MBAgdAnrX8bjQWSJcgZAbVtprR8kgdfez858ejvXs3qZWqn2
 Confirm? (y/n): 
 Calculating transaction...
 
-Final fee rate: 10 satoshis per vbyte
+Final fee rate: 10.00 satoshis per vbyte
 
 Raw signed transaction (hex):
 02000000016fc7d202d191d1dea6cb542db7bb6f59b748bdf78feb5a689e642bcf8927db6a02000000fd88010047304402200bcd64900e1cdf46356593f1831e1a97ac41d4a071b65ec450e21e8078c5da1802204d38dfcd82b7ce3973311c550cd7a028904f0ad5b7cb37d75f66fc5c133305e90147304402206e2a21b8bed758c6f3ae2c0595c6a3d85052e80df9a93e4f98449f38da390ca302200a7f5da51844f2cda6f9e5662f989bd35303c3220aa7bba1b72b46aa767959be01473044022075f4a64651e9212f6a4810fc1bb5396831fa5d455db1dbc719251c4ae25edac90220018e9360de09302ba40744d152fb2a0674b62b705ef3dbd884f75d970e8cea87014cad53210320849607eed265c09f51cda0e972426558276384870651250aa4e8638c334ced2102766c70472a8a3de751d126eddac8436338f8447b1967b5aa3b12a2b9a6e712e921039080ddc448e7fe4985676a7d2d6567dfc2febb8207a6f29b9737233f4c3b44d62103fa2d2c07653afb0a73340ee9e6b10ff0d4624c93b01127e9a69efbed48468e0121029669b79d7e05f20ca7aa418edc839da904467253c9e47194cb83e69ee418315155aeffffffff014a1a3101000000001976a914b6c7733e23a271e57ca16e5cd885174917968db988ac00000000
