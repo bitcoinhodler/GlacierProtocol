@@ -129,6 +129,7 @@
   ],
   "fee": 0.00000308
 }
+online_regtest_wallet.py combined all PSBTs to form final transaction:
 {
   "txid": "acb7a01d7523767a3f9c076b0ba40158a5fc02c3fcf23cb0ded7c33f6b848fa3",
   "hash": "ebc64caaaa4fe34a9d4016e3c10e7930f073eb08bb5f8d45d4ad5fb69692a4a6",

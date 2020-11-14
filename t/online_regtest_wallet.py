@@ -517,11 +517,14 @@ def submit(args):
     """
     infile = args.goldenfile
     found = find_withdrawal_tx(infile)
+    decoded_tx = ""
+    if 'psbt' in found:
+        decoded_tx += "\n".join(bitcoin_cli.checkoutput("decodepsbt", p) for p in found['psbt'])
     if 'rawtx' in found:
         if len(found['rawtx']) != 1:
             raise RuntimeError("How did we find more than one rawtx?")
         confirm_raw_tx(found['rawtx'][0])
-        decoded_tx = bitcoin_cli.checkoutput("decoderawtransaction", found['rawtx'][0])
+        decoded_tx += bitcoin_cli.checkoutput("decoderawtransaction", found['rawtx'][0])
     elif 'psbt' in found:
         # Combine the psbts and confirm in the blockchain. First I
         # need the original PSBT for this test, since it has the full
@@ -535,7 +538,7 @@ def submit(args):
         if not finalized['complete']:
             raise RuntimeError("Expected {} PSBTs to combine to a final signed transaction".format(len(found['psbt'])))
         confirm_raw_tx(finalized['hex'])
-        decoded_tx = "\n".join(bitcoin_cli.checkoutput("decodepsbt", p) for p in found['psbt'])
+        decoded_tx += "online_regtest_wallet.py combined all PSBTs to form final transaction:\n"
         decoded_tx += bitcoin_cli.checkoutput("decoderawtransaction", finalized['hex'])
     else:
         decoded_tx = "No transaction found\n"
