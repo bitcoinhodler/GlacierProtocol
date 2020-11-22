@@ -4,7 +4,8 @@ Are you running this on a computer WITHOUT a network connection of any kind? (y/
 Fee amount: 0.00000308
 Confirm? (y/n): 
 How many private keys will you be signing this transaction with (at least 2 required to complete transaction)?
-#: Key #1: Key #2: 
+#: Output will be a partially signed bitcoin transaction (PSBT).
+Key #1: 
 Is this data correct?
 *** WARNING: Incorrect data may lead to loss of funds ***
 
@@ -14,17 +15,45 @@ Fee amount: 0.00000308
 
 Signing with private keys: 
 cQCrT9Ncs9729ao7jbmAWrD9z7tF64s2yKzmD6nkiLAi9sXVZWAn
+
+
+Confirm? (y/n): 
+Calculating transaction...
+
+Incomplete PSBT (base64):
+cHNidP8BAFICAAAAAetf0SI46CMb9RtUg2zSfdBdLcN2bXgePxh32DErZXs1AQAAAAD/////AQxKTAAAAAAAFgAUpBDHZKyNoStXigYCfxHgLwe34dMAAAAAAAEBK0BLTAAAAAAAIgAgZchjx1AzHMA++02sohfnklz/h/XpypknVkI0vg1ieOgiAgPRTdz7aBf1V5aVu7PrPhhYh78pQrAx5vcWNDuP5+no4kcwRAIgGd7FJ4PYsMct4H0Leede6HFZn1byMz20nV4nUy4oWKICIBlCf9sIM2jnSuSnquwq+8IDDzFqeDD/ebaTzPjbMxCyAQEFi1IhA9FN3PtoF/VXlpW7s+s+GFiHvylCsDHm9xY0O4/n6ejiIQKPzUb4YUssvzGAlpaCQqHiK8+22PK23JOcjCfDR7KTeyEDFay1UBIPTNy0YNXEkICrUIykzNje3srCL+6sjNAX1MEhAisGPuLyL54ZgsFA/neGcsaDERp5bczNvUe7ZePWCKmDVK4AAA==
+
+Transaction fingerprint (md5):
+d87d8b79d3169687c21b5e9e4df3ae1c
+QR code for transaction written to transaction.png
+First glacierscript run complete. Deleting wallet...
+Bitcoin Core stopping
+Running glacierscript again for the second signature...
+Are you running this on a computer WITHOUT a network connection of any kind? (y/n)?Have the wireless cards in this computer been physically removed? (y/n)?Are you running on battery power? (y/n)?Are you running on an operating system booted from a USB drive? (y/n)?Is your screen hidden from view of windows, cameras, and other people? (y/n)?Are smartphones and all other nearby devices turned off and in a Faraday bag? (y/n)?Input a filename located in the current directory which contains the PSBT:
+0.05000000 BTC in unspent inputs from cold storage address bcrt1qvhyx836sxvwvq0hmfkk2y9l8jfw0lpl4a89fjf6kgg6turtz0r5q2wgvlj
+0.04999692 BTC going to destination address bcrt1q5sgvwe9v3ksjk4u2qcp87y0q9urm0cwnrkhp23
+Fee amount: 0.00000308
+Confirm? (y/n): 
+How many private keys will you be signing this transaction with (at least 2 required to complete transaction)?
+#: Output will be a partially signed bitcoin transaction (PSBT).
+Key #1: 
+Is this data correct?
+*** WARNING: Incorrect data may lead to loss of funds ***
+
+0.05000000 BTC in unspent inputs from cold storage address bcrt1qvhyx836sxvwvq0hmfkk2y9l8jfw0lpl4a89fjf6kgg6turtz0r5q2wgvlj
+0.04999692 BTC going to destination address bcrt1q5sgvwe9v3ksjk4u2qcp87y0q9urm0cwnrkhp23
+Fee amount: 0.00000308
+
+Signing with private keys: 
 cP65UeSDZPiTLB6CBwasWv9oJYEjRgQXhswfwcT9HscEKDcEbgy4
 
 
 Confirm? (y/n): 
 Calculating transaction...
 
-Final fee rate: 2.00 satoshis per vbyte
-
-Raw signed transaction (hex):
-02000000000101eb5fd12238e8231bf51b54836cd27dd05d2dc3766d781e3f1877d8312b657b350100000000ffffffff010c4a4c0000000000160014a410c764ac8da12b578a06027f11e02f07b7e1d30400473044022019dec52783d8b0c72de07d0b79e75ee871599f56f2333db49d5e27532e2858a2022019427fdb083368e74ae4a7aaec2afbc2030f316a7830ff79b693ccf8db3310b201473044022074b1d40dc891a6c060040599cfc29325519277aae3f8c2f8449aea3a8c71c50f022018fd8ddc17804024d298844f05f6448937bd959d6aac4a846cea1b805e8e487f018b522103d14ddcfb6817f5579695bbb3eb3e185887bf2942b031e6f716343b8fe7e9e8e221028fcd46f8614b2cbf318096968242a1e22bcfb6d8f2b6dc939c8c27c347b2937b210315acb550120f4cdcb460d5c49080ab508ca4ccd8dedecac22feeac8cd017d4c121022b063ee2f22f9e1982c140fe778672c683111a796dcccdbd47bb65e3d608a98354ae00000000
+Incomplete PSBT (base64):
+cHNidP8BAFICAAAAAetf0SI46CMb9RtUg2zSfdBdLcN2bXgePxh32DErZXs1AQAAAAD/////AQxKTAAAAAAAFgAUpBDHZKyNoStXigYCfxHgLwe34dMAAAAAAAEBK0BLTAAAAAAAIgAgZchjx1AzHMA++02sohfnklz/h/XpypknVkI0vg1ieOgiAgKPzUb4YUssvzGAlpaCQqHiK8+22PK23JOcjCfDR7KTe0cwRAIgdLHUDciRpsBgBAWZz8KTJVGSd6rj+ML4RJrqOoxxxQ8CIBj9jdwXgEAk0piETwX2RIk3vZWdaqxKhGzqG4Bejkh/AQEFi1IhA9FN3PtoF/VXlpW7s+s+GFiHvylCsDHm9xY0O4/n6ejiIQKPzUb4YUssvzGAlpaCQqHiK8+22PK23JOcjCfDR7KTeyEDFay1UBIPTNy0YNXEkICrUIykzNje3srCL+6sjNAX1MEhAisGPuLyL54ZgsFA/neGcsaDERp5bczNvUe7ZePWCKmDVK4AAA==
 
 Transaction fingerprint (md5):
-1d9f8cc1fb1dd292f52832e88b12967c
+7c10141d791d56619c374ffe4cc3eedc
 QR code for transaction written to transaction.png
