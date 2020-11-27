@@ -7,9 +7,6 @@ set -e
 # One of them is from an evil hacked GlacierScript that redirects the
 # output to the attacker's address.
 
-#CREATE HACKED PSBT
-cp ../../t/sign-psbt.malicious-psbt.psbt attacker.psbt
-
 
 # Run GlacierScript on original PSBT for valid signature:
 $GLACIERSCRIPT --regtest=$1 sign-psbt << INPUT 2>&1
@@ -45,7 +42,7 @@ y
 y
 y
 y
-attacker.psbt
+../../t/sign-psbt.malicious-psbt.attacker.psbt
 y
 1
 cP65UeSDZPiTLB6CBwasWv9oJYEjRgQXhswfwcT9HscEKDcEbgy4

@@ -3,7 +3,7 @@ import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), 'trim-psbt'))
 from bitcoin import psbt
-from bitcoin.networks import NETWORKS
+from bitcoin.script import Script
 # base64 encoding
 from binascii import a2b_base64, b2a_base64
 
@@ -11,42 +11,22 @@ from binascii import a2b_base64, b2a_base64
 
 def main():
     # parse psbt transaction
-    # From sign-psbt.p2wsh.psbt:
-    orig_psbt = "cHNidP8BAFICAAAAATrA+nAjorbvWhg+VE1ql6DnmRMibJRuJjHVq1I1b72fAQAAAAD/////AQxKTAAAAAAAFgAUpBDHZKyNoStXigYCfxHgLwe34dMAAAAAAAEAfQIAAAABEw04mQpL5Ny5AZwHaJeEoqjk51OwcCOHc7VnnAD9294AAAAAAP////8C2goOAAAAAAAWABRPf0Rx/SsT/Uez2y+ve3H6+M4a/UBLTAAAAAAAIgAgZchjx1AzHMA++02sohfnklz/h/XpypknVkI0vg1ieOgAAAAAAQErQEtMAAAAAAAiACBlyGPHUDMcwD77TayiF+eSXP+H9enKmSdWQjS+DWJ46AEFi1IhA9FN3PtoF/VXlpW7s+s+GFiHvylCsDHm9xY0O4/n6ejiIQKPzUb4YUssvzGAlpaCQqHiK8+22PK23JOcjCfDR7KTeyEDFay1UBIPTNy0YNXEkICrUIykzNje3srCL+6sjNAX1MEhAisGPuLyL54ZgsFA/neGcsaDERp5bczNvUe7ZePWCKmDVK4AAA=="
+    # From sign-psbt.malicious-psbt.psbt:
+    orig_psbt = "cHNidP8BAFICAAAAAetf0SI46CMb9RtUg2zSfdBdLcN2bXgePxh32DErZXs1AQAAAAD/////AQxKTAAAAAAAFgAUpBDHZKyNoStXigYCfxHgLwe34dMAAAAAAAEBK0BLTAAAAAAAIgAgZchjx1AzHMA++02sohfnklz/h/XpypknVkI0vg1ieOgBBYtSIQPRTdz7aBf1V5aVu7PrPhhYh78pQrAx5vcWNDuP5+no4iECj81G+GFLLL8xgJaWgkKh4ivPttjyttyTnIwnw0eyk3shAxWstVASD0zctGDVxJCAq1CMpMzY3t7Kwi/urIzQF9TBIQIrBj7i8i+eGYLBQP53hnLGgxEaeW3Mzb1Hu2Xj1gipg1SuAAA="
 
     # first convert it to binary
     raw = a2b_base64(orig_psbt)
     # then parse
     tx = psbt.PSBT.parse(raw)
 
-    # Since PSBT has both witness and non-witness input descriptions:
-    if not all(x.non_witness_utxo for x in tx.inputs):
-        raise ValueError("Expected every input to have non_witness_utxo")
-    if not all(x.witness_utxo for x in tx.inputs):
-        raise ValueError("Expected every input to have witness_utxo")
+    # Modify destination address in vout[0] to be bcrt1qrwxllgvtc0ns624dlped894kkfq608jmye2k50
+    # which is a scriptPubKey of 00141b8dffa18bc3e70d2aadf872d396b6b241a79e5b
+    scripthex = "00141b8dffa18bc3e70d2aadf872d396b6b241a79e5b"
+    scriptbin = bytes.fromhex(scripthex)
 
-    def amount_for(idx):
-        """Return satoshis on input {idx}. Uses non-witness inputs."""
-        vout = tx.tx.vin[idx].vout
-        outp = tx.inputs[idx].non_witness_utxo.vout[vout]
-        return outp.value
+    tx.tx.vout[0].script_pubkey = Script(scriptbin)
 
-    # Calculate and display transaction fee.
-    input_total = sum(amount_for(idx) for idx in range(len(tx.tx.vin)))
-    output_total = sum(out.value for out in tx.tx.vout)
-
-    print("Inputs total", input_total, "sats from", len(tx.tx.vin), "inputs")
-    print("Outputs total", output_total, "sats")
-    print("Fee equals", input_total - output_total, "sats")
-
-    # print how much we are spending and where
-    for out in tx.tx.vout:
-        print(out.value,"to",out.script_pubkey.address(NETWORKS["test"]))
-
-    # Corrupt the PSBT by modifying the amount on the first input
-    tx.inputs[0].witness_utxo.value = 1
-
-    save_to_file(tx, 'sign-psbt.corrupted-witness-utxo.psbt')
+    save_to_file(tx, 'attacker.psbt')
 
 
 def save_to_file(psbt, filename):
