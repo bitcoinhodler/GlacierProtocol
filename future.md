@@ -473,7 +473,7 @@ confirm. Then user types in xprv key via mnemonics. Sign
 transaction. Display updated PSBT as QR code. Scan with phone. (Might
 take multiple QR codes again.) Could we possibly display only the new
 signature(s) and have the online node stuff that into the PSBT? Just
-so we don't have scan back the entire (possibly large) PSBT?
+so we don't have to scan back the entire (possibly large) PSBT?
 
 On the online PC, import each PSBT, combine and finalize. Display
 transaction details again. After user confirmation, broadcast.
