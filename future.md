@@ -263,33 +263,32 @@ signatories, we shard this with Shamir.
 
 ## Principles
 
-For an M-of-N system, we create N packets, each with one extended
-private key (xprv). We also create a simple JSON data structure
-describing the wallet and print it as a QR code, to be held by the
-owner and used for any wallet activities on the quarantined laptops
-(since they are stateless).
+For an M-of-N system, we create N packets, each with one BIP39 seed
+phrase. We also create a simple JSON data structure describing the
+wallet and print it as a QR code, to be held by the owner and used for
+any wallet activities on the quarantined laptops (since they are
+stateless).
 
 The JSON contains:
 
 * Output script descriptor, containing all N xpubs
-* Password for each of the N xprvs
+* Password for each of the N BIP39 seed phrases
 
 Each packet contains:
 
-* One extended private key (xprv)
+* One BIP39 seed phrase
   * Hand-written on paper
-  * Converted to mnemonics using SLIP39 (in 1-of-1 mode)
-  * Encrypted so nosy signatories can't find past withdrawals
+  * Password-protected so nosy signatories can't find past withdrawals
 * One printed QR code containing a shard of the descriptor JSON
   * Sharded into M-of-N using SLIP39
   * Used only if master descriptor QR is lost or otherwise unavailable
 
 With the descriptor JSON, we can (1) import the wallet as watch-only
-into Bitcoin Core; (2) generate new receive addresses; and (3) decrypt
-any xprv to enable signing.
+into Bitcoin Core; (2) generate new receive addresses; and (3) unlock
+any BIP39 seed phrase to enable signing.
 
 With any M-of-N packets, we can (1) recreate the descriptor JSON,
-containing the output script descriptor and all N xprv passwords; (2)
+containing the output script descriptor and all N BIP39 passwords; (2)
 sign a transaction.
 
 ## Output script descriptor
@@ -320,28 +319,30 @@ some other tampered PSBTs.)
 
 *Use case: new user wishing to put bitcoins into cold storage*
 
-Using each quarantined laptop in turn, generate 1 xprv on each laptop
-using entropy from dice & Bitcoin Core. Generate a random string of
-gibberish as a password, and convert each xprv to mnemonics using
-SLIP39 (1-of-1), each 59 words. (Or is it more, if I include the
-entire bip32 data? 78 bytes instead of 64.) Write each set of 59 words
-on a separate piece of paper. Write today's date on each page. (Is
-this crazy? Should we just do 24 words via BIP39 and encrypt with
-BIP38?) Label each laptop Q1/Q2/Q3/Q4 and label each xprv
-Q1/Q2/Q3/Q4. Never type in an xprv except on its matching
-laptop. (Unless exigent circumstances.) Convert each xprv's matching
-xpub, plus the xprv password, to a QR code and scan with phone. (Can
-we assume the owner has all N quarantined laptops in a single
-location? Or do we need to seal up each xprv packet immediately upon
-creation, before all N are created? We need to store a descriptor
-shard with each, too, and that requires all N xpubs.)
+Using each quarantined laptop in turn, generate a BIP39 seed phrase
+using [Seedpicker](https://github.com/merland/seedpicker). Use the
+respective quarantined laptop to calculate the 24th word for
+each. Write each set of 24 words on a separate piece of paper. Write
+today's date on each page.
+
+Label each laptop Q1/Q2/Q3/Q4 and label each seed phrase
+Q1/Q2/Q3/Q4. Never type in a seed phrase except on its matching
+laptop. (Unless exigent circumstances.)
+
+For each key, generate a random string of gibberish as a BIP39
+password. Convert each seed phrase's matching xpub, plus the BIP39
+password, to a QR code and scan with phone. (Can we assume the owner
+has all N quarantined laptops in a single location? Or do we need to
+seal up each key packet immediately upon creation, before all N are
+created? We need to store a descriptor shard with each, too, and that
+requires all N xpubs.)
 
 Import: On an online PC, paste all N xpubs and construct descriptor
-(including all N xprv passwords). Construct a PDF with N+1 pages, each
-with one QR code: the descriptor JSON, then an M-of-N sharded SLIP39'd
-set of QR coded mnemonics (500+ words each). Also print the date on
-each page, and label the shards as Q1/Q2/Q3/Q4. (Order isn't really
-important but we want to distinguish the shards from the master
+(including all N BIP39 passwords). Construct a PDF with N+1 pages,
+each with one QR code: the descriptor JSON, then an M-of-N sharded
+SLIP39'd set of QR coded mnemonics (500+ words each). Also print the
+date on each page, and label the shards as Q1/Q2/Q3/Q4. (Order isn't
+really important but we want to distinguish the shards from the master
 descriptor.)
 
 Verification: Run on each laptop in turn. Verification script will ask
@@ -352,10 +353,11 @@ successfully. This verifies that the sharded QR codes have not been
 altered on their way through the phone/printer. If Q3 or higher,
 assume shards are good, and scan in only the master descriptor.
 
-Type in that laptop's corresponding 59-word xprv. Script will verify
-that this key matches the same-numbered xpub in the descriptor. This
-verifies that each xprv has been copied down correctly, and that the
-xprv password stored with the descriptor has not been altered.
+Type in that laptop's corresponding 24-word seed phrase. Script will
+verify that this key matches the same-numbered xpub in the
+descriptor. This verifies that each seed phrase has been copied down
+correctly, and that the BIP39 password stored with the descriptor has
+not been altered.
 
 If Q1, display the first 10 receive addresses. Show BIP32 path for
 first, and index for each. Take photo with instant film or
@@ -367,10 +369,10 @@ Should we do a test deposit? So the user can prove to himself that
 everything works? Part of the process is not just to confirm the
 user's actions, but for the user to confirm the process.
 
-After verification, create N packets, each with one hand-written xprv
-and one descriptor shard QR code. Save the master descriptor QR code
-with the Q1 laptop. Distribute the packets. Ideally, save each laptop
-near its corresponding packet. (Just in case it's stored key
+After verification, create N packets, each with one hand-written seed
+phrase and one descriptor shard QR code. Save the master descriptor QR
+code with the Q1 laptop. Distribute the packets. Ideally, save each
+laptop near its corresponding packet. (Just in case it's stored key
 information somehow.) Don't put packets inside laptop boxes, because
 it would be too easy to miss and get thrown away by someone assuming
 the laptop was obsolete or its WiFi broken.
@@ -464,26 +466,27 @@ Using the online Bitcoin Core wallet, create PSBT for
 withdrawal. Create change address (if needed) using change
 descriptor. Create PDF with QR code(s) containing PSBT. Print the PDF.
 
-For each available xprv, use the corresponding quarantined laptop. (If
-not available, buy and prepare a new quarantined laptop for that
-xprv.) Scan in the descriptor QR first. Then scan in the PSBT QR
-code(s) and recreate the PSBT. Check that all inputs and change
-outputs match our expected descriptor. Display tx details to user and
-confirm. Then user types in xprv key via mnemonics. Sign
-transaction. Display updated PSBT as QR code. Scan with phone. (Might
-take multiple QR codes again.) Could we possibly display only the new
-signature(s) and have the online node stuff that into the PSBT? Just
-so we don't have to scan back the entire (possibly large) PSBT?
+For each available seed phrase, use the corresponding quarantined
+laptop. (If not available, buy and prepare a new quarantined laptop
+for that seed phrase.) Scan in the descriptor QR first. Then scan in
+the PSBT QR code(s) and recreate the PSBT. Check that all inputs and
+change outputs match our expected descriptor. Display tx details to
+user and confirm. Then user types in seed phrase. Sign transaction.
+Display updated PSBT as QR code. Scan with phone. (Might take multiple
+QR codes again.) Could we possibly display only the new signature(s)
+and have the online node stuff that into the PSBT? Just so we don't
+have to scan back the entire (possibly large) PSBT?
 
-On the online PC, import each PSBT, combine and finalize. Display
-transaction details again. After user confirmation, broadcast.
+On the online PC, import each PSBT, combine (including original PSBT
+with no signatures), and finalize. Display transaction details
+again. After user confirmation, broadcast.
 
 (This has the same security concerns as my [current PSBT
 investigation](https://github.com/bitcoinhodler/glacier-psbt) has.)
 
 Do we need or want to validate the global xpubs in the PSBT? I don't
 think we care, since we have them all from the descriptor already. And
-we need the descriptor for the xprv passwords anyway.
+we need the descriptor for the BIP39 passwords anyway.
 
 ## QR code efficiency
 
@@ -521,11 +524,7 @@ Some options for higher-efficiency encoding of the wallet data:
 
 # Questions
 
-1. Can we find a more robust SLIP39 decoder? To help the user with a
-mistyped mnemonic: report suggested corrections instead of simply
-failing. Otherwise the fancy error-correcting checksum is pointless.
-
-2. For the Shamir flow, instead of sharding the 512-bit xprv, should
+1. For the Shamir flow, instead of sharding the 512-bit xprv, should
 we do what Trezor does with SLIP39 and use a PBKDF2-based key
 generation process like BIP39?  They only need 20 or 33 words, instead
 of 59.
