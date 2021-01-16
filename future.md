@@ -291,6 +291,13 @@ With any M-of-N packets, we can (1) recreate the descriptor JSON,
 containing the output script descriptor and all N BIP39 passwords; (2)
 sign a transaction.
 
+## Canary/honeypot
+
+In order to detect compromise of a key, we will deposit a nominal
+amount of bitcoin into P2WPKH addresses derived from each BIP39 seed,
+and set up a notification process to alert the user if these funds
+ever move.
+
 ## Output script descriptor
 
 `wsh(sortedmulti(2, xpub1/0/*, xpub2/0/*, xpub3/0/*, xpub4/0/*))`
@@ -330,20 +337,29 @@ Q1/Q2/Q3/Q4. Never type in a seed phrase except on its matching
 laptop. (Unless exigent circumstances.)
 
 For each key, generate a random string of gibberish as a BIP39
-password. Convert each seed phrase's matching xpub, plus the BIP39
-password, to a QR code and scan with phone. (Can we assume the owner
-has all N quarantined laptops in a single location? Or do we need to
-seal up each key packet immediately upon creation, before all N are
-created? We need to store a descriptor shard with each, too, and that
-requires all N xpubs.)
+password. Construct a partial descriptor containing the BIP39
+password, the xpub derived using that password at a standard HDM
+derivation path, and an xpub derived using no password at a standard
+P2WPKH derivation path (for canary usage).
 
-Import: On an online PC, paste all N xpubs and construct descriptor
-(including all N BIP39 passwords). Construct a PDF with N+1 pages,
-each with one QR code: the descriptor JSON, then an M-of-N sharded
-SLIP39'd set of QR coded mnemonics (500+ words each). Also print the
-date on each page, and label the shards as Q1/Q2/Q3/Q4. (Order isn't
-really important but we want to distinguish the shards from the master
-descriptor.)
+Convert that partial descriptor to a QR code and scan with phone. (Can
+we assume the owner has all N quarantined laptops in a single
+location? Or do we need to seal up each key packet immediately upon
+creation, before all N are created? We need to store a descriptor
+shard with each, too, and that requires all N xpubs.)
+
+Import: On an online PC, paste all N partial descriptors and construct
+descriptor (including all N BIP39 passwords). Construct a PDF with N+1
+pages, each with one QR code: the descriptor JSON, then an M-of-N
+sharded SLIP39'd set of QR coded mnemonics (500+ words each). Also
+print the date on each page, and label the shards as
+Q1/Q2/Q3/Q4. (Order isn't really important but we want to distinguish
+the shards from the master descriptor.)
+
+Using the canary xpubs, create N wallets in Bitcoin Core. Set up alert
+system to contact user on any activity in these wallets. Get receive
+addresses from each and instruct user to deposit a small amount of
+bitcoins into each.
 
 Verification: Run on each laptop in turn. Verification script will ask
 user which laptop this is (Q1, Q2, etc.) If Q1 or Q2, scan in all N+1
@@ -464,7 +480,12 @@ watch-only wallet into Bitcoin Core" subprocess.
 
 Using the online Bitcoin Core wallet, create PSBT for
 withdrawal. Create change address (if needed) using change
-descriptor. Create PDF with QR code(s) containing PSBT. Print the PDF.
+descriptor. If this is a complete sweep and this wallet will not be
+used anymore, offer to include one or more canary UTXOs in this
+withdrawal (but note, these will require specific keys for signing,
+not M-of-N).
+
+Create PDF with QR code(s) containing PSBT. Print the PDF.
 
 For each available seed phrase, use the corresponding quarantined
 laptop. (If not available, buy and prepare a new quarantined laptop
