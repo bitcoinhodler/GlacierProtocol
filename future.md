@@ -371,6 +371,11 @@ successfully. This verifies that the sharded QR codes have not been
 altered on their way through the phone/printer. If Q3 or higher,
 assume shards are good, and scan in only the master descriptor.
 
+> It is critical that each laptop validate the same descriptor;
+therefore it is critical that the exact same piece of paper is used
+with each. If you ever need to print a new descriptor QR, it must be
+revalidated by each laptop again.
+
 Type in that laptop's corresponding 24-word seed phrase. Script will
 verify that this key matches the same-numbered xpub in the
 descriptor. This verifies that each seed phrase has been copied down
