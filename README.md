@@ -76,6 +76,8 @@ issue](https://github.com/GlacierProtocol/GlacierProtocol/issues/38).
   yet exist. Needed for compatibility with future Bitcoin Core 0.21
   release. See [#15454](https://github.com/bitcoin/bitcoin/pull/15454).
 
+* (bitcoin-core-22) Added compatibility with Bitcoin Core 22.0.
+
 ## Improvements for Glacier developers
 
 * (tidypy) Clean up source code using linters from

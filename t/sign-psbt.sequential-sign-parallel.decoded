@@ -25,11 +25,8 @@
         "scriptPubKey": {
           "asm": "0 a410c764ac8da12b578a06027f11e02f07b7e1d3",
           "hex": "0014a410c764ac8da12b578a06027f11e02f07b7e1d3",
-          "reqSigs": 1,
-          "type": "witness_v0_keyhash",
-          "addresses": [
-            "bcrt1q5sgvwe9v3ksjk4u2qcp87y0q9urm0cwnrkhp23"
-          ]
+          "address": "bcrt1q5sgvwe9v3ksjk4u2qcp87y0q9urm0cwnrkhp23",
+          "type": "witness_v0_keyhash"
         }
       }
     ]
@@ -91,11 +88,8 @@
         "scriptPubKey": {
           "asm": "0 a410c764ac8da12b578a06027f11e02f07b7e1d3",
           "hex": "0014a410c764ac8da12b578a06027f11e02f07b7e1d3",
-          "reqSigs": 1,
-          "type": "witness_v0_keyhash",
-          "addresses": [
-            "bcrt1q5sgvwe9v3ksjk4u2qcp87y0q9urm0cwnrkhp23"
-          ]
+          "address": "bcrt1q5sgvwe9v3ksjk4u2qcp87y0q9urm0cwnrkhp23",
+          "type": "witness_v0_keyhash"
         }
       }
     ]
@@ -162,11 +156,8 @@ online_regtest_wallet.py combined all PSBTs to form final transaction:
       "scriptPubKey": {
         "asm": "0 a410c764ac8da12b578a06027f11e02f07b7e1d3",
         "hex": "0014a410c764ac8da12b578a06027f11e02f07b7e1d3",
-        "reqSigs": 1,
-        "type": "witness_v0_keyhash",
-        "addresses": [
-          "bcrt1q5sgvwe9v3ksjk4u2qcp87y0q9urm0cwnrkhp23"
-        ]
+        "address": "bcrt1q5sgvwe9v3ksjk4u2qcp87y0q9urm0cwnrkhp23",
+        "type": "witness_v0_keyhash"
       }
     }
   ]

@@ -96,6 +96,20 @@ def satoshi_to_btc(satoshi):
     return value.quantize(SATOSHI_PLACES)
 
 
+def address_from_vout(vout):
+    """
+    Given a vout from decoderawtransaction, return the Bitcoin address.
+    """
+    # Bitcoin Core <22.0 has list "addresses" (but always 0 or 1);
+    # Bitcoin Core 22.0 has scalar "address"
+    addrs = vout["scriptPubKey"].get("addresses", [
+        vout["scriptPubKey"].get("address", None)
+    ])
+    if len(addrs) > 1:
+        raise TypeError("how does one scriptPubKey have >1 corresponding address?")
+    return addrs[0] if addrs else None
+
+
 ################################################################################################
 #
 # Read & validate random data from the user
@@ -529,7 +543,8 @@ class BaseWithdrawalXact:
             return False
         if "segwit" in decoded_script:
             if self.source_address in [decoded_script["segwit"]["p2sh-segwit"],
-                                       *decoded_script["segwit"]["addresses"]]:
+                                       decoded_script["segwit"].get("address", None),
+                                       *(decoded_script["segwit"].get("addresses", []))]:
                 return True
         raise GlacierFatal("Redemption script does not match cold storage address. Doublecheck for typos")
 
@@ -674,11 +689,7 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
         utxos = []
 
         for output in xact["vout"]:
-            if "addresses" not in output["scriptPubKey"]:
-                # In Bitcoin Core versions older than v0.16, native segwit outputs have no address decoded
-                continue  # pragma: no cover
-            out_addresses = output["scriptPubKey"]["addresses"]
-            if self.source_address in out_addresses:
+            if self.source_address == address_from_vout(output):
                 utxos.append(output)
 
         return utxos
@@ -740,7 +751,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
             else:
                 inp0_n = self.psbt['tx']['vin'][index]['vout']
                 vout = inp['non_witness_utxo']['vout'][inp0_n]
-                addr = vout['scriptPubKey']['addresses'][0]
+                addr = address_from_vout(vout)
                 amount = vout['value']
             yield addr, amount
 
@@ -760,7 +771,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         """
         out = OrderedDict()
         for vout in self.psbt['tx']['vout']:
-            addr = vout['scriptPubKey']['addresses'][0]
+            addr = address_from_vout(vout)
             out[addr] = vout['value']
         return out
 
