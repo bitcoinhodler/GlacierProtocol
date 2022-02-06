@@ -46,6 +46,9 @@ disabled = [
     # lines to make this cleanup cost-effective. Maybe we revisit this
     # later when the rest is clean. See also E501 above.
     "line-too-long",
+    # On the quarantined laptops running Ubuntu 16.04 we have Python
+    # 3.5.2 which does not support f-strings.
+    "consider-using-f-string",
 ]
 
 
