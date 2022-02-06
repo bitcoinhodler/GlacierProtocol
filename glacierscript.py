@@ -1270,7 +1270,8 @@ class ManualWithdrawalBuilder(BaseWithdrawalBuilder):
 
         hex_tx = input()
         if os.path.isfile(hex_tx):
-            hex_tx = open(hex_tx).read().strip()
+            with open(hex_tx) as hexfile:
+                hex_tx = hexfile.read().strip()
         return hex_tx
 
     def construct_withdrawal_interactive(self):
