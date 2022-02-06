@@ -78,11 +78,8 @@
       "scriptPubKey": {
         "asm": "0 1b8dffa18bc3e70d2aadf872d396b6b241a79e5b",
         "hex": "00141b8dffa18bc3e70d2aadf872d396b6b241a79e5b",
-        "reqSigs": 1,
-        "type": "witness_v0_keyhash",
-        "addresses": [
-          "bcrt1qrwxllgvtc0ns624dlped894kkfq608jmye2k50"
-        ]
+        "address": "bcrt1qrwxllgvtc0ns624dlped894kkfq608jmye2k50",
+        "type": "witness_v0_keyhash"
       }
     }
   ]

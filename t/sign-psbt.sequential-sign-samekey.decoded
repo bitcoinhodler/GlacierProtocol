@@ -79,11 +79,8 @@
         "scriptPubKey": {
           "asm": "0 1b8dffa18bc3e70d2aadf872d396b6b241a79e5b",
           "hex": "00141b8dffa18bc3e70d2aadf872d396b6b241a79e5b",
-          "reqSigs": 1,
-          "type": "witness_v0_keyhash",
-          "addresses": [
-            "bcrt1qrwxllgvtc0ns624dlped894kkfq608jmye2k50"
-          ]
+          "address": "bcrt1qrwxllgvtc0ns624dlped894kkfq608jmye2k50",
+          "type": "witness_v0_keyhash"
         }
       }
     ]
@@ -118,11 +115,8 @@
             "scriptPubKey": {
               "asm": "OP_HASH160 fd6aa516ce5ea8d28ab608642c2119b52f1091ae OP_EQUAL",
               "hex": "a914fd6aa516ce5ea8d28ab608642c2119b52f1091ae87",
-              "reqSigs": 1,
-              "type": "scripthash",
-              "addresses": [
-                "2NGMAhdgCzog5xrfGRDLT8eovgjhvvrRAky"
-              ]
+              "address": "2NGMAhdgCzog5xrfGRDLT8eovgjhvvrRAky",
+              "type": "scripthash"
             }
           },
           {
@@ -131,11 +125,8 @@
             "scriptPubKey": {
               "asm": "OP_HASH160 4151ec0c95327edca1c4c5d38d01e00d9ec93d57 OP_EQUAL",
               "hex": "a9144151ec0c95327edca1c4c5d38d01e00d9ec93d5787",
-              "reqSigs": 1,
-              "type": "scripthash",
-              "addresses": [
-                "2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR"
-              ]
+              "address": "2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR",
+              "type": "scripthash"
             }
           }
         ]
@@ -176,11 +167,8 @@
             "scriptPubKey": {
               "asm": "OP_HASH160 252aa667c4fb9264f53f9e6065ff8a359a73d2a7 OP_EQUAL",
               "hex": "a914252aa667c4fb9264f53f9e6065ff8a359a73d2a787",
-              "reqSigs": 1,
-              "type": "scripthash",
-              "addresses": [
-                "2Mvdk5ks5HHBbGw5GooquyM7BPoxBgkLrEi"
-              ]
+              "address": "2Mvdk5ks5HHBbGw5GooquyM7BPoxBgkLrEi",
+              "type": "scripthash"
             }
           },
           {
@@ -189,11 +177,8 @@
             "scriptPubKey": {
               "asm": "OP_HASH160 4151ec0c95327edca1c4c5d38d01e00d9ec93d57 OP_EQUAL",
               "hex": "a9144151ec0c95327edca1c4c5d38d01e00d9ec93d5787",
-              "reqSigs": 1,
-              "type": "scripthash",
-              "addresses": [
-                "2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR"
-              ]
+              "address": "2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR",
+              "type": "scripthash"
             }
           }
         ]
@@ -234,11 +219,8 @@
             "scriptPubKey": {
               "asm": "OP_HASH160 bd227b9e1284efa4df58b4e79e17fd42527525b4 OP_EQUAL",
               "hex": "a914bd227b9e1284efa4df58b4e79e17fd42527525b487",
-              "reqSigs": 1,
-              "type": "scripthash",
-              "addresses": [
-                "2NAVH1TCKo9KnfDRa9vyQLL2ehkGH1QpL75"
-              ]
+              "address": "2NAVH1TCKo9KnfDRa9vyQLL2ehkGH1QpL75",
+              "type": "scripthash"
             }
           },
           {
@@ -247,11 +229,8 @@
             "scriptPubKey": {
               "asm": "OP_HASH160 4151ec0c95327edca1c4c5d38d01e00d9ec93d57 OP_EQUAL",
               "hex": "a9144151ec0c95327edca1c4c5d38d01e00d9ec93d5787",
-              "reqSigs": 1,
-              "type": "scripthash",
-              "addresses": [
-                "2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR"
-              ]
+              "address": "2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR",
+              "type": "scripthash"
             }
           }
         ]
@@ -292,11 +271,8 @@
             "scriptPubKey": {
               "asm": "OP_HASH160 4151ec0c95327edca1c4c5d38d01e00d9ec93d57 OP_EQUAL",
               "hex": "a9144151ec0c95327edca1c4c5d38d01e00d9ec93d5787",
-              "reqSigs": 1,
-              "type": "scripthash",
-              "addresses": [
-                "2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR"
-              ]
+              "address": "2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR",
+              "type": "scripthash"
             }
           },
           {
@@ -305,11 +281,8 @@
             "scriptPubKey": {
               "asm": "OP_HASH160 a41b64ef758b6e225b1757db4ddcc01b6ccfbfb4 OP_EQUAL",
               "hex": "a914a41b64ef758b6e225b1757db4ddcc01b6ccfbfb487",
-              "reqSigs": 1,
-              "type": "scripthash",
-              "addresses": [
-                "2N8Cwd8cKNBxNHwjootcqzX1K2Sr6RfKgys"
-              ]
+              "address": "2N8Cwd8cKNBxNHwjootcqzX1K2Sr6RfKgys",
+              "type": "scripthash"
             }
           }
         ]
@@ -350,11 +323,8 @@
             "scriptPubKey": {
               "asm": "OP_HASH160 55c531b23fa2a3006813d79601484f8d7a9a75a4 OP_EQUAL",
               "hex": "a91455c531b23fa2a3006813d79601484f8d7a9a75a487",
-              "reqSigs": 1,
-              "type": "scripthash",
-              "addresses": [
-                "2N14jesrZnJ22KuLJJDMq43tm1BwzcyXK78"
-              ]
+              "address": "2N14jesrZnJ22KuLJJDMq43tm1BwzcyXK78",
+              "type": "scripthash"
             }
           },
           {
@@ -363,11 +333,8 @@
             "scriptPubKey": {
               "asm": "OP_HASH160 4151ec0c95327edca1c4c5d38d01e00d9ec93d57 OP_EQUAL",
               "hex": "a9144151ec0c95327edca1c4c5d38d01e00d9ec93d5787",
-              "reqSigs": 1,
-              "type": "scripthash",
-              "addresses": [
-                "2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR"
-              ]
+              "address": "2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR",
+              "type": "scripthash"
             }
           }
         ]
@@ -408,11 +375,8 @@
             "scriptPubKey": {
               "asm": "OP_HASH160 4151ec0c95327edca1c4c5d38d01e00d9ec93d57 OP_EQUAL",
               "hex": "a9144151ec0c95327edca1c4c5d38d01e00d9ec93d5787",
-              "reqSigs": 1,
-              "type": "scripthash",
-              "addresses": [
-                "2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR"
-              ]
+              "address": "2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR",
+              "type": "scripthash"
             }
           },
           {
@@ -421,11 +385,8 @@
             "scriptPubKey": {
               "asm": "OP_HASH160 8eb380efa6e70961c81fb99495c0f7a5ee4840b9 OP_EQUAL",
               "hex": "a9148eb380efa6e70961c81fb99495c0f7a5ee4840b987",
-              "reqSigs": 1,
-              "type": "scripthash",
-              "addresses": [
-                "2N6Fkyf33hbKvhbwauL39WoN65nBx2niUbD"
-              ]
+              "address": "2N6Fkyf33hbKvhbwauL39WoN65nBx2niUbD",
+              "type": "scripthash"
             }
           }
         ]
@@ -466,11 +427,8 @@
             "scriptPubKey": {
               "asm": "OP_HASH160 4151ec0c95327edca1c4c5d38d01e00d9ec93d57 OP_EQUAL",
               "hex": "a9144151ec0c95327edca1c4c5d38d01e00d9ec93d5787",
-              "reqSigs": 1,
-              "type": "scripthash",
-              "addresses": [
-                "2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR"
-              ]
+              "address": "2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR",
+              "type": "scripthash"
             }
           },
           {
@@ -479,11 +437,8 @@
             "scriptPubKey": {
               "asm": "OP_HASH160 45580a93e24418c4146a64f8788e4ac438abb1fb OP_EQUAL",
               "hex": "a91445580a93e24418c4146a64f8788e4ac438abb1fb87",
-              "reqSigs": 1,
-              "type": "scripthash",
-              "addresses": [
-                "2MyZt5jn2Y4oVRitKUvuJDffRU4D3KnzcEp"
-              ]
+              "address": "2MyZt5jn2Y4oVRitKUvuJDffRU4D3KnzcEp",
+              "type": "scripthash"
             }
           }
         ]
