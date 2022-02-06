@@ -100,7 +100,11 @@ def address_from_vout(vout):
     """
     Given a vout from decoderawtransaction, return the Bitcoin address.
     """
-    addrs = vout["scriptPubKey"].get("addresses", [])
+    # Bitcoin Core <22.0 has list "addresses" (but always 0 or 1);
+    # Bitcoin Core 22.0 has scalar "address"
+    addrs = vout["scriptPubKey"].get("addresses", [
+        vout["scriptPubKey"].get("address", None)
+    ])
     if len(addrs) > 1:
         raise TypeError("how does one scriptPubKey have >1 corresponding address?")
     return addrs[0] if addrs else None
@@ -539,7 +543,8 @@ class BaseWithdrawalXact:
             return False
         if "segwit" in decoded_script:
             if self.source_address in [decoded_script["segwit"]["p2sh-segwit"],
-                                       *decoded_script["segwit"]["addresses"]]:
+                                       decoded_script["segwit"].get("address", None),
+                                       *(decoded_script["segwit"].get("addresses", []))]:
                 return True
         raise GlacierFatal("Redemption script does not match cold storage address. Doublecheck for typos")
 
