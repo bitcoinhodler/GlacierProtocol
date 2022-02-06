@@ -32,6 +32,7 @@ from atomic_write import atomic_write
 import segwit_addr
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import glacierscript  # noqa:pylint:wrong-import-position
+from glacierscript import address_from_vout  # noqa:pylint:wrong-import-position
 import bitcoin_cli    # noqa:pylint:wrong-import-position
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'trim-psbt'))
 import trim_psbt
@@ -147,12 +148,12 @@ class PsbtCreator(metaclass=ABCMeta):
                 crtinp = {
                     'txid': decoded['txid'],
                     'vout': next(vout['n'] for vout in decoded['vout']
-                                 if self.xact.source_address in vout['scriptPubKey']['addresses']),
+                                 if self.xact.source_address == address_from_vout(vout)),
                 }
                 newinputs.append(crtinp)
         # Now we have newinputs for `createpsbt`
         otx = self.outputs_like_tx()
-        outputs = [{vout['scriptPubKey']['addresses'][0]: vout['value']}
+        outputs = [{address_from_vout(vout): vout['value']}
                    for vout in otx['vout']]
         createpsbt = bitcoin_cli.checkoutput(
             "createpsbt",
@@ -239,8 +240,7 @@ class TxlistPsbtCreator(PsbtCreator):
             # ones we care about. Typically there will be exactly one.
             txdec = bitcoin_cli.json("decoderawtransaction", hextx)
             for outp in txdec['vout']:
-                if self.prf.cold_storage_address \
-                   in outp['scriptPubKey']['addresses']:
+                if self.prf.cold_storage_address == address_from_vout(outp):
                     yield (outp['value'], self.prf.cold_storage_address, None)
 
     def gen_input_txs(self):
@@ -338,7 +338,8 @@ def create_input2(amount, *, addresstype='bech32', dest=None):
     txdec = bitcoin_cli.json("decoderawtransaction", hextx)
     # Find our vout. This is more flexible than necessary since we
     # fix the order of our two outputs above. It's always the last one.
-    vout = next(vout for vout in txdec["vout"] if dest_adrs in vout["scriptPubKey"]["addresses"])
+    vout = next(vout for vout in txdec["vout"]
+                if dest_adrs == address_from_vout(vout))
     return {
         "txid": txdec["txid"],
         "vout": vout["n"]
@@ -410,7 +411,7 @@ def build_one_inp_output(cold_address, vout):
     i.e. { address: amount }
 
     """
-    if cold_address in vout["scriptPubKey"]["addresses"]:
+    if cold_address == address_from_vout(vout):
         return {cold_address: vout["value"]}
 
     # Decipher scriptPubKey.asm to determine address type (legacy, p2sh-segwit, bech32)
