@@ -31,7 +31,7 @@ def _run_subprocess(exe, *args):
     """
     cmd_list = [exe] + cli_args + list(args)
     _verbose("bitcoin cli call:\n  {0}\n".format(" ".join(shlex.quote(x) for x in cmd_list)))
-    with subprocess.Popen(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, bufsize=1) as pipe:
+    with subprocess.Popen(cmd_list, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as pipe:
         output, _ = pipe.communicate()
     output = output.decode('ascii')
     retcode = pipe.returncode
