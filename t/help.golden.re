@@ -2,7 +2,7 @@ usage: glacierscript.py [-h] [-v]
                         {entropy,create-deposit-data,create-withdrawal-data,sign-psbt}
                         ...
 
-optional arguments:
+option<(al argument)?>s:
   -h, --help            show this help message and exit
   -v, --verbose         increase output verbosity
 
@@ -19,7 +19,7 @@ Subcommands:
 For more help, include a subcommand, e.g. `./glacierscript.py entropy --help`
 usage: glacierscript.py entropy [-h] [--num-keys NUM_KEYS] [-r RNG]
 
-optional arguments:
+option<(al argument)?>s:
   -h, --help           show this help message and exit
   --num-keys NUM_KEYS  The number of keys to create random entropy for
   -r RNG, --rng RNG    Minimum number of 8-bit bytes to use for computer
@@ -27,7 +27,7 @@ optional arguments:
 usage: glacierscript.py create-deposit-data [-h] [-m M] [-n N] [-d DICE]
                                             [--p2wsh] [-r RNG]
 
-optional arguments:
+option<(al argument)?>s:
   -h, --help            show this help message and exit
   -m M                  Number of signing keys required in an m-of-n multisig
                         address creation (default m-of-n = 1-of-2)
@@ -41,5 +41,5 @@ optional arguments:
                         entropy when generating private keys (default: 20)
 usage: glacierscript.py create-withdrawal-data [-h]
 
-optional arguments:
+option<(al argument)?>s:
   -h, --help  show this help message and exit
