@@ -852,6 +852,10 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         # decodepsbt has already checked that the length of psbt['inputs']
         # matches length of psbt['tx']['vin'].
 
+        psbt_version = self.psbt.get('psbt_version', 0)
+        if psbt_version != 0:
+            raise GlacierFatal("unknown PSBT version of {}".format(psbt_version))
+
         # Every input must be populated with utxo info.
         for inp in self.psbt['inputs']:
             if 'witness_utxo' not in inp and 'non_witness_utxo' not in inp:
@@ -912,7 +916,8 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
 
         # Die if anything unusual or unrecognized. We don't want to
         # sign something that we don't fully understand.
-        allowed_global_keys = ['fee', 'inputs', 'outputs', 'tx', 'unknown']
+        allowed_global_keys = ['fee', 'inputs', 'outputs', 'tx', 'unknown',
+                               'global_xpubs', 'psbt_version', 'proprietary']
         for key in self.psbt:
             if key not in allowed_global_keys:
                 raise GlacierFatal("Unknown PSBT key '{}'".format(key))
