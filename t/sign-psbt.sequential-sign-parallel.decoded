@@ -24,6 +24,7 @@
         "n": 0,
         "scriptPubKey": {
           "asm": "0 a410c764ac8da12b578a06027f11e02f07b7e1d3",
+          "desc": "addr(bcrt1q5sgvwe9v3ksjk4u2qcp87y0q9urm0cwnrkhp23)#5da9chcd",
           "hex": "0014a410c764ac8da12b578a06027f11e02f07b7e1d3",
           "address": "bcrt1q5sgvwe9v3ksjk4u2qcp87y0q9urm0cwnrkhp23",
           "type": "witness_v0_keyhash"
@@ -31,6 +32,11 @@
       }
     ]
   },
+  "global_xpubs": [
+  ],
+  "psbt_version": 0,
+  "proprietary": [
+  ],
   "unknown": {
   },
   "inputs": [
@@ -39,9 +45,10 @@
         "amount": 0.05000000,
         "scriptPubKey": {
           "asm": "0 65c863c750331cc03efb4daca217e7925cff87f5e9ca9927564234be0d6278e8",
+          "desc": "addr(bcrt1qvhyx836sxvwvq0hmfkk2y9l8jfw0lpl4a89fjf6kgg6turtz0r5q2wgvlj)#jpvstz23",
           "hex": "002065c863c750331cc03efb4daca217e7925cff87f5e9ca9927564234be0d6278e8",
-          "type": "witness_v0_scripthash",
-          "address": "bcrt1qvhyx836sxvwvq0hmfkk2y9l8jfw0lpl4a89fjf6kgg6turtz0r5q2wgvlj"
+          "address": "bcrt1qvhyx836sxvwvq0hmfkk2y9l8jfw0lpl4a89fjf6kgg6turtz0r5q2wgvlj",
+          "type": "witness_v0_scripthash"
         }
       },
       "partial_signatures": {
@@ -87,6 +94,7 @@
         "n": 0,
         "scriptPubKey": {
           "asm": "0 a410c764ac8da12b578a06027f11e02f07b7e1d3",
+          "desc": "addr(bcrt1q5sgvwe9v3ksjk4u2qcp87y0q9urm0cwnrkhp23)#5da9chcd",
           "hex": "0014a410c764ac8da12b578a06027f11e02f07b7e1d3",
           "address": "bcrt1q5sgvwe9v3ksjk4u2qcp87y0q9urm0cwnrkhp23",
           "type": "witness_v0_keyhash"
@@ -94,6 +102,11 @@
       }
     ]
   },
+  "global_xpubs": [
+  ],
+  "psbt_version": 0,
+  "proprietary": [
+  ],
   "unknown": {
   },
   "inputs": [
@@ -102,9 +115,10 @@
         "amount": 0.05000000,
         "scriptPubKey": {
           "asm": "0 65c863c750331cc03efb4daca217e7925cff87f5e9ca9927564234be0d6278e8",
+          "desc": "addr(bcrt1qvhyx836sxvwvq0hmfkk2y9l8jfw0lpl4a89fjf6kgg6turtz0r5q2wgvlj)#jpvstz23",
           "hex": "002065c863c750331cc03efb4daca217e7925cff87f5e9ca9927564234be0d6278e8",
-          "type": "witness_v0_scripthash",
-          "address": "bcrt1qvhyx836sxvwvq0hmfkk2y9l8jfw0lpl4a89fjf6kgg6turtz0r5q2wgvlj"
+          "address": "bcrt1qvhyx836sxvwvq0hmfkk2y9l8jfw0lpl4a89fjf6kgg6turtz0r5q2wgvlj",
+          "type": "witness_v0_scripthash"
         }
       },
       "partial_signatures": {
@@ -155,6 +169,7 @@ online_regtest_wallet.py combined all PSBTs to form final transaction:
       "n": 0,
       "scriptPubKey": {
         "asm": "0 a410c764ac8da12b578a06027f11e02f07b7e1d3",
+        "desc": "addr(bcrt1q5sgvwe9v3ksjk4u2qcp87y0q9urm0cwnrkhp23)#5da9chcd",
         "hex": "0014a410c764ac8da12b578a06027f11e02f07b7e1d3",
         "address": "bcrt1q5sgvwe9v3ksjk4u2qcp87y0q9urm0cwnrkhp23",
         "type": "witness_v0_keyhash"

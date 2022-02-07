@@ -77,6 +77,7 @@
       "n": 0,
       "scriptPubKey": {
         "asm": "0 1b8dffa18bc3e70d2aadf872d396b6b241a79e5b",
+        "desc": "addr(bcrt1qrwxllgvtc0ns624dlped894kkfq608jmye2k50)#hfrytdh0",
         "hex": "00141b8dffa18bc3e70d2aadf872d396b6b241a79e5b",
         "address": "bcrt1qrwxllgvtc0ns624dlped894kkfq608jmye2k50",
         "type": "witness_v0_keyhash"

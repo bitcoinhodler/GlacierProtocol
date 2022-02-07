@@ -29,6 +29,7 @@
       "n": 0,
       "scriptPubKey": {
         "asm": "0 a410c764ac8da12b578a06027f11e02f07b7e1d3",
+        "desc": "addr(bcrt1q5sgvwe9v3ksjk4u2qcp87y0q9urm0cwnrkhp23)#5da9chcd",
         "hex": "0014a410c764ac8da12b578a06027f11e02f07b7e1d3",
         "address": "bcrt1q5sgvwe9v3ksjk4u2qcp87y0q9urm0cwnrkhp23",
         "type": "witness_v0_keyhash"

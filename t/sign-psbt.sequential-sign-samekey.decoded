@@ -78,6 +78,7 @@
         "n": 0,
         "scriptPubKey": {
           "asm": "0 1b8dffa18bc3e70d2aadf872d396b6b241a79e5b",
+          "desc": "addr(bcrt1qrwxllgvtc0ns624dlped894kkfq608jmye2k50)#hfrytdh0",
           "hex": "00141b8dffa18bc3e70d2aadf872d396b6b241a79e5b",
           "address": "bcrt1qrwxllgvtc0ns624dlped894kkfq608jmye2k50",
           "type": "witness_v0_keyhash"
@@ -85,6 +86,11 @@
       }
     ]
   },
+  "global_xpubs": [
+  ],
+  "psbt_version": 0,
+  "proprietary": [
+  ],
   "unknown": {
   },
   "inputs": [
@@ -114,6 +120,7 @@
             "n": 0,
             "scriptPubKey": {
               "asm": "OP_HASH160 fd6aa516ce5ea8d28ab608642c2119b52f1091ae OP_EQUAL",
+              "desc": "addr(2NGMAhdgCzog5xrfGRDLT8eovgjhvvrRAky)#agphnyrv",
               "hex": "a914fd6aa516ce5ea8d28ab608642c2119b52f1091ae87",
               "address": "2NGMAhdgCzog5xrfGRDLT8eovgjhvvrRAky",
               "type": "scripthash"
@@ -124,6 +131,7 @@
             "n": 1,
             "scriptPubKey": {
               "asm": "OP_HASH160 4151ec0c95327edca1c4c5d38d01e00d9ec93d57 OP_EQUAL",
+              "desc": "addr(2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR)#2ds08ey5",
               "hex": "a9144151ec0c95327edca1c4c5d38d01e00d9ec93d5787",
               "address": "2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR",
               "type": "scripthash"
@@ -166,6 +174,7 @@
             "n": 0,
             "scriptPubKey": {
               "asm": "OP_HASH160 252aa667c4fb9264f53f9e6065ff8a359a73d2a7 OP_EQUAL",
+              "desc": "addr(2Mvdk5ks5HHBbGw5GooquyM7BPoxBgkLrEi)#jn6d2yr9",
               "hex": "a914252aa667c4fb9264f53f9e6065ff8a359a73d2a787",
               "address": "2Mvdk5ks5HHBbGw5GooquyM7BPoxBgkLrEi",
               "type": "scripthash"
@@ -176,6 +185,7 @@
             "n": 1,
             "scriptPubKey": {
               "asm": "OP_HASH160 4151ec0c95327edca1c4c5d38d01e00d9ec93d57 OP_EQUAL",
+              "desc": "addr(2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR)#2ds08ey5",
               "hex": "a9144151ec0c95327edca1c4c5d38d01e00d9ec93d5787",
               "address": "2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR",
               "type": "scripthash"
@@ -218,6 +228,7 @@
             "n": 0,
             "scriptPubKey": {
               "asm": "OP_HASH160 bd227b9e1284efa4df58b4e79e17fd42527525b4 OP_EQUAL",
+              "desc": "addr(2NAVH1TCKo9KnfDRa9vyQLL2ehkGH1QpL75)#mla8znyh",
               "hex": "a914bd227b9e1284efa4df58b4e79e17fd42527525b487",
               "address": "2NAVH1TCKo9KnfDRa9vyQLL2ehkGH1QpL75",
               "type": "scripthash"
@@ -228,6 +239,7 @@
             "n": 1,
             "scriptPubKey": {
               "asm": "OP_HASH160 4151ec0c95327edca1c4c5d38d01e00d9ec93d57 OP_EQUAL",
+              "desc": "addr(2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR)#2ds08ey5",
               "hex": "a9144151ec0c95327edca1c4c5d38d01e00d9ec93d5787",
               "address": "2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR",
               "type": "scripthash"
@@ -270,6 +282,7 @@
             "n": 0,
             "scriptPubKey": {
               "asm": "OP_HASH160 4151ec0c95327edca1c4c5d38d01e00d9ec93d57 OP_EQUAL",
+              "desc": "addr(2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR)#2ds08ey5",
               "hex": "a9144151ec0c95327edca1c4c5d38d01e00d9ec93d5787",
               "address": "2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR",
               "type": "scripthash"
@@ -280,6 +293,7 @@
             "n": 1,
             "scriptPubKey": {
               "asm": "OP_HASH160 a41b64ef758b6e225b1757db4ddcc01b6ccfbfb4 OP_EQUAL",
+              "desc": "addr(2N8Cwd8cKNBxNHwjootcqzX1K2Sr6RfKgys)#we6d52x6",
               "hex": "a914a41b64ef758b6e225b1757db4ddcc01b6ccfbfb487",
               "address": "2N8Cwd8cKNBxNHwjootcqzX1K2Sr6RfKgys",
               "type": "scripthash"
@@ -322,6 +336,7 @@
             "n": 0,
             "scriptPubKey": {
               "asm": "OP_HASH160 55c531b23fa2a3006813d79601484f8d7a9a75a4 OP_EQUAL",
+              "desc": "addr(2N14jesrZnJ22KuLJJDMq43tm1BwzcyXK78)#e3avmh7a",
               "hex": "a91455c531b23fa2a3006813d79601484f8d7a9a75a487",
               "address": "2N14jesrZnJ22KuLJJDMq43tm1BwzcyXK78",
               "type": "scripthash"
@@ -332,6 +347,7 @@
             "n": 1,
             "scriptPubKey": {
               "asm": "OP_HASH160 4151ec0c95327edca1c4c5d38d01e00d9ec93d57 OP_EQUAL",
+              "desc": "addr(2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR)#2ds08ey5",
               "hex": "a9144151ec0c95327edca1c4c5d38d01e00d9ec93d5787",
               "address": "2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR",
               "type": "scripthash"
@@ -374,6 +390,7 @@
             "n": 0,
             "scriptPubKey": {
               "asm": "OP_HASH160 4151ec0c95327edca1c4c5d38d01e00d9ec93d57 OP_EQUAL",
+              "desc": "addr(2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR)#2ds08ey5",
               "hex": "a9144151ec0c95327edca1c4c5d38d01e00d9ec93d5787",
               "address": "2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR",
               "type": "scripthash"
@@ -384,6 +401,7 @@
             "n": 1,
             "scriptPubKey": {
               "asm": "OP_HASH160 8eb380efa6e70961c81fb99495c0f7a5ee4840b9 OP_EQUAL",
+              "desc": "addr(2N6Fkyf33hbKvhbwauL39WoN65nBx2niUbD)#rvnt3mjs",
               "hex": "a9148eb380efa6e70961c81fb99495c0f7a5ee4840b987",
               "address": "2N6Fkyf33hbKvhbwauL39WoN65nBx2niUbD",
               "type": "scripthash"
@@ -426,6 +444,7 @@
             "n": 0,
             "scriptPubKey": {
               "asm": "OP_HASH160 4151ec0c95327edca1c4c5d38d01e00d9ec93d57 OP_EQUAL",
+              "desc": "addr(2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR)#2ds08ey5",
               "hex": "a9144151ec0c95327edca1c4c5d38d01e00d9ec93d5787",
               "address": "2MyCc3oEVwSYzgmspKTjZ6HZrzeg8ajdmKR",
               "type": "scripthash"
@@ -436,6 +455,7 @@
             "n": 1,
             "scriptPubKey": {
               "asm": "OP_HASH160 45580a93e24418c4146a64f8788e4ac438abb1fb OP_EQUAL",
+              "desc": "addr(2MyZt5jn2Y4oVRitKUvuJDffRU4D3KnzcEp)#lrdrc8h6",
               "hex": "a91445580a93e24418c4146a64f8788e4ac438abb1fb87",
               "address": "2MyZt5jn2Y4oVRitKUvuJDffRU4D3KnzcEp",
               "type": "scripthash"

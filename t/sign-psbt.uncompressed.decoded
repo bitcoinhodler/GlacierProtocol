@@ -23,6 +23,7 @@
       "n": 0,
       "scriptPubKey": {
         "asm": "OP_HASH160 762fea3246dc4ce19cfd3f1aa9685e8838605057 OP_EQUAL",
+        "desc": "addr(2N42986nuqGfmbRUuojYCboE7EE9VLmYai2)#uak3n7ft",
         "hex": "a914762fea3246dc4ce19cfd3f1aa9685e883860505787",
         "address": "2N42986nuqGfmbRUuojYCboE7EE9VLmYai2",
         "type": "scripthash"
@@ -33,6 +34,7 @@
       "n": 1,
       "scriptPubKey": {
         "asm": "OP_DUP OP_HASH160 fb5b6788a336c0cf49b90e51ad426f2e89bf43fb OP_EQUALVERIFY OP_CHECKSIG",
+        "desc": "addr(n4S1Q6S9b5dq72ttpnFZXwaPCs2Z8ojwPR)#rrg9rtak",
         "hex": "76a914fb5b6788a336c0cf49b90e51ad426f2e89bf43fb88ac",
         "address": "n4S1Q6S9b5dq72ttpnFZXwaPCs2Z8ojwPR",
         "type": "pubkeyhash"
