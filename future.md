@@ -339,10 +339,8 @@ laptop. (Unless exigent circumstances.)
 For each key, generate a random string of gibberish as a BIP39
 password. Construct a partial descriptor containing the BIP39
 password, the xpub derived using that password at a standard HDM
-derivation path, and an xprv derived using no password at a standard
-P2WPKH derivation path (for canary usage). (This is safe, right? If an
-attacker gets this canary xprv, which uses a hardened derivation path,
-they cannot compute my multisig xprv or xpub.)
+derivation path, and an xpub derived using no password at a standard
+P2WPKH derivation path (for canary usage).
 
 Convert that partial descriptor to a QR code and scan with phone. (Can
 we assume the owner has all N quarantined laptops in a single
@@ -358,7 +356,7 @@ print the date on each page, and label the shards as
 Q1/Q2/Q3/Q4. (Order isn't really important but we want to distinguish
 the shards from the master descriptor.)
 
-Using the canary xprvs, create N wallets in Bitcoin Core. Set up alert
+Using the canary xpubs, create N wallets in Bitcoin Core. Set up alert
 system to contact user on any activity in these wallets. Get receive
 addresses from each and instruct user to deposit a small amount of
 bitcoins into each.
@@ -489,7 +487,8 @@ Using the online Bitcoin Core wallet, create PSBT for
 withdrawal. Create change address (if needed) using change
 descriptor. If this is a complete sweep and this wallet will not be
 used anymore, offer to include one or more canary UTXOs in this
-withdrawal.
+withdrawal (but note, these will require specific keys for signing,
+not M-of-N).
 
 Create PDF with QR code(s) containing PSBT. Print the PDF.
 
