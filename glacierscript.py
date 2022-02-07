@@ -287,6 +287,7 @@ def ensure_bitcoind_running(*extra_args):
             # See https://github.com/bitcoin/bitcoin/pull/19215
             require_minimum_bitcoind_version(200100)
             create_default_wallet()
+            ensure_expected_wallet()
             return
         time.sleep(0.5)
 
@@ -316,6 +317,18 @@ def create_default_wallet():
     loaded_wallet = bitcoin_cli.json(cmd, "")
     if loaded_wallet["warning"]:
         raise Exception("problem running {} on default wallet".format(cmd))  # pragma: no cover
+
+
+def ensure_expected_wallet():
+    """
+    Ensure the expected wallet exists and is a legacy wallet.
+
+    Descriptor wallets are the future but will take some work to
+    support. For now, we require legacy wallets.
+    """
+    info = bitcoin_cli.json("getwalletinfo")
+    if info.get("descriptors", False):
+        raise Exception("default wallet is a descriptor wallet, not supported")
 
 
 def require_minimum_bitcoind_version(min_version):
