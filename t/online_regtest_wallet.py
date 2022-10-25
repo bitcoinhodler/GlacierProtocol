@@ -616,6 +616,13 @@ class TxFile():
             infile.readline()  # first line is comment, throw away
             struct = infile.read()
             self.txlist = json.loads(struct)
+        # Validate our assumption that no test has more than one
+        # non-obsolete entry.
+        found = set()
+        for clump in (t for t in self.txlist if not t['obsolete']):
+            if clump['file'] in found:
+                raise RuntimeError("found multiple entries in tx.json for " + clump['file'])
+            found.update(clump['file'])
 
     def __iter__(self):
         """Iterate over the transaction list."""
