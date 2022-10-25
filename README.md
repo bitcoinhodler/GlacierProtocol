@@ -78,6 +78,11 @@ issue](https://github.com/GlacierProtocol/GlacierProtocol/issues/38).
 
 * (bitcoin-core-22) Added compatibility with Bitcoin Core 22.0.
 
+* (no-descriptors) Avoid creating descriptor wallet; needed for
+  compatibility with Bitcoin Core 23.0.
+
+* (bitcoin-core-23) Added compatibility with Bitcoin Core 23.0.
+
 ## Improvements for Glacier developers
 
 * (tidypy) Clean up source code using linters from
