@@ -1057,6 +1057,13 @@ def recreate_as_psbt(args):
     stop(args)
 
 
+def recreate_all_tests(args):
+    """
+    Recreate all transactions in tx.json and *.run.
+    """
+    print("Placeholder; TBD")
+
+
 def stop(_):
     """
     Stop the bitcoind server.
@@ -1153,6 +1160,26 @@ def main():
                                  help='Do not trim non-witness UTXO from PSBT')
     parser_recreate.set_defaults(program=recreate_as_psbt)
     parser_recreate.add_argument('runfile')
+
+    parser_redoall = subparsers.add_parser(
+        'recreate-all-tests',
+        help="Recreate all withdrawal tests using new transactions",
+        description=textwrap.dedent("""\
+        Take all create-withdrawal-data.*.run and sign-psbt.*.run
+        files and recreate the input transactions. Optionally remove
+        obsolete transactions from tx.json.
+
+        This is useful to handle changes in Bitcoin Core that change
+        how regtest transactions are mined, such as #24732.
+
+        Running this without any such changes (and without
+        --trim-obsolete) should be safe and make no changes.
+
+        """),
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser_redoall.add_argument('--trim-obsolete', action='store_true',
+                                help='Remove obsolete transactions from tx.json')
+    parser_redoall.set_defaults(program=recreate_all_tests)
 
     parser_stop = subparsers.add_parser(
         'stop',
