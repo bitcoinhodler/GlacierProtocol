@@ -45,7 +45,7 @@ glacierscript.wif_prefix = "EF"
 MIN_FEE = Decimal("0.00010000")
 
 
-def start(args):
+def start(args, *, mine_txjson=True):
     """Run the `start` subcommand to load bitcoind."""
     # We start with a pre-created wallet.dat so that our addresses
     # will be the same every time we run.
@@ -56,6 +56,8 @@ def start(args):
 
     glacierscript.ensure_bitcoind_running('-txindex')
     mine_block(101)  # 101 so we have some coinbase outputs that are spendable
+    if not mine_txjson:
+        return
     # Load all transactions in tx.json and reconstruct those in our blockchain
     txfile = TxFile()
     for txdata in txfile:
@@ -681,6 +683,20 @@ class TxFile():
             outfile.write("\n")
 
 
+def path_to_datafile(filename):
+    """
+    Return a path to the expected data file (xact or psbt).
+
+    Assumes all such data files are located in the same directory as
+    this python script.
+
+    glacierscript assumes the filenames are relative to $CWD, so they
+    appear in *.run as '../../t/foo.psbt'.
+
+    """
+    return os.path.join(os.path.dirname(__file__), os.path.basename(filename))
+
+
 class ParseError(RuntimeError):
     """Exception class for errors encountered in parsing a *.run file."""
 
@@ -842,7 +858,7 @@ class CreateWithdrawalDataRunfile(ParsedRunfile):
             if not re.match(r"^[0-9a-fA-F]+$", xact):
                 # If not hex, this must be a filename
                 filename = xact
-                with open(filename, 'rt') as xfile:
+                with open(path_to_datafile(filename), 'rt') as xfile:
                     xact = xfile.read().strip()
             self._input_txs.append(xact)
             self._input_tx_files.append(filename)
@@ -883,14 +899,15 @@ class CreateWithdrawalDataRunfile(ParsedRunfile):
         for idx, xact in enumerate(self._input_txs):
             if self._input_tx_files[idx]:
                 outfile.write(self._input_tx_files[idx] + "\n")
-                with open(self._input_tx_files[idx], 'wt') as txfile:
+                with open(path_to_datafile(self._input_tx_files[idx]), 'wt') \
+                     as txfile:
                     txfile.write(xact + "\n")
             else:
                 outfile.write(xact + "\n")
 
         outfile.write(self.back_matter)
 
-    def convert_to_regtest(self):
+    def convert_to_regtest(self, _trim=True):
         """
         Convert a testnet test to use regtest.
 
@@ -948,20 +965,19 @@ class SignPsbtRunfile(ParsedRunfile):
         self.psbt_filename = parser.send(r"""
                             [^\n]+ \n
                         """).strip()
-        with open(self.psbt_filename, 'rt') as pfile:
+        with open(path_to_datafile(self.psbt_filename), 'rt') as pfile:
             self._psbt = pfile.read().strip()
 
         self.back_matter = parser.send(r"""
                                .* \Z  # everything up to the end
                            """)
 
-    def convert_to_regtest(self):
+    def convert_to_regtest(self, trim=True):
         """Convert a testnet test to use regtest."""
         txjson = TxFile()
         tx_from_json = txjson.get(self.filename)
         if not tx_from_json \
            or tx_from_json['psbt'] != self.psbt:
-            trim = True
             self.psbt = PsbtPsbtCreator(self.psbt, trim).build_psbt()
             txjson.put(self.filename, psbt=self.psbt, trim=trim)
         self.save()
@@ -971,7 +987,7 @@ class SignPsbtRunfile(ParsedRunfile):
         outfile.write(self.front_matter)
         outfile.write(self.psbt_filename + "\n")
         outfile.write(self.back_matter)
-        with open(self.psbt_filename, 'wt') as pfile:
+        with open(path_to_datafile(self.psbt_filename), 'wt') as pfile:
             pfile.write(self.psbt + "\n")
 
 
@@ -1057,11 +1073,56 @@ def recreate_as_psbt(args):
     stop(args)
 
 
+def _recreate_obsolete(txdata):
+    """
+    Recreate one obsolete transaction from tx.json.
+
+    The only reason we'd want to do this is to demonstrate that
+    recreate-all-tests is idempotent, as it should be most of the
+    time.
+
+    """
+    if 'txs' in txdata:
+        if 'psbt' in txdata:
+            raise RuntimeError("Didn't expect both txs and psbt in tx.json for " + txdata['file'])
+        newtxs = [build_input_xact(txdata['address'], hextx)
+                  for hextx in txdata['txs']]
+        txdata['txs'] = newtxs
+    elif 'psbt' in txdata:
+        newpsbt = PsbtPsbtCreator(txdata['psbt'], txdata['trim']).build_psbt()
+        txdata['psbt'] = newpsbt
+    else:
+        raise RuntimeError("Expected either txs or psbt in tx.json for " + txdata['file'])
+    # Append txdata to tx.json
+    txfile = TxFile()
+    txfile.txlist.append(txdata)
+    txfile.save()
+
+
 def recreate_all_tests(args):
     """
     Recreate all transactions in tx.json and *.run.
     """
-    print("Placeholder; TBD")
+    start(args, mine_txjson=False)
+    oldtxfile = TxFile()
+    # Now that we've loaded tx.json, clobber it so that each test
+    # converted will append to a blank slate.
+    newtxfile = TxFile()
+    newtxfile.txlist = []
+    newtxfile.save()
+
+    for txdata in oldtxfile:
+        if txdata['obsolete']:
+            if not args.trim_obsolete:
+                _recreate_obsolete(txdata)
+        else:
+            # Find *.run in t/ directory, same directory as this script
+            runfile = os.path.join(os.path.dirname(__file__), txdata['file'])
+            prf = ParsedRunfile.create(runfile)
+            if prf.modified:
+                raise RuntimeError("Didn't expect loading {} to modify it".format(runfile))
+            prf.convert_to_regtest(txdata.get('trim', False))
+    stop(args)
 
 
 def stop(_):
