@@ -59,6 +59,10 @@ def start(args, *, mine_txjson=True):
     mine_block(101)  # 101 so we have some coinbase outputs that are spendable
     if not mine_txjson:
         return
+    # The transactions in tx.json were redone following
+    # https://github.com/bitcoin/bitcoin/pull/24732 and trying to
+    # recreate these utxos without that PR will fail.
+    glacierscript.require_minimum_bitcoind_version(239900)
     # Load all transactions in tx.json and reconstruct those in our blockchain
     txfile = TxFile()
     for txdata in txfile:
