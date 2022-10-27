@@ -162,7 +162,7 @@ class PsbtCreator(metaclass=ABCMeta):
             glacierscript.jsonstr(newinputs),
             glacierscript.jsonstr(outputs),
             '0',  # locktime
-            # replaceable is determined by sequence numbers in recreate_witness_utxo
+            'false',  # replaceable
         ).strip()
         bitcoin_cli.checkoutput("lockunspent", 'false', glacierscript.jsonstr(newinputs))
         results = bitcoin_cli.json("walletprocesspsbt", createpsbt, 'false', 'ALL', 'false')
@@ -481,7 +481,10 @@ def create_and_mine(inputs, outputs):
     """
     rawtx = bitcoin_cli.checkoutput("createrawtransaction",
                                     glacierscript.jsonstr(inputs),
-                                    glacierscript.jsonstr(outputs)).strip()
+                                    glacierscript.jsonstr(outputs),
+                                    "0",  # locktime
+                                    "false",  # replaceable
+                                    ).strip()
     signedtx = bitcoin_cli.json("signrawtransactionwithwallet", rawtx)
     if not signedtx["complete"]:
         raise ValueError("unable to sign transaction")
