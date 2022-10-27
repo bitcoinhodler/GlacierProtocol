@@ -86,7 +86,11 @@ define test_recipe =
 	@mkdir -p $(BITCOIN_DATA_DIR) $(RUNDIR)
 	cd $(RUNDIR) && ../../$< $(compteur) 2>&1 > ../../$(OUTPUT)
 	@$(1) $(GOLDEN_FILE) $(OUTPUT) || \
-	  (echo "Test $@ failed" && exit 1)
+	(if [[ "$$GOLDEN_REMAKE" == "1" ]]; then \
+	  cp $(OUTPUT) $(GOLDEN_FILE); \
+	else \
+	    (echo "Test $@ failed" && exit 1); \
+	fi)
 	@if [[ "$@" == *"create-withdrawal-data."* || "$@" == *"sign-psbt."* ]]; then \
 	  if grep --word-regexp --quiet -- -regtest $<; then \
 	    (cd testrun/online && ../../t/online_regtest_wallet.py submit ../../$(GOLDEN_FILE)); \
@@ -115,3 +119,9 @@ ifdef COVERAGE
 endif
 	@mkdir -p testrun/online
 	@(cd testrun/online && ../../t/online_regtest_wallet.py start)
+
+
+.PHONY: remake
+remake: export GOLDEN_REMAKE=1
+remake: test
+	@echo All *.golden files remade -- but any regexps in *.golden.re must be hand-redone
