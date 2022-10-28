@@ -83,6 +83,11 @@ issue](https://github.com/GlacierProtocol/GlacierProtocol/issues/38).
 
 * (bitcoin-core-23) Added compatibility with Bitcoin Core 23.0.
 
+* (recreate-all-tests) Added system to recreate all tests when Bitcoin
+  Core changes
+
+* (bitcoin-core-24) Added compatibility with Bitcoin Core 24.0.
+
 ## Improvements for Glacier developers
 
 * (tidypy) Clean up source code using linters from
