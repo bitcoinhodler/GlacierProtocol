@@ -19,6 +19,7 @@ import argparse
 from collections import defaultdict
 from decimal import Decimal
 import json
+from operator import itemgetter
 import os
 import pprint
 import re
@@ -58,6 +59,10 @@ def start(args, *, mine_txjson=True):
     mine_block(101)  # 101 so we have some coinbase outputs that are spendable
     if not mine_txjson:
         return
+    # The transactions in tx.json were redone following
+    # https://github.com/bitcoin/bitcoin/pull/24732 and trying to
+    # recreate these utxos without that PR will fail.
+    glacierscript.require_minimum_bitcoind_version(239900)
     # Load all transactions in tx.json and reconstruct those in our blockchain
     txfile = TxFile()
     for txdata in txfile:
@@ -162,7 +167,7 @@ class PsbtCreator(metaclass=ABCMeta):
             glacierscript.jsonstr(newinputs),
             glacierscript.jsonstr(outputs),
             '0',  # locktime
-            # replaceable is determined by sequence numbers in recreate_witness_utxo
+            'false',  # replaceable
         ).strip()
         bitcoin_cli.checkoutput("lockunspent", 'false', glacierscript.jsonstr(newinputs))
         results = bitcoin_cli.json("walletprocesspsbt", createpsbt, 'false', 'ALL', 'false')
@@ -321,7 +326,9 @@ def create_input2(amount, *, addresstype='bech32', dest=None):
 
     Creates & mines transactions.
     """
-    unspents = bitcoin_cli.json("listunspent")
+    # Sort for stability...the order of transactions in listunspent
+    # can be nondeterministic in v24.0
+    unspents = sorted(bitcoin_cli.json("listunspent"), key=itemgetter("txid", "vout"))
     # Choose first unspent that's large enough. There should always be one because of
     # all our coinbase outputs of 50.0 BTC
     inputtx = next(unspent for unspent in unspents
@@ -481,7 +488,10 @@ def create_and_mine(inputs, outputs):
     """
     rawtx = bitcoin_cli.checkoutput("createrawtransaction",
                                     glacierscript.jsonstr(inputs),
-                                    glacierscript.jsonstr(outputs)).strip()
+                                    glacierscript.jsonstr(outputs),
+                                    "0",  # locktime
+                                    "false",  # replaceable
+                                    ).strip()
     signedtx = bitcoin_cli.json("signrawtransactionwithwallet", rawtx)
     if not signedtx["complete"]:
         raise ValueError("unable to sign transaction")

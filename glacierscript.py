@@ -315,7 +315,8 @@ def create_default_wallet():
     found = any(w["name"] == "" for w in all_wallets["wallets"])
     cmd = ["loadwallet", ""] if found else ["-named", "createwallet", "wallet_name=", "descriptors=false"]
     loaded_wallet = bitcoin_cli.json(*cmd)
-    if loaded_wallet["warning"]:
+    if loaded_wallet["warning"] \
+       and not loaded_wallet["warning"].startswith("Wallet created successfully"):
         raise Exception("problem running {} on default wallet".format(cmd))  # pragma: no cover
 
 
@@ -437,7 +438,7 @@ def jsonstr(thing):
 
     Decimal values are encoded as strings to avoid any floating point imprecision.
     """
-    return json.dumps(thing, cls=DecimalEncoder)
+    return json.dumps(thing, cls=DecimalEncoder, sort_keys=True)
 
 
 ################################################################################################
@@ -643,8 +644,10 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
         tx_unsigned_hex = bitcoin_cli.checkoutput(
             "createrawtransaction",
             prev_txs,
-            jsonstr(destinations)).strip()
-
+            jsonstr(destinations),
+            "0",  # locktime
+            "false",  # replaceable
+        ).strip()
         signed_tx = bitcoin_cli.json(
             "signrawtransactionwithwallet",
             tx_unsigned_hex, prev_txs)
