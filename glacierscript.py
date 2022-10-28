@@ -644,8 +644,10 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
         tx_unsigned_hex = bitcoin_cli.checkoutput(
             "createrawtransaction",
             prev_txs,
-            jsonstr(destinations)).strip()
-
+            jsonstr(destinations),
+            "0",  # locktime
+            "false",  # replaceable
+        ).strip()
         signed_tx = bitcoin_cli.json(
             "signrawtransactionwithwallet",
             tx_unsigned_hex, prev_txs)
