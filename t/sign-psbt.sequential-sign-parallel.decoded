@@ -1,7 +1,7 @@
 {
   "tx": {
-    "txid": "a38ce049e1b043b396694a2bf9b9c470674e5830501754bd8be7861d51029ec3",
-    "hash": "a38ce049e1b043b396694a2bf9b9c470674e5830501754bd8be7861d51029ec3",
+    "txid": "2efe76cd96fd09b5592f701ce64557d209bdb5940b7fdd3f5e0517747869b019",
+    "hash": "2efe76cd96fd09b5592f701ce64557d209bdb5940b7fdd3f5e0517747869b019",
     "version": 2,
     "size": 82,
     "vsize": 82,
@@ -9,7 +9,7 @@
     "locktime": 0,
     "vin": [
       {
-        "txid": "ade6a28d94f7f0f71481a98a424e4f1d73b07354f5180cbd3f141f54d332679a",
+        "txid": "3e6273b8ba48eda3a182ca2638825cf8eb3bc010b405d9579ff9d2ca0838fa51",
         "vout": 1,
         "scriptSig": {
           "asm": "",
@@ -52,7 +52,7 @@
         }
       },
       "partial_signatures": {
-        "03d14ddcfb6817f5579695bbb3eb3e185887bf2942b031e6f716343b8fe7e9e8e2": "304402204c18dcf9382aaccdf9360d8fec83841ef73e89378dd7aa3f3bc8169399893c8f02202e1cdad6a71cf1fa95370b3686daeb32bd6a8b7216cbe8348b0a3732cc031c7901"
+        "03d14ddcfb6817f5579695bbb3eb3e185887bf2942b031e6f716343b8fe7e9e8e2": "3044022028d3048a56b0f2f5b73254e9fe89928fc0c62e85e6ca2bb2ed0b26c99bc70ad80220265fcf93ee97be2b5a6477aead8019c75fe852ba05c9464bfe9996673aee6b9801"
       },
       "witness_script": {
         "asm": "2 03d14ddcfb6817f5579695bbb3eb3e185887bf2942b031e6f716343b8fe7e9e8e2 028fcd46f8614b2cbf318096968242a1e22bcfb6d8f2b6dc939c8c27c347b2937b 0315acb550120f4cdcb460d5c49080ab508ca4ccd8dedecac22feeac8cd017d4c1 022b063ee2f22f9e1982c140fe778672c683111a796dcccdbd47bb65e3d608a983 4 OP_CHECKMULTISIG",
@@ -70,8 +70,8 @@
 
 {
   "tx": {
-    "txid": "a38ce049e1b043b396694a2bf9b9c470674e5830501754bd8be7861d51029ec3",
-    "hash": "a38ce049e1b043b396694a2bf9b9c470674e5830501754bd8be7861d51029ec3",
+    "txid": "2efe76cd96fd09b5592f701ce64557d209bdb5940b7fdd3f5e0517747869b019",
+    "hash": "2efe76cd96fd09b5592f701ce64557d209bdb5940b7fdd3f5e0517747869b019",
     "version": 2,
     "size": 82,
     "vsize": 82,
@@ -79,7 +79,7 @@
     "locktime": 0,
     "vin": [
       {
-        "txid": "ade6a28d94f7f0f71481a98a424e4f1d73b07354f5180cbd3f141f54d332679a",
+        "txid": "3e6273b8ba48eda3a182ca2638825cf8eb3bc010b405d9579ff9d2ca0838fa51",
         "vout": 1,
         "scriptSig": {
           "asm": "",
@@ -122,7 +122,7 @@
         }
       },
       "partial_signatures": {
-        "028fcd46f8614b2cbf318096968242a1e22bcfb6d8f2b6dc939c8c27c347b2937b": "304402202d537e1d7a4a7c15295f3ccaeb5c3ae38c50139f9cac3441e96f99c9717ffadd02203c1c558ec13dfc9a5163c6d4db1c95df33f8630975dbaa8f1c171ba4c748bc1f01"
+        "028fcd46f8614b2cbf318096968242a1e22bcfb6d8f2b6dc939c8c27c347b2937b": "30440220285f22184f6973ec8d375eaf8f2d761f113a65e353be99213dcbb3531889c5770220678c700e3d35dcee4686b8709c9c4904cfd26a1605850fc8cdbd4c6d4075332301"
       },
       "witness_script": {
         "asm": "2 03d14ddcfb6817f5579695bbb3eb3e185887bf2942b031e6f716343b8fe7e9e8e2 028fcd46f8614b2cbf318096968242a1e22bcfb6d8f2b6dc939c8c27c347b2937b 0315acb550120f4cdcb460d5c49080ab508ca4ccd8dedecac22feeac8cd017d4c1 022b063ee2f22f9e1982c140fe778672c683111a796dcccdbd47bb65e3d608a983 4 OP_CHECKMULTISIG",
@@ -139,8 +139,8 @@
 }
 online_regtest_wallet.py combined all PSBTs to form final transaction:
 {
-  "txid": "a38ce049e1b043b396694a2bf9b9c470674e5830501754bd8be7861d51029ec3",
-  "hash": "5ec5d213038728d3bf8ed8d611846c581bfcaad72670b686a3f5f0d27c91d729",
+  "txid": "2efe76cd96fd09b5592f701ce64557d209bdb5940b7fdd3f5e0517747869b019",
+  "hash": "31e3df343e8aac050de655af90496cdec1a54198ca2e671f9a752d5098079876",
   "version": 2,
   "size": 370,
   "vsize": 154,
@@ -148,7 +148,7 @@ online_regtest_wallet.py combined all PSBTs to form final transaction:
   "locktime": 0,
   "vin": [
     {
-      "txid": "ade6a28d94f7f0f71481a98a424e4f1d73b07354f5180cbd3f141f54d332679a",
+      "txid": "3e6273b8ba48eda3a182ca2638825cf8eb3bc010b405d9579ff9d2ca0838fa51",
       "vout": 1,
       "scriptSig": {
         "asm": "",
@@ -156,8 +156,8 @@ online_regtest_wallet.py combined all PSBTs to form final transaction:
       },
       "txinwitness": [
         "",
-        "304402204c18dcf9382aaccdf9360d8fec83841ef73e89378dd7aa3f3bc8169399893c8f02202e1cdad6a71cf1fa95370b3686daeb32bd6a8b7216cbe8348b0a3732cc031c7901",
-        "304402202d537e1d7a4a7c15295f3ccaeb5c3ae38c50139f9cac3441e96f99c9717ffadd02203c1c558ec13dfc9a5163c6d4db1c95df33f8630975dbaa8f1c171ba4c748bc1f01",
+        "3044022028d3048a56b0f2f5b73254e9fe89928fc0c62e85e6ca2bb2ed0b26c99bc70ad80220265fcf93ee97be2b5a6477aead8019c75fe852ba05c9464bfe9996673aee6b9801",
+        "30440220285f22184f6973ec8d375eaf8f2d761f113a65e353be99213dcbb3531889c5770220678c700e3d35dcee4686b8709c9c4904cfd26a1605850fc8cdbd4c6d4075332301",
         "522103d14ddcfb6817f5579695bbb3eb3e185887bf2942b031e6f716343b8fe7e9e8e221028fcd46f8614b2cbf318096968242a1e22bcfb6d8f2b6dc939c8c27c347b2937b210315acb550120f4cdcb460d5c49080ab508ca4ccd8dedecac22feeac8cd017d4c121022b063ee2f22f9e1982c140fe778672c683111a796dcccdbd47bb65e3d608a98354ae"
       ],
       "sequence": 4294967295

@@ -19,6 +19,7 @@ import argparse
 from collections import defaultdict
 from decimal import Decimal
 import json
+from operator import itemgetter
 import os
 import pprint
 import re
@@ -321,7 +322,9 @@ def create_input2(amount, *, addresstype='bech32', dest=None):
 
     Creates & mines transactions.
     """
-    unspents = bitcoin_cli.json("listunspent")
+    # Sort for stability...the order of transactions in listunspent
+    # can be nondeterministic in v24.0
+    unspents = sorted(bitcoin_cli.json("listunspent"), key=itemgetter("txid", "vout"))
     # Choose first unspent that's large enough. There should always be one because of
     # all our coinbase outputs of 50.0 BTC
     inputtx = next(unspent for unspent in unspents
