@@ -438,7 +438,7 @@ def jsonstr(thing):
 
     Decimal values are encoded as strings to avoid any floating point imprecision.
     """
-    return json.dumps(thing, cls=DecimalEncoder)
+    return json.dumps(thing, cls=DecimalEncoder, sort_keys=True)
 
 
 ################################################################################################
