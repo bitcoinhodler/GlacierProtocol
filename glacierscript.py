@@ -296,14 +296,13 @@ def ensure_bitcoind_running(*extra_args):
 
 def create_default_wallet():
     """
-    Ensure the default wallet exists and is loaded.
-
-    Since v0.21, Bitcoin Core will not create a default wallet when
-    started for the first time.
+    Ensure our wallet exists and is loaded.
     """
+    # Anything other than "" requires -rpcwallet= on every bitcoin-cli call:
+    wallet_name = ""
     loaded_wallets = bitcoin_cli.json("listwallets")
-    if "" in loaded_wallets:
-        return  # default wallet already loaded
+    if wallet_name in loaded_wallets:
+        return  # our wallet already loaded
     all_wallets = bitcoin_cli.json("listwalletdir")
     # {
     #     "wallets": [
@@ -317,7 +316,7 @@ def create_default_wallet():
         [
             "-named",
             "createwallet",
-            "wallet_name=",
+            "wallet_name=" + wallet_name,
             "descriptors=false",
         ]
     loaded_wallet = bitcoin_cli.json(*cmd)
