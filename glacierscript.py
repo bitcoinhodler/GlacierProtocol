@@ -312,8 +312,14 @@ def create_default_wallet():
     #         }
     #     ]
     # }
-    found = any(w["name"] == "" for w in all_wallets["wallets"])
-    cmd = ["loadwallet", ""] if found else ["-named", "createwallet", "wallet_name=", "descriptors=false"]
+    found = any(w["name"] == wallet_name for w in all_wallets["wallets"])
+    cmd = ["loadwallet", wallet_name] if found else \
+        [
+            "-named",
+            "createwallet",
+            "wallet_name=",
+            "descriptors=false",
+        ]
     loaded_wallet = bitcoin_cli.json(*cmd)
     if loaded_wallet["warning"] \
        and not loaded_wallet["warning"].startswith("Wallet created successfully"):
