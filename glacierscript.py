@@ -358,14 +358,7 @@ def get_pubkey_for_wif_privkey(privkey):
 
     <privkey> - a bitcoin private key in WIF format
     """
-    # Bitcoin Core doesn't have an RPC for "get the addresses associated w/this private key"
-    # just "get the addresses associated with this label"
-    # where "label" corresponds to an arbitrary tag we can associate with each private key
-    # so, we'll generate a unique "label" to attach to this private key.
-
-    label = hash_sha256(privkey)
-
-    bitcoin_cli.checkoutput("importprivkey", privkey, label)
+    bitcoin_cli.checkoutput("importprivkey", privkey)
 
     dinfo = bitcoin_cli.json("getdescriptorinfo", "pkh({})".format(privkey))
     # The pubkey is displayed in the "descriptor" returned by getdescriptorinfo:
