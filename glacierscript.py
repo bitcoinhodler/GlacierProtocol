@@ -41,6 +41,7 @@ import glob
 from hashlib import sha256, md5
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -365,17 +366,14 @@ def get_pubkey_for_wif_privkey(privkey):
     label = hash_sha256(privkey)
 
     bitcoin_cli.checkoutput("importprivkey", privkey, label)
-    addresses = bitcoin_cli.json("getaddressesbylabel", label)
 
-    # getaddressesbylabel returns multiple addresses associated with
-    # this one privkey; since we use it only for communicating the
-    # pubkey to addmultisigaddress, it doesn't matter which one we
-    # choose; they are all associated with the same pubkey.
-
-    address = next(iter(addresses))
-
-    validate_output = bitcoin_cli.json("getaddressinfo", address)
-    return validate_output["pubkey"]
+    dinfo = bitcoin_cli.json("getdescriptorinfo", "pkh({})".format(privkey))
+    # The pubkey is displayed in the "descriptor" returned by getdescriptorinfo:
+    #  "descriptor": "pkh(0277f15f22aeffaf3f3bc48a280a767f7c6af21276783c09ff3bcaabbece178113)#7d2u80af",
+    pubkey_match = re.match(r"pkh\((.*)\)", dinfo["descriptor"])
+    if not pubkey_match:
+        raise GlacierFatal("unable to find pubkey in descriptor")
+    return pubkey_match.group(1)
 
 
 def get_fee_interactive(xact, destinations):
