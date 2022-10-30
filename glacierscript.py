@@ -358,8 +358,6 @@ def get_pubkey_for_wif_privkey(privkey):
 
     <privkey> - a bitcoin private key in WIF format
     """
-    bitcoin_cli.checkoutput("importprivkey", privkey)
-
     dinfo = bitcoin_cli.json("getdescriptorinfo", "pkh({})".format(privkey))
     # The pubkey is displayed in the "descriptor" returned by getdescriptorinfo:
     #  "descriptor": "pkh(0277f15f22aeffaf3f3bc48a280a767f7c6af21276783c09ff3bcaabbece178113)#7d2u80af",
@@ -519,6 +517,7 @@ class BaseWithdrawalXact:
         """
         self.keys.append(key)
         # Teach the wallet about this key
+        bitcoin_cli.checkoutput("importprivkey", key)
         pubkey = get_pubkey_for_wif_privkey(key)
         if pubkey not in self._pubkeys:
             raise GlacierFatal("that key does not belong to this source address")
