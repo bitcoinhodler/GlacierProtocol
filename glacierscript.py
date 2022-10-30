@@ -1168,30 +1168,43 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
     print("Private keys created.")
     print("Generating {0}-of-{1} cold storage address...\n".format(nrequired, nkeys))
 
-    pubkeys = [get_pubkey_for_wif_privkey(key) for key in keys]
-    address_type = 'bech32' if p2wsh else 'p2sh-segwit'
-    results = addmultisigaddress(nrequired, pubkeys, address_type)
+    base_desc = "wsh(multi({},{}))".format(
+        nrequired,
+        ",".join(keys)
+    )
+    desc = base_desc if p2wsh else "sh({})".format(base_desc)
+    dinfo = bitcoin_cli.json("getdescriptorinfo", desc)
+    address = bitcoin_cli.json("deriveaddresses", dinfo["descriptor"])[0]
+
+    # We still need the wallet in order to find the redeem script.
+    # Even though user doesn't really need redeem script anymore if they're
+    # using a PSBT flow.
+    bitcoin_cli.json("importmulti", jsonstr([{
+        'desc': dinfo["descriptor"],
+        'timestamp': 'now',
+        'watchonly': True,
+    }]))
+    ainfo = bitcoin_cli.json("getaddressinfo", address)
+    script = ainfo["embedded"]["hex"] if "embedded" in ainfo else ainfo["hex"]
 
     print("Private keys:")
     for idx, key in enumerate(keys):
         print("Key #{0}: {1}".format(idx + 1, key))
 
     print("\nCold storage address:")
-    print(results["address"])
+    print(address)
 
     print("\nRedemption script:")
-    print(results["redeemScript"])
+    print(script)
     print()
 
     print("\nWallet descriptor:")
-    print(results["descriptor"])
+    print(ainfo["desc"])
     print()
 
-    write_and_verify_qr_code("cold storage address", "address.png", results["address"])
-    write_and_verify_qr_code("redemption script", "redemption.png",
-                             results["redeemScript"])
-    write_and_verify_qr_code("wallet descriptor", "descriptor.png",
-                             results["descriptor"])
+    write_and_verify_qr_code("cold storage address", "address.png", address)
+    write_and_verify_qr_code("redemption script", "redemption.png", script)
+    write_and_verify_qr_code("wallet descriptor", "descriptor.png", ainfo["desc"])
 
 
 ################################################################################################
