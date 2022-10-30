@@ -11,35 +11,50 @@ bitcoin-cli -regtest -named createwallet wallet_name= descriptors=false
 echo decodescript
 bitcoin-cli -regtest decodescript 52210277f15f22aeffaf3f3bc48a280a767f7c6af21276783c09ff3bcaabbece178113210203f642223bc751e125ab604ed20c544e933eb82a19201f90bda6236a9ddbedac21026895f3ed01c09025ba9cfab7b67d699e3ebaceada0beff70bc72c7f10df2d1c621039f3cb152130c241e01b9220a147f69f7111b830def35b510973ab47bb9af7ff654ae
 
-echo importmulti
+
+# Instead of getaddressinfo can we figure all that out from the descriptor?
+# Because we can't import it yet (or else privkeys won't import successfully)
+
+echo getdescriptorinfo to get checksum for 1st privkey
+bitcoin-cli -regtest getdescriptorinfo \
+  "pkh(cSfvoUsWWZ81M4qGYciPHdNxHXQxPEsXBdGWjYdchpisPabtiKVQ)"
+
+echo importmulti for 1st privkey
 bitcoin-cli -regtest importmulti '[{
-  "redeemscript": "52210277f15f22aeffaf3f3bc48a280a767f7c6af21276783c09ff3bcaabbece178113210203f642223bc751e125ab604ed20c544e933eb82a19201f90bda6236a9ddbedac21026895f3ed01c09025ba9cfab7b67d699e3ebaceada0beff70bc72c7f10df2d1c621039f3cb152130c241e01b9220a147f69f7111b830def35b510973ab47bb9af7ff654ae",
-  "scriptPubKey": { "address": "2N238gpicqPFfMz8sUN7pqqaJnYkgsC1WmL" },
+  "desc": "pkh(cSfvoUsWWZ81M4qGYciPHdNxHXQxPEsXBdGWjYdchpisPabtiKVQ)#eayt77q4",
+  "timestamp": "now"
+}]'
+
+
+# The pubkey is displayed in the "descriptor" returned by getdescriptorinfo:
+#   "descriptor": "pkh(0277f15f22aeffaf3f3bc48a280a767f7c6af21276783c09ff3bcaabbece178113)#7d2u80af",
+
+
+echo getdescriptorinfo to get checksum for 2nd privkey
+bitcoin-cli -regtest getdescriptorinfo \
+  "pkh(cPWVKeCBjnv833Kayc6nczBbG4YqqbCucup3n5D68WPzBEfceBAQ)"
+
+echo importmulti for 2nd privkey
+bitcoin-cli -regtest importmulti '[{
+  "desc": "pkh(cPWVKeCBjnv833Kayc6nczBbG4YqqbCucup3n5D68WPzBEfceBAQ)#2euvjpya",
+  "timestamp": "now"
+}]'
+
+# The pubkey is displayed in the "descriptor" returned by getdescriptorinfo:
+#  "descriptor": "pkh(0203f642223bc751e125ab604ed20c544e933eb82a19201f90bda6236a9ddbedac)#alaa56tl",
+
+
+echo getdescriptorinfo to get checksum
+bitcoin-cli -regtest getdescriptorinfo \
+  "sh(multi(2,0277f15f22aeffaf3f3bc48a280a767f7c6af21276783c09ff3bcaabbece178113,0203f642223bc751e125ab604ed20c544e933eb82a19201f90bda6236a9ddbedac,026895f3ed01c09025ba9cfab7b67d699e3ebaceada0beff70bc72c7f10df2d1c6,039f3cb152130c241e01b9220a147f69f7111b830def35b510973ab47bb9af7ff6))"
+
+echo importmulti for multisig
+bitcoin-cli -regtest importmulti '[{
+  "desc": "sh(multi(2,0277f15f22aeffaf3f3bc48a280a767f7c6af21276783c09ff3bcaabbece178113,0203f642223bc751e125ab604ed20c544e933eb82a19201f90bda6236a9ddbedac,026895f3ed01c09025ba9cfab7b67d699e3ebaceada0beff70bc72c7f10df2d1c6,039f3cb152130c241e01b9220a147f69f7111b830def35b510973ab47bb9af7ff6))#87e0xgh9",
   "timestamp": "now",
   "watchonly": true
 }]'
 
-echo getaddressinfo
-bitcoin-cli -regtest getaddressinfo 2N238gpicqPFfMz8sUN7pqqaJnYkgsC1WmL
-
-echo importprivkey
-bitcoin-cli -regtest importprivkey cSfvoUsWWZ81M4qGYciPHdNxHXQxPEsXBdGWjYdchpisPabtiKVQ mylabel1
-
-#### Get pubkey for that privkey:
-echo getaddressesbylabel
-bitcoin-cli -regtest getaddressesbylabel mylabel1
-echo getaddressinfo
-bitcoin-cli -regtest getaddressinfo n15S6QmgaiPU6HVaejdKD3fXwH2FmbjBaN
-
-
-
-echo importprivkey
-bitcoin-cli -regtest importprivkey cPWVKeCBjnv833Kayc6nczBbG4YqqbCucup3n5D68WPzBEfceBAQ mylabel2
-
-#### Get pubkey for that privkey:
-echo getaddressesbylabel
-bitcoin-cli -regtest getaddressesbylabel mylabel2
-bitcoin-cli -regtest getaddressinfo mt8oozbuUhdzspaouz5Yzhg4wgpQRnSn2W
 
 
 echo createrawtransaction
