@@ -6,7 +6,7 @@ bitcoind -regtest -connect=0.0.0.0 -daemon
 sleep 5
 
 echo createwallet
-bitcoin-cli -regtest -named createwallet wallet_name= descriptors=false
+bitcoin-cli -regtest -named createwallet wallet_name= descriptors=true
 
 echo decodescript
 bitcoin-cli -regtest decodescript 52210277f15f22aeffaf3f3bc48a280a767f7c6af21276783c09ff3bcaabbece178113210203f642223bc751e125ab604ed20c544e933eb82a19201f90bda6236a9ddbedac21026895f3ed01c09025ba9cfab7b67d699e3ebaceada0beff70bc72c7f10df2d1c621039f3cb152130c241e01b9220a147f69f7111b830def35b510973ab47bb9af7ff654ae
@@ -36,11 +36,10 @@ echo getdescriptorinfo to get checksum
 bitcoin-cli -regtest getdescriptorinfo \
   "sh(multi(2,cSfvoUsWWZ81M4qGYciPHdNxHXQxPEsXBdGWjYdchpisPabtiKVQ,cPWVKeCBjnv833Kayc6nczBbG4YqqbCucup3n5D68WPzBEfceBAQ,026895f3ed01c09025ba9cfab7b67d699e3ebaceada0beff70bc72c7f10df2d1c6,039f3cb152130c241e01b9220a147f69f7111b830def35b510973ab47bb9af7ff6))"
 
-echo importmulti for multisig
-bitcoin-cli -regtest importmulti '[{
+echo importdescriptors
+bitcoin-cli -regtest importdescriptors '[{
   "desc": "sh(multi(2,cSfvoUsWWZ81M4qGYciPHdNxHXQxPEsXBdGWjYdchpisPabtiKVQ,cPWVKeCBjnv833Kayc6nczBbG4YqqbCucup3n5D68WPzBEfceBAQ,026895f3ed01c09025ba9cfab7b67d699e3ebaceada0beff70bc72c7f10df2d1c6,039f3cb152130c241e01b9220a147f69f7111b830def35b510973ab47bb9af7ff6))#lypu83k3",
-  "timestamp": "now",
-  "watchonly": true
+  "timestamp": "now"
 }]'
 
 
