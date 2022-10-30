@@ -1177,15 +1177,15 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
         print("Key #{0}: {1}".format(idx + 1, key))
 
     print("\nCold storage address:")
-    print("{}".format(results["address"]))
+    print(results["address"])
 
     print("\nRedemption script:")
-    print("{}".format(results["redeemScript"]))
-    print("")
+    print(results["redeemScript"])
+    print()
 
     print("\nWallet descriptor:")
-    print("{}".format(results["descriptor"]))
-    print("")
+    print(results["descriptor"])
+    print()
 
     write_and_verify_qr_code("cold storage address", "address.png", results["address"])
     write_and_verify_qr_code("redemption script", "redemption.png",
