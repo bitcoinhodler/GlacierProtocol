@@ -15,42 +15,30 @@ bitcoin-cli -regtest decodescript 52210277f15f22aeffaf3f3bc48a280a767f7c6af21276
 # Instead of getaddressinfo can we figure all that out from the descriptor?
 # Because we can't import it yet (or else privkeys won't import successfully)
 
-echo getdescriptorinfo to get checksum for 1st privkey
+echo getdescriptorinfo to get pubkey for 1st privkey
 bitcoin-cli -regtest getdescriptorinfo \
   "pkh(cSfvoUsWWZ81M4qGYciPHdNxHXQxPEsXBdGWjYdchpisPabtiKVQ)"
-
-echo importmulti for 1st privkey
-bitcoin-cli -regtest importmulti '[{
-  "desc": "pkh(cSfvoUsWWZ81M4qGYciPHdNxHXQxPEsXBdGWjYdchpisPabtiKVQ)#eayt77q4",
-  "timestamp": "now"
-}]'
-
 
 # The pubkey is displayed in the "descriptor" returned by getdescriptorinfo:
 #   "descriptor": "pkh(0277f15f22aeffaf3f3bc48a280a767f7c6af21276783c09ff3bcaabbece178113)#7d2u80af",
 
 
-echo getdescriptorinfo to get checksum for 2nd privkey
+echo getdescriptorinfo to get pubkey for 2nd privkey
 bitcoin-cli -regtest getdescriptorinfo \
   "pkh(cPWVKeCBjnv833Kayc6nczBbG4YqqbCucup3n5D68WPzBEfceBAQ)"
-
-echo importmulti for 2nd privkey
-bitcoin-cli -regtest importmulti '[{
-  "desc": "pkh(cPWVKeCBjnv833Kayc6nczBbG4YqqbCucup3n5D68WPzBEfceBAQ)#2euvjpya",
-  "timestamp": "now"
-}]'
 
 # The pubkey is displayed in the "descriptor" returned by getdescriptorinfo:
 #  "descriptor": "pkh(0203f642223bc751e125ab604ed20c544e933eb82a19201f90bda6236a9ddbedac)#alaa56tl",
 
+# Replace the appropriate 2 of the pubkeys in the descriptor with our privkeys.
 
 echo getdescriptorinfo to get checksum
 bitcoin-cli -regtest getdescriptorinfo \
-  "sh(multi(2,0277f15f22aeffaf3f3bc48a280a767f7c6af21276783c09ff3bcaabbece178113,0203f642223bc751e125ab604ed20c544e933eb82a19201f90bda6236a9ddbedac,026895f3ed01c09025ba9cfab7b67d699e3ebaceada0beff70bc72c7f10df2d1c6,039f3cb152130c241e01b9220a147f69f7111b830def35b510973ab47bb9af7ff6))"
+  "sh(multi(2,cSfvoUsWWZ81M4qGYciPHdNxHXQxPEsXBdGWjYdchpisPabtiKVQ,cPWVKeCBjnv833Kayc6nczBbG4YqqbCucup3n5D68WPzBEfceBAQ,026895f3ed01c09025ba9cfab7b67d699e3ebaceada0beff70bc72c7f10df2d1c6,039f3cb152130c241e01b9220a147f69f7111b830def35b510973ab47bb9af7ff6))"
 
 echo importmulti for multisig
 bitcoin-cli -regtest importmulti '[{
-  "desc": "sh(multi(2,0277f15f22aeffaf3f3bc48a280a767f7c6af21276783c09ff3bcaabbece178113,0203f642223bc751e125ab604ed20c544e933eb82a19201f90bda6236a9ddbedac,026895f3ed01c09025ba9cfab7b67d699e3ebaceada0beff70bc72c7f10df2d1c6,039f3cb152130c241e01b9220a147f69f7111b830def35b510973ab47bb9af7ff6))#87e0xgh9",
+  "desc": "sh(multi(2,cSfvoUsWWZ81M4qGYciPHdNxHXQxPEsXBdGWjYdchpisPabtiKVQ,cPWVKeCBjnv833Kayc6nczBbG4YqqbCucup3n5D68WPzBEfceBAQ,026895f3ed01c09025ba9cfab7b67d699e3ebaceada0beff70bc72c7f10df2d1c6,039f3cb152130c241e01b9220a147f69f7111b830def35b510973ab47bb9af7ff6))#lypu83k3",
   "timestamp": "now",
   "watchonly": true
 }]'
