@@ -1,0 +1,43 @@
+#!/bin/bash
+
+set -e
+
+bitcoind -regtest -connect=0.0.0.0 -daemon
+sleep 5
+
+echo createwallet
+bitcoin-cli -regtest -named createwallet wallet_name= descriptors=false
+
+echo importprivkey for 1st privkey
+bitcoin-cli -regtest importprivkey cQCrT9Ncs9729ao7jbmAWrD9z7tF64s2yKzmD6nkiLAi9sXVZWAn cf012ce88841b4f8a85f650481eeaa863b50126ebcfc5d9fe7c393d25e9f30a4
+bitcoin-cli -regtest getaddressesbylabel cf012ce88841b4f8a85f650481eeaa863b50126ebcfc5d9fe7c393d25e9f30a4
+bitcoin-cli -regtest getaddressinfo mn1f471kQHYx9oUnwc4TUy9KzbMx9847Dk
+
+echo importprivkey for 2nd privkey
+bitcoin-cli -regtest importprivkey cP65UeSDZPiTLB6CBwasWv9oJYEjRgQXhswfwcT9HscEKDcEbgy4 53c1357034bb830e227548db751a75febfc75bf7b5443f24a0fb4586550ed888
+bitcoin-cli -regtest getaddressesbylabel 53c1357034bb830e227548db751a75febfc75bf7b5443f24a0fb4586550ed888
+bitcoin-cli -regtest getaddressinfo mxtjsVSypDUjWAvc5nNRMEqYY5C4G2HpWL
+
+echo importprivkey for 3rd privkey
+bitcoin-cli -regtest importprivkey cNYaH3onqrdMffpznhMMmrHn34fuTU59w5j8LM3H42VPcUsLeXy5 472b80e12f2e4e5c570dc7961b882fa107b4afc5cdc23ab093bd3d1639964fce
+bitcoin-cli -regtest getaddressesbylabel 472b80e12f2e4e5c570dc7961b882fa107b4afc5cdc23ab093bd3d1639964fce
+bitcoin-cli -regtest getaddressinfo 2NCMtwCLCQNXG1LpoMXfF4eVpeXj8KpVcUt
+
+echo importprivkey for 4th privkey
+bitcoin-cli -regtest importprivkey cRoydfinDRzzRQJp5niqJWukSYTfPJQM6ytqGN6nzonaz1mafgwD 223dc98df71eac87fe9810240541563734ab4f78eeab79387096058b7639063e
+bitcoin-cli -regtest getaddressesbylabel 223dc98df71eac87fe9810240541563734ab4f78eeab79387096058b7639063e
+bitcoin-cli -regtest getaddressinfo 2N2CGYxXudFHFwTvErbnA2dGHDP3i739tbw
+
+
+echo addmultisigaddress
+bitcoin-cli -regtest addmultisigaddress 2 '[
+  "03d14ddcfb6817f5579695bbb3eb3e185887bf2942b031e6f716343b8fe7e9e8e2",
+  "028fcd46f8614b2cbf318096968242a1e22bcfb6d8f2b6dc939c8c27c347b2937b",
+  "0315acb550120f4cdcb460d5c49080ab508ca4ccd8dedecac22feeac8cd017d4c1",
+  "022b063ee2f22f9e1982c140fe778672c683111a796dcccdbd47bb65e3d608a983"
+]' '' bech32
+
+echo stop
+bitcoin-cli -regtest stop
+sleep 2
+rm -rf ~/.bitcoin
