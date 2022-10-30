@@ -639,6 +639,8 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
     def create_final_output(self, destinations, _expect_complete):
         """Return FinalOutput object with withdrawal transaction."""
         signed_tx = self.create_signed_transaction(destinations)
+        if not signed_tx['complete']:
+            raise GlacierFatal("Expected transaction to be complete by now")  # pragma: no cover
         return RawTransactionFinalOutput(fee=self.fee, rawxact=signed_tx["hex"])
 
     def unspent_total(self):
