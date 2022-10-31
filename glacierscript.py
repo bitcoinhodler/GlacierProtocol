@@ -582,13 +582,14 @@ class BaseWithdrawalXact:
     def _find_pubkeys(self):
         """
         Return (sigsrequired, pubkeys) associated with our source address.
-
-        Assumes that source_address has already been imported to the wallet using `importmulti`
         """
-        out = bitcoin_cli.json("getaddressinfo", self.source_address)
-        if "pubkeys" not in out:
-            out = out["embedded"]  # for p2sh-segwit
-        return (out["sigsrequired"], out["pubkeys"])
+        decoded_script = bitcoin_cli.json("decodescript", self.redeem_script)
+        match = re.match(r"multi\((\d+),([0-9a-fA-F,]+)\)", decoded_script["desc"])
+        if decoded_script["type"] != "multisig" or not match:
+            raise GlacierFatal("redeem script does not appear to be multisig")
+        sigsrequired = int(match.group(1))
+        pubkeys = match.group(2).split(",")
+        return (sigsrequired, pubkeys)
 
 
 class ManualWithdrawalXact(BaseWithdrawalXact):
