@@ -507,7 +507,6 @@ class BaseWithdrawalXact:
         self.redeem_script = redeem_script
         self.keys = []
         self.segwit = self._validate_address()
-        self.teach_address_to_wallet()
         self.sigsrequired, self._pubkeys = self._find_pubkeys()
         self.fee = None  # not yet known
 
@@ -1219,6 +1218,7 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
         for key_idx in range(key_count):
             key = input("Key #{0}: ".format(key_idx + 1))
             xact.add_key(key)
+        xact.teach_address_to_wallet()
 
     @staticmethod
     def print_tx(xact, addresses):

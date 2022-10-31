@@ -124,6 +124,7 @@ class PsbtCreator(metaclass=ABCMeta):
 
     def __init__(self, xact, trim):
         """Create new instance."""
+        xact.teach_address_to_wallet()
         self.xact = xact
         self.trim = trim
 
