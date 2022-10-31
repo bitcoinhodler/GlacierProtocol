@@ -66,6 +66,10 @@ def start(args, *, mine_txjson=True):
     # Load all transactions in tx.json and reconstruct those in our blockchain
     txfile = TxFile()
     for txdata in txfile:
+        print("Creating regtest UTXOs for {}{}".format(
+            "obsolete " if txdata['obsolete'] else "",
+            txdata["file"],
+        ))
         if 'txs' in txdata:
             if 'psbt' in txdata:
                 raise RuntimeError("Didn't expect both txs and psbt in tx.json for " + txdata['file'])
