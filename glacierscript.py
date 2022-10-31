@@ -367,6 +367,23 @@ def get_pubkey_for_wif_privkey(privkey):
     return pubkey_match.group(1)
 
 
+def build_descriptor(nrequired, keys, address_format):
+    """
+    Return descriptor for the specified multisig.
+
+    nrequired: <int> number of multisig keys required for withdrawal
+    keys: List<string> pubkeys or privkeys
+    address_format: <string> 'p2sh', 'p2sh-p2wsh', or 'p2wsh'
+    """
+    if address_format == 'p2sh':
+        raise NotImplementedError("p2sh not yet supported here")
+    base_desc = "wsh(multi({},{}))".format(
+        nrequired,
+        ",".join(keys)
+    )
+    return base_desc if address_format == 'p2wsh' else "sh({})".format(base_desc)
+
+
 def get_fee_interactive(xact, destinations):
     """
     Return a recommended transaction fee, given market fee data provided by the user interactively.
@@ -1143,11 +1160,7 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
     print("Private keys created.")
     print("Generating {0}-of-{1} cold storage address...\n".format(nrequired, nkeys))
 
-    base_desc = "wsh(multi({},{}))".format(
-        nrequired,
-        ",".join(keys)
-    )
-    desc = base_desc if p2wsh else "sh({})".format(base_desc)
+    desc = build_descriptor(nrequired, keys, 'p2wsh' if p2wsh else 'p2sh-p2wsh')
     dinfo = bitcoin_cli.json("getdescriptorinfo", desc)
     address = bitcoin_cli.json("deriveaddresses", dinfo["descriptor"])[0]
 
