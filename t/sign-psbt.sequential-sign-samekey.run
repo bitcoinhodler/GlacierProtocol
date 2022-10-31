@@ -35,7 +35,7 @@ bitcoin-cli -regtest -rpcport=$1 -datadir=../bitcoin-data/$1 combinepsbt '["'`ca
 bitcoin-cli -regtest -rpcport=$1 -datadir=../bitcoin-data/$1 stop
 # So ugly, but without this, I get timeouts restarting bitcoind:
 sleep 5
-rm -rf ../bitcoin-data/$1/regtest/wallets
+rm -rf ../bitcoin-data/$1/*
 
 echo Running glacierscript again for the second signature...
 
