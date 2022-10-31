@@ -375,13 +375,20 @@ def build_descriptor(nrequired, keys, address_format):
     keys: List<string> pubkeys or privkeys
     address_format: <string> 'p2sh', 'p2sh-p2wsh', or 'p2wsh'
     """
-    if address_format == 'p2sh':
-        raise NotImplementedError("p2sh not yet supported here")
-    base_desc = "wsh(multi({},{}))".format(
+    base_desc = "multi({},{})".format(
         nrequired,
         ",".join(keys)
     )
-    return base_desc if address_format == 'p2wsh' else "sh({})".format(base_desc)
+    form = {
+        'p2sh': "sh({})",
+        'p2wsh': "wsh({})",
+        'p2sh-p2wsh': "sh(wsh({}))",
+    }
+    if address_format not in form:
+        raise GlacierFatal("Unrecognized address_format")
+    desc = form[address_format].format(base_desc)
+    dinfo = bitcoin_cli.json("getdescriptorinfo", desc)
+    return desc + "#" + dinfo["checksum"]
 
 
 def get_fee_interactive(xact, destinations):
@@ -532,8 +539,6 @@ class BaseWithdrawalXact:
         Use the (WIF format) private key for signing this withdrawal.
         """
         self.keys.append(key)
-        # Teach the wallet about this key
-        bitcoin_cli.checkoutput("importprivkey", key)
         pubkey = get_pubkey_for_wif_privkey(key)
         if pubkey not in self._pubkeys:
             raise GlacierFatal("that key does not belong to this source address")
@@ -568,24 +573,22 @@ class BaseWithdrawalXact:
         about to create.
 
         """
-        # If address is p2wsh-in-p2sh, then the user-provided
-        # redeem_script is actually witnessScript, and I need to get the
-        # redeemScript from `decodescript`.
-
         decoded_script = bitcoin_cli.json("decodescript", self.redeem_script)
-
+        address_format = 'p2sh' if decoded_script["p2sh"] == self.source_address \
+            else 'p2sh-p2wsh' if self.source_address == decoded_script["segwit"]["p2sh-segwit"] \
+            else 'p2wsh'
+        # Replace pubkeys with privkeys where available
+        priv_for_pub = {get_pubkey_for_wif_privkey(key): key
+                        for key in self.keys}
+        keys = [priv_for_pub[key] if key in priv_for_pub else key
+                for key in self._pubkeys]
         import_this = {
-            "scriptPubKey": {"address": self.source_address},
+            "desc": build_descriptor(self.sigsrequired, keys, address_format),
             "timestamp": "now",
-            "watchonly": True  # to avoid warning about "Some private keys are missing[...]"
         }
-        if decoded_script["p2sh"] == self.source_address:
-            import_this["redeemscript"] = self.redeem_script
-        else:
-            # segwit (either p2wsh or p2sh-in-p2wsh)
-            import_this["witnessscript"] = self.redeem_script
-            if self.source_address == decoded_script["segwit"]["p2sh-segwit"]:
-                import_this["redeemscript"] = decoded_script["segwit"]["hex"]
+        if len(priv_for_pub) < len(keys):
+            # Avoid warning about "Some private keys are missing[...]"
+            import_this["watchonly"] = True
         results = bitcoin_cli.json("importmulti", jsonstr([import_this]))
         if not all(result["success"] for result in results) or \
            any("warnings" in result for result in results):
