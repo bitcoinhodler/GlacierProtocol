@@ -369,7 +369,7 @@ def get_pubkey_for_wif_privkey(privkey):
 
 def build_descriptor(nrequired, keys, address_format):
     """
-    Return descriptor for the specified multisig.
+    Return (descriptor_with_privkeys, descriptor_with_pubkeys) for the specified multisig.
 
     nrequired: <int> number of multisig keys required for withdrawal
     keys: List<string> pubkeys or privkeys
@@ -388,7 +388,9 @@ def build_descriptor(nrequired, keys, address_format):
         raise GlacierFatal("Unrecognized address_format")
     desc = form[address_format].format(base_desc)
     dinfo = bitcoin_cli.json("getdescriptorinfo", desc)
-    return desc + "#" + dinfo["checksum"]
+    with_privkeys = desc + "#" + dinfo["checksum"]
+    with_pubkeys = dinfo["descriptor"]
+    return (with_privkeys, with_pubkeys)
 
 
 def get_fee_interactive(xact, destinations):
@@ -581,8 +583,9 @@ class BaseWithdrawalXact:
         priv_for_pub = {pubkey: privkey for privkey, pubkey in self.keys}
         keys = [priv_for_pub[key] if key in priv_for_pub else key
                 for key in self._pubkeys]
+        desc_with_privkeys, _ = build_descriptor(self.sigsrequired, keys, address_format)
         import_this = {
-            "desc": build_descriptor(self.sigsrequired, keys, address_format),
+            "desc": desc_with_privkeys,
             "timestamp": "now",
         }
         if len(priv_for_pub) < len(keys):
@@ -1162,15 +1165,15 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
     print("Private keys created.")
     print("Generating {0}-of-{1} cold storage address...\n".format(nrequired, nkeys))
 
-    desc = build_descriptor(nrequired, keys, 'p2wsh' if p2wsh else 'p2sh-p2wsh')
-    dinfo = bitcoin_cli.json("getdescriptorinfo", desc)
-    address = bitcoin_cli.json("deriveaddresses", dinfo["descriptor"])[0]
+    _, desc_with_pubkeys = \
+        build_descriptor(nrequired, keys, 'p2wsh' if p2wsh else 'p2sh-p2wsh')
+    address = bitcoin_cli.json("deriveaddresses", desc_with_pubkeys)[0]
 
     # We still need the wallet in order to find the redeem script.
     # Even though user doesn't really need redeem script anymore if they're
     # using a PSBT flow.
     bitcoin_cli.json("importmulti", jsonstr([{
-        'desc': dinfo["descriptor"],
+        'desc': desc_with_pubkeys,
         'timestamp': 'now',
         'watchonly': True,
     }]))
