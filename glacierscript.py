@@ -534,12 +534,12 @@ class BaseWithdrawalXact:
         self.sigsrequired, self._pubkeys = self._find_pubkeys()
         self.fee = None  # not yet known
 
-    def add_key(self, key):
+    def add_key(self, privkey):
         """
         Use the (WIF format) private key for signing this withdrawal.
         """
-        self.keys.append(key)
-        pubkey = get_pubkey_for_wif_privkey(key)
+        self.keys.append(privkey)
+        pubkey = get_pubkey_for_wif_privkey(privkey)
         if pubkey not in self._pubkeys:
             raise GlacierFatal("that key does not belong to this source address")
         return pubkey
@@ -832,11 +832,11 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         pubkeys = self.psbt['inputs'][0].get('partial_signatures', {})
         return pubkeys.keys()
 
-    def add_key(self, key):
+    def add_key(self, privkey):
         """
         Use the (WIF format) private key for signing this withdrawal.
         """
-        pubkey = super().add_key(key)
+        pubkey = super().add_key(privkey)
         if pubkey in self.partial_sig_pubkeys():
             raise GlacierFatal("this PSBT has already been signed by that key")
 
@@ -1232,8 +1232,8 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
         if key_count < sigsrequired:
             self.too_few_keys(sigsrequired)
         for key_idx in range(key_count):
-            key = input("Key #{0}: ".format(key_idx + 1))
-            xact.add_key(key)
+            privkey = input("Key #{0}: ".format(key_idx + 1))
+            xact.add_key(privkey)
         xact.teach_address_to_wallet()
 
     @staticmethod
