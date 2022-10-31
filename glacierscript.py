@@ -1192,12 +1192,12 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
     print()
 
     print("\nWallet descriptor:")
-    print(ainfo["desc"])
+    print(desc_with_pubkeys)
     print()
 
     write_and_verify_qr_code("cold storage address", "address.png", address)
     write_and_verify_qr_code("redemption script", "redemption.png", script)
-    write_and_verify_qr_code("wallet descriptor", "descriptor.png", ainfo["desc"])
+    write_and_verify_qr_code("wallet descriptor", "descriptor.png", desc_with_pubkeys)
 
 
 ################################################################################################
