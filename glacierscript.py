@@ -578,8 +578,7 @@ class BaseWithdrawalXact:
             else 'p2sh-p2wsh' if self.source_address == decoded_script["segwit"]["p2sh-segwit"] \
             else 'p2wsh'
         # Replace pubkeys with privkeys where available
-        priv_for_pub = {get_pubkey_for_wif_privkey(privkey): privkey
-                        for privkey, pubkey in self.keys}
+        priv_for_pub = {pubkey: privkey for privkey, pubkey in self.keys}
         keys = [priv_for_pub[key] if key in priv_for_pub else key
                 for key in self._pubkeys]
         import_this = {
