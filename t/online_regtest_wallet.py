@@ -48,14 +48,13 @@ MIN_FEE = Decimal("0.00010000")
 
 def start(args, *, mine_txjson=True):
     """Run the `start` subcommand to load bitcoind."""
-    # We start with a pre-created wallet.dat so that our addresses
-    # will be the same every time we run.
+    # We seed the wallet so that our addresses will be the same every
+    # time we run.
     stop(None)
-    os.makedirs('bitcoin-online-data/regtest/wallets')
-    shutil.copyfile(os.path.join(os.path.dirname(__file__), 'regtest-initial-wallet.dat'),
-                    'bitcoin-online-data/regtest/wallets/wallet.dat')
-
+    os.makedirs('bitcoin-online-data')
     glacierscript.ensure_bitcoind_running('-txindex')
+    # This seed comes from a new wallet I once made:
+    bitcoin_cli.checkoutput("sethdseed", "true", "cNGZqmpNeUvJ5CNTeJKc6Huz2N9paoifVDxAC9JuxJEkH6DUdtEZ")
     mine_block(101)  # 101 so we have some coinbase outputs that are spendable
     if not mine_txjson:
         return

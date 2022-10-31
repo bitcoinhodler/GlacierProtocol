@@ -319,6 +319,7 @@ def create_default_wallet():
             "createwallet",
             "wallet_name=" + wallet_name,
             "descriptors=false",
+            "blank=true",
         ]
     loaded_wallet = bitcoin_cli.json(*cmd)
     if loaded_wallet["warning"] \
