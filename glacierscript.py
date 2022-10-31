@@ -551,10 +551,6 @@ class BaseWithdrawalXact:
         So it can use that knowledge to sign the transaction we're
         about to create.
 
-        PSBT doesn't really need this for signing, but it enables me
-        to get the pubkeys (via getaddressinfo) which enables me to
-        validate every key entered by the user.
-
         """
         # If address is p2wsh-in-p2sh, then the user-provided
         # redeem_script is actually witnessScript, and I need to get the
