@@ -507,7 +507,7 @@ class BaseWithdrawalXact:
         self.redeem_script = redeem_script
         self.keys = []
         self.segwit = self._validate_address()
-        self._teach_address_to_wallet()
+        self.teach_address_to_wallet()
         self.sigsrequired, self._pubkeys = self._find_pubkeys()
         self.fee = None  # not yet known
 
@@ -544,7 +544,7 @@ class BaseWithdrawalXact:
                 return True
         raise GlacierFatal("Redemption script does not match cold storage address. Doublecheck for typos")
 
-    def _teach_address_to_wallet(self):
+    def teach_address_to_wallet(self):
         """
         Teach the bitcoind wallet about our multisig address.
 
