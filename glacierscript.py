@@ -1342,7 +1342,6 @@ class ManualWithdrawalBuilder(BaseWithdrawalBuilder):
         # fees, amount, and change
 
         fee = get_fee_interactive(xact, addresses)
-        # Got this far
         if fee > input_amount:
             raise GlacierFatal("Your fee is greater than the sum of your unspent transactions.  Try using larger unspent transactions")
 
