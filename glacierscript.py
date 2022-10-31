@@ -529,7 +529,7 @@ class BaseWithdrawalXact:
         """
         self.source_address = source_address
         self.redeem_script = redeem_script
-        self.keys = []
+        self.keys = []  # tuples of (privkey, pubkey)
         self.segwit = self._validate_address()
         self.sigsrequired, self._pubkeys = self._find_pubkeys()
         self.fee = None  # not yet known
@@ -538,8 +538,8 @@ class BaseWithdrawalXact:
         """
         Use the (WIF format) private key for signing this withdrawal.
         """
-        self.keys.append(privkey)
         pubkey = get_pubkey_for_wif_privkey(privkey)
+        self.keys.append((privkey, pubkey))
         if pubkey not in self._pubkeys:
             raise GlacierFatal("that key does not belong to this source address")
         return pubkey
@@ -578,8 +578,8 @@ class BaseWithdrawalXact:
             else 'p2sh-p2wsh' if self.source_address == decoded_script["segwit"]["p2sh-segwit"] \
             else 'p2wsh'
         # Replace pubkeys with privkeys where available
-        priv_for_pub = {get_pubkey_for_wif_privkey(key): key
-                        for key in self.keys}
+        priv_for_pub = {get_pubkey_for_wif_privkey(privkey): privkey
+                        for privkey, pubkey in self.keys}
         keys = [priv_for_pub[key] if key in priv_for_pub else key
                 for key in self._pubkeys]
         import_this = {
@@ -1272,8 +1272,8 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
             print("*** WARNING: Incorrect data may lead to loss of funds ***\n")
             self.print_tx(xact, addresses)
             print("\nSigning with private keys: ")
-            for key in xact.keys:
-                print("{}".format(key))
+            for privkey, _ in xact.keys:
+                print("{}".format(privkey))
             print("\n")
             confirm = yes_no_interactive()
 
