@@ -1508,12 +1508,13 @@ def main():
         parser.print_usage()
         raise GlacierFatal("you must specify a subcommand")
 
-    bitcoin_cli.verbose_mode = args.verbose
-
-    set_network_params(args.testnet, args.regtest)
-
     if args.program == "entropy":
         entropy(args.num_keys, args.rng)
+        return
+
+    # Remaining subcommands all require bitcoind
+    bitcoin_cli.verbose_mode = args.verbose
+    set_network_params(args.testnet, args.regtest)
 
     if args.program == "create-deposit-data":
         deposit_interactive(args.m, args.n, args.dice, args.rng, args.p2wsh)
