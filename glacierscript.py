@@ -1101,8 +1101,6 @@ def entropy(count, length):
     """
     Generate n random strings for the user from /dev/random.
     """
-    safety_checklist()
-
     print("\n\n")
     print("Making {} random data strings....".format(count))
     print("If strings don't appear right away, please continually move your mouse cursor. These movements generate entropy which is used to create random data.\n")
@@ -1151,7 +1149,6 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
     rng_seed_length: <int> minimum length of random seed required
     p2wsh: if True, generate p2wsh instead of p2wsh-in-p2sh
     """
-    safety_checklist()
     ensure_bitcoind_running(descriptors=True)
 
     print("\n")
@@ -1263,7 +1260,6 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
 
         All data required for transaction construction is input at the terminal
         """
-        safety_checklist()
         ensure_bitcoind_running(descriptors=True)
 
         approve = False
@@ -1507,6 +1503,8 @@ def main():
     if not args.program:
         parser.print_usage()
         raise GlacierFatal("you must specify a subcommand")
+
+    safety_checklist()
 
     if args.program == "entropy":
         entropy(args.num_keys, args.rng)
