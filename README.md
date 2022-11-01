@@ -84,9 +84,12 @@ issue](https://github.com/GlacierProtocol/GlacierProtocol/issues/38).
 * (bitcoin-core-23) Added compatibility with Bitcoin Core 23.0.
 
 * (recreate-all-tests) Added system to recreate all tests when Bitcoin
-  Core changes
+  Core changes.
 
 * (bitcoin-core-24) Added compatibility with Bitcoin Core 24.0.
+
+* (desc-offline) Convert offline wallet (glacierscript.py) to use
+  descriptor wallets.
 
 ## Improvements for Glacier developers
 
