@@ -1166,7 +1166,7 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
     print("Private keys created.")
     print("Generating {0}-of-{1} cold storage address...\n".format(nrequired, nkeys))
 
-    _, desc_with_pubkeys = \
+    desc_with_privkeys, desc_with_pubkeys = \
         build_descriptor(nrequired, keys, 'p2wsh' if p2wsh else 'p2sh-p2wsh')
     address = bitcoin_cli.json("deriveaddresses", desc_with_pubkeys)[0]
 
@@ -1174,7 +1174,7 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
     # Even though user doesn't really need redeem script anymore if they're
     # using a PSBT flow.
     bitcoin_cli.json("importmulti", jsonstr([{
-        'desc': desc_with_pubkeys,
+        'desc': desc_with_privkeys,
         'timestamp': 'now',
         'watchonly': True,
     }]))
