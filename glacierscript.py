@@ -1149,8 +1149,6 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
     rng_seed_length: <int> minimum length of random seed required
     p2wsh: if True, generate p2wsh instead of p2wsh-in-p2sh
     """
-    ensure_bitcoind_running(descriptors=True)
-
     print("\n")
     print("Creating {0}-of-{1} cold storage address.\n".format(nrequired, nkeys))
 
@@ -1260,8 +1258,6 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
 
         All data required for transaction construction is input at the terminal
         """
-        ensure_bitcoind_running(descriptors=True)
-
         approve = False
 
         while not approve:
@@ -1513,6 +1509,7 @@ def main():
     # Remaining subcommands all require bitcoind
     bitcoin_cli.verbose_mode = args.verbose
     set_network_params(args.testnet, args.regtest)
+    ensure_bitcoind_running(descriptors=True)
 
     if args.program == "create-deposit-data":
         deposit_interactive(args.m, args.n, args.dice, args.rng, args.p2wsh)
