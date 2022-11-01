@@ -595,8 +595,10 @@ class BaseWithdrawalXact:
             # Avoid warning about "Some private keys are missing[...]"
             import_this["watchonly"] = True
         results = bitcoin_cli.json("importmulti", jsonstr([import_this]))
-        if not all(result["success"] for result in results) or \
-           any("warnings" in result for result in results):
+        if len(results) != 1:
+            raise Exception("How did wallet import not return exactly 1 result?")
+        result = results[0]
+        if not result["success"] or "warnings" in result:
             raise Exception("Problem importing address to wallet")  # pragma: no cover
 
     def _find_pubkeys(self):
