@@ -123,7 +123,7 @@ class PsbtCreator(metaclass=ABCMeta):
 
     def __init__(self, xact, trim):
         """Create new instance."""
-        xact.teach_address_to_wallet()
+        xact.teach_address_to_wallet("importmulti")
         self.xact = xact
         self.trim = trim
 

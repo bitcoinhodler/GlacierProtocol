@@ -570,7 +570,7 @@ class BaseWithdrawalXact:
                 return True
         raise GlacierFatal("Redemption script does not match cold storage address. Doublecheck for typos")
 
-    def teach_address_to_wallet(self):
+    def teach_address_to_wallet(self, how="importdescriptors"):
         """
         Teach the bitcoind wallet about our multisig address.
 
@@ -594,11 +594,14 @@ class BaseWithdrawalXact:
         if len(priv_for_pub) < len(keys):
             # Avoid warning about "Some private keys are missing[...]"
             import_this["watchonly"] = True
-        results = bitcoin_cli.json("importmulti", jsonstr([import_this]))
+        results = bitcoin_cli.json(how, jsonstr([import_this]))
         if len(results) != 1:
             raise Exception("How did wallet import not return exactly 1 result?")
         result = results[0]
-        warnings_ok = "warnings" not in result
+        # This warning is okay, and expected:
+        # "Not all private keys provided. Some wallet functionality may return unexpected errors"
+        warnings_ok = ("warnings" not in result) or (len(result["warnings"]) == 1 and
+            result["warnings"][0].startswith("Not all private keys provided."))
         if not (result["success"] and warnings_ok):
             raise Exception("Problem importing address to wallet")  # pragma: no cover
 
@@ -1268,7 +1271,7 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
         All data required for transaction construction is input at the terminal
         """
         safety_checklist()
-        ensure_bitcoind_running()
+        ensure_bitcoind_running(descriptors=True)
 
         approve = False
 
