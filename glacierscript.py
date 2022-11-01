@@ -269,7 +269,7 @@ class GlacierFatal(Exception):
 ################################################################################################
 
 
-def ensure_bitcoind_running(*extra_args):
+def ensure_bitcoind_running(*extra_args, descriptors=False):
     """
     Start bitcoind (if it's not already running) and ensure it's functioning properly.
     """
@@ -287,15 +287,15 @@ def ensure_bitcoind_running(*extra_args):
             # We need to support PSBTs that have both witness and non-witness data.
             # See https://github.com/bitcoin/bitcoin/pull/19215
             require_minimum_bitcoind_version(200100)
-            create_default_wallet()
-            ensure_expected_wallet()
+            create_default_wallet(descriptors=descriptors)
+            ensure_expected_wallet(descriptors=descriptors)
             return
         time.sleep(0.5)
 
     raise Exception("Timeout while starting bitcoin server")  # pragma: no cover
 
 
-def create_default_wallet():
+def create_default_wallet(descriptors=False):
     """
     Ensure our wallet exists and is loaded.
     """
@@ -318,7 +318,7 @@ def create_default_wallet():
             "-named",
             "createwallet",
             "wallet_name=" + wallet_name,
-            "descriptors=false",
+            "descriptors=" + ("true" if descriptors else "false"),
             "blank=true",
         ]
     loaded_wallet = bitcoin_cli.json(*cmd)
@@ -327,16 +327,18 @@ def create_default_wallet():
         raise Exception("problem running {} on default wallet".format(cmd))  # pragma: no cover
 
 
-def ensure_expected_wallet():
+def ensure_expected_wallet(descriptors=False):
     """
-    Ensure the expected wallet exists and is a legacy wallet.
+    Ensure the expected wallet exists and is the expected type.
 
     Descriptor wallets are the future but will take some work to
-    support. For now, we require legacy wallets.
+    support throughout Glacier.
     """
     info = bitcoin_cli.json("getwalletinfo")
-    if info.get("descriptors", False):
-        raise Exception("default wallet is a descriptor wallet, not supported")
+    if info.get("descriptors", False) != descriptors:
+        if descriptors:
+            raise Exception("default wallet is a legacy wallet; expected a descriptor wallet")
+        raise Exception("default wallet is a descriptor wallet; expected a legacy wallet")
 
 
 def require_minimum_bitcoind_version(min_version):
@@ -1151,7 +1153,7 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
     p2wsh: if True, generate p2wsh instead of p2wsh-in-p2sh
     """
     safety_checklist()
-    ensure_bitcoind_running()
+    ensure_bitcoind_running(descriptors=True)
 
     print("\n")
     print("Creating {0}-of-{1} cold storage address.\n".format(nrequired, nkeys))
@@ -1173,7 +1175,7 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
     # We still need the wallet in order to find the redeem script.
     # Even though user doesn't really need redeem script anymore if they're
     # using a PSBT flow.
-    bitcoin_cli.json("importmulti", jsonstr([{
+    bitcoin_cli.json("importdescriptors", jsonstr([{
         'desc': desc_with_privkeys,
         'timestamp': 'now',
         'watchonly': True,
