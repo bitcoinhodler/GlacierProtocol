@@ -41,6 +41,7 @@ import glob
 from hashlib import sha256, md5
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -268,7 +269,7 @@ class GlacierFatal(Exception):
 ################################################################################################
 
 
-def ensure_bitcoind_running(*extra_args):
+def ensure_bitcoind_running(*extra_args, descriptors=False):
     """
     Start bitcoind (if it's not already running) and ensure it's functioning properly.
     """
@@ -286,24 +287,23 @@ def ensure_bitcoind_running(*extra_args):
             # We need to support PSBTs that have both witness and non-witness data.
             # See https://github.com/bitcoin/bitcoin/pull/19215
             require_minimum_bitcoind_version(200100)
-            create_default_wallet()
-            ensure_expected_wallet()
+            create_default_wallet(descriptors=descriptors)
+            ensure_expected_wallet(descriptors=descriptors)
             return
         time.sleep(0.5)
 
     raise Exception("Timeout while starting bitcoin server")  # pragma: no cover
 
 
-def create_default_wallet():
+def create_default_wallet(descriptors=False):
     """
-    Ensure the default wallet exists and is loaded.
-
-    Since v0.21, Bitcoin Core will not create a default wallet when
-    started for the first time.
+    Ensure our wallet exists and is loaded.
     """
+    # Anything other than "" requires -rpcwallet= on every bitcoin-cli call:
+    wallet_name = ""
     loaded_wallets = bitcoin_cli.json("listwallets")
-    if "" in loaded_wallets:
-        return  # default wallet already loaded
+    if wallet_name in loaded_wallets:
+        return  # our wallet already loaded
     all_wallets = bitcoin_cli.json("listwalletdir")
     # {
     #     "wallets": [
@@ -312,24 +312,33 @@ def create_default_wallet():
     #         }
     #     ]
     # }
-    found = any(w["name"] == "" for w in all_wallets["wallets"])
-    cmd = ["loadwallet", ""] if found else ["-named", "createwallet", "wallet_name=", "descriptors=false"]
+    found = any(w["name"] == wallet_name for w in all_wallets["wallets"])
+    cmd = ["loadwallet", wallet_name] if found else \
+        [
+            "-named",
+            "createwallet",
+            "wallet_name=" + wallet_name,
+            "descriptors=" + ("true" if descriptors else "false"),
+            "blank=true",
+        ]
     loaded_wallet = bitcoin_cli.json(*cmd)
     if loaded_wallet["warning"] \
        and not loaded_wallet["warning"].startswith("Wallet created successfully"):
         raise Exception("problem running {} on default wallet".format(cmd))  # pragma: no cover
 
 
-def ensure_expected_wallet():
+def ensure_expected_wallet(descriptors=False):
     """
-    Ensure the expected wallet exists and is a legacy wallet.
+    Ensure the expected wallet exists and is the expected type.
 
     Descriptor wallets are the future but will take some work to
-    support. For now, we require legacy wallets.
+    support throughout Glacier.
     """
     info = bitcoin_cli.json("getwalletinfo")
-    if info.get("descriptors", False):
-        raise Exception("default wallet is a descriptor wallet, not supported")
+    if info.get("descriptors", False) != descriptors:
+        if descriptors:
+            raise Exception("default wallet is a legacy wallet; expected a descriptor wallet")
+        raise Exception("default wallet is a descriptor wallet; expected a legacy wallet")
 
 
 def require_minimum_bitcoind_version(min_version):
@@ -352,38 +361,39 @@ def get_pubkey_for_wif_privkey(privkey):
 
     <privkey> - a bitcoin private key in WIF format
     """
-    # Bitcoin Core doesn't have an RPC for "get the addresses associated w/this private key"
-    # just "get the addresses associated with this label"
-    # where "label" corresponds to an arbitrary tag we can associate with each private key
-    # so, we'll generate a unique "label" to attach to this private key.
-
-    label = hash_sha256(privkey)
-
-    bitcoin_cli.checkoutput("importprivkey", privkey, label)
-    addresses = bitcoin_cli.json("getaddressesbylabel", label)
-
-    # getaddressesbylabel returns multiple addresses associated with
-    # this one privkey; since we use it only for communicating the
-    # pubkey to addmultisigaddress, it doesn't matter which one we
-    # choose; they are all associated with the same pubkey.
-
-    address = next(iter(addresses))
-
-    validate_output = bitcoin_cli.json("getaddressinfo", address)
-    return validate_output["pubkey"]
+    dinfo = bitcoin_cli.json("getdescriptorinfo", "pkh({})".format(privkey))
+    # The pubkey is displayed in the "descriptor" returned by getdescriptorinfo:
+    #  "descriptor": "pkh(0277f15f22aeffaf3f3bc48a280a767f7c6af21276783c09ff3bcaabbece178113)#7d2u80af",
+    pubkey_match = re.match(r"pkh\((.*)\)", dinfo["descriptor"])
+    if not pubkey_match:
+        raise GlacierFatal("unable to find pubkey in descriptor")
+    return pubkey_match.group(1)
 
 
-def addmultisigaddress(nrequired, pubkeys, address_type='p2sh-segwit'):
+def build_descriptor(nrequired, keys, address_format):
     """
-    Call `bitcoin-cli addmultisigaddress`.
-
-    returns => JSON response from bitcoin-cli
+    Return (descriptor_with_privkeys, descriptor_with_pubkeys) for the specified multisig.
 
     nrequired: <int> number of multisig keys required for withdrawal
-    pubkeys: List<string> hex pubkeys for each of the N keys
+    keys: List<string> pubkeys or privkeys
+    address_format: <string> 'p2sh', 'p2sh-p2wsh', or 'p2wsh'
     """
-    pubkey_string = jsonstr(pubkeys)
-    return bitcoin_cli.json("addmultisigaddress", str(nrequired), pubkey_string, "", address_type)
+    base_desc = "multi({},{})".format(
+        nrequired,
+        ",".join(keys)
+    )
+    form = {
+        'p2sh': "sh({})",
+        'p2wsh': "wsh({})",
+        'p2sh-p2wsh': "sh(wsh({}))",
+    }
+    if address_format not in form:
+        raise GlacierFatal("Unrecognized address_format")
+    desc = form[address_format].format(base_desc)
+    dinfo = bitcoin_cli.json("getdescriptorinfo", desc)
+    with_privkeys = desc + "#" + dinfo["checksum"]
+    with_pubkeys = dinfo["descriptor"]
+    return (with_privkeys, with_pubkeys)
 
 
 def get_fee_interactive(xact, destinations):
@@ -524,19 +534,17 @@ class BaseWithdrawalXact:
         """
         self.source_address = source_address
         self.redeem_script = redeem_script
-        self.keys = []
+        self.keys = []  # tuples of (privkey, pubkey)
         self.segwit = self._validate_address()
-        self._teach_address_to_wallet()
         self.sigsrequired, self._pubkeys = self._find_pubkeys()
         self.fee = None  # not yet known
 
-    def add_key(self, key):
+    def add_key(self, privkey):
         """
         Use the (WIF format) private key for signing this withdrawal.
         """
-        self.keys.append(key)
-        # Teach the wallet about this key
-        pubkey = get_pubkey_for_wif_privkey(key)
+        pubkey = get_pubkey_for_wif_privkey(privkey)
+        self.keys.append((privkey, pubkey))
         if pubkey not in self._pubkeys:
             raise GlacierFatal("that key does not belong to this source address")
         return pubkey
@@ -562,51 +570,52 @@ class BaseWithdrawalXact:
                 return True
         raise GlacierFatal("Redemption script does not match cold storage address. Doublecheck for typos")
 
-    def _teach_address_to_wallet(self):
+    def teach_address_to_wallet(self, how="importdescriptors"):
         """
         Teach the bitcoind wallet about our multisig address.
 
         So it can use that knowledge to sign the transaction we're
         about to create.
 
-        PSBT doesn't really need this for signing, but it enables me
-        to get the pubkeys (via getaddressinfo) which enables me to
-        validate every key entered by the user.
-
         """
-        # If address is p2wsh-in-p2sh, then the user-provided
-        # redeem_script is actually witnessScript, and I need to get the
-        # redeemScript from `decodescript`.
-
         decoded_script = bitcoin_cli.json("decodescript", self.redeem_script)
-
+        address_format = 'p2sh' if decoded_script["p2sh"] == self.source_address \
+            else 'p2sh-p2wsh' if self.source_address == decoded_script["segwit"]["p2sh-segwit"] \
+            else 'p2wsh'
+        # Replace pubkeys with privkeys where available
+        priv_for_pub = {pubkey: privkey for privkey, pubkey in self.keys}
+        keys = [priv_for_pub[key] if key in priv_for_pub else key
+                for key in self._pubkeys]
+        desc_with_privkeys, _ = build_descriptor(self.sigsrequired, keys, address_format)
         import_this = {
-            "scriptPubKey": {"address": self.source_address},
+            "desc": desc_with_privkeys,
             "timestamp": "now",
-            "watchonly": True  # to avoid warning about "Some private keys are missing[...]"
         }
-        if decoded_script["p2sh"] == self.source_address:
-            import_this["redeemscript"] = self.redeem_script
-        else:
-            # segwit (either p2wsh or p2sh-in-p2wsh)
-            import_this["witnessscript"] = self.redeem_script
-            if self.source_address == decoded_script["segwit"]["p2sh-segwit"]:
-                import_this["redeemscript"] = decoded_script["segwit"]["hex"]
-        results = bitcoin_cli.json("importmulti", jsonstr([import_this]))
-        if not all(result["success"] for result in results) or \
-           any("warnings" in result for result in results):
+        if len(priv_for_pub) < len(keys):
+            # Avoid warning about "Some private keys are missing[...]"
+            import_this["watchonly"] = True
+        results = bitcoin_cli.json(how, jsonstr([import_this]))
+        if len(results) != 1:
+            raise Exception("How did wallet import not return exactly 1 result?")
+        result = results[0]
+        # This warning is okay, and expected:
+        # "Not all private keys provided. Some wallet functionality may return unexpected errors"
+        warnings_ok = ("warnings" not in result) or (len(result["warnings"]) == 1 and
+            result["warnings"][0].startswith("Not all private keys provided."))
+        if not (result["success"] and warnings_ok):
             raise Exception("Problem importing address to wallet")  # pragma: no cover
 
     def _find_pubkeys(self):
         """
         Return (sigsrequired, pubkeys) associated with our source address.
-
-        Assumes that source_address has already been imported to the wallet using `importmulti`
         """
-        out = bitcoin_cli.json("getaddressinfo", self.source_address)
-        if "pubkeys" not in out:
-            out = out["embedded"]  # for p2sh-segwit
-        return (out["sigsrequired"], out["pubkeys"])
+        decoded_script = bitcoin_cli.json("decodescript", self.redeem_script)
+        match = re.match(r"multi\((\d+),([0-9a-fA-F,]+)\)", decoded_script["desc"])
+        if decoded_script["type"] != "multisig" or not match:
+            raise GlacierFatal("redeem script does not appear to be multisig")
+        sigsrequired = int(match.group(1))
+        pubkeys = match.group(2).split(",")
+        return (sigsrequired, pubkeys)
 
 
 class ManualWithdrawalXact(BaseWithdrawalXact):
@@ -656,6 +665,8 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
     def create_final_output(self, destinations, _expect_complete):
         """Return FinalOutput object with withdrawal transaction."""
         signed_tx = self.create_signed_transaction(destinations)
+        if not signed_tx['complete']:
+            raise GlacierFatal("Expected transaction to be complete by now")  # pragma: no cover
         return RawTransactionFinalOutput(fee=self.fee, rawxact=signed_tx["hex"])
 
     def unspent_total(self):
@@ -832,11 +843,11 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         pubkeys = self.psbt['inputs'][0].get('partial_signatures', {})
         return pubkeys.keys()
 
-    def add_key(self, key):
+    def add_key(self, privkey):
         """
         Use the (WIF format) private key for signing this withdrawal.
         """
-        pubkey = super().add_key(key)
+        pubkey = super().add_key(privkey)
         if pubkey in self.partial_sig_pubkeys():
             raise GlacierFatal("this PSBT has already been signed by that key")
 
@@ -1148,7 +1159,7 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
     p2wsh: if True, generate p2wsh instead of p2wsh-in-p2sh
     """
     safety_checklist()
-    ensure_bitcoind_running()
+    ensure_bitcoind_running(descriptors=True)
 
     print("\n")
     print("Creating {0}-of-{1} cold storage address.\n".format(nrequired, nkeys))
@@ -1163,24 +1174,39 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
     print("Private keys created.")
     print("Generating {0}-of-{1} cold storage address...\n".format(nrequired, nkeys))
 
-    pubkeys = [get_pubkey_for_wif_privkey(key) for key in keys]
-    address_type = 'bech32' if p2wsh else 'p2sh-segwit'
-    results = addmultisigaddress(nrequired, pubkeys, address_type)
+    desc_with_privkeys, desc_with_pubkeys = \
+        build_descriptor(nrequired, keys, 'p2wsh' if p2wsh else 'p2sh-p2wsh')
+    address = bitcoin_cli.json("deriveaddresses", desc_with_pubkeys)[0]
+
+    # We still need the wallet in order to find the redeem script.
+    # Even though user doesn't really need redeem script anymore if they're
+    # using a PSBT flow.
+    bitcoin_cli.json("importdescriptors", jsonstr([{
+        'desc': desc_with_privkeys,
+        'timestamp': 'now',
+        'watchonly': True,
+    }]))
+    ainfo = bitcoin_cli.json("getaddressinfo", address)
+    script = ainfo["embedded"]["hex"] if "embedded" in ainfo else ainfo["hex"]
 
     print("Private keys:")
     for idx, key in enumerate(keys):
         print("Key #{0}: {1}".format(idx + 1, key))
 
     print("\nCold storage address:")
-    print("{}".format(results["address"]))
+    print(address)
 
     print("\nRedemption script:")
-    print("{}".format(results["redeemScript"]))
-    print("")
+    print(script)
+    print()
 
-    write_and_verify_qr_code("cold storage address", "address.png", results["address"])
-    write_and_verify_qr_code("redemption script", "redemption.png",
-                             results["redeemScript"])
+    print("\nWallet descriptor:")
+    print(desc_with_pubkeys)
+    print()
+
+    write_and_verify_qr_code("cold storage address", "address.png", address)
+    write_and_verify_qr_code("redemption script", "redemption.png", script)
+    write_and_verify_qr_code("wallet descriptor", "descriptor.png", desc_with_pubkeys)
 
 
 ################################################################################################
@@ -1217,8 +1243,9 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
         if key_count < sigsrequired:
             self.too_few_keys(sigsrequired)
         for key_idx in range(key_count):
-            key = input("Key #{0}: ".format(key_idx + 1))
-            xact.add_key(key)
+            privkey = input("Key #{0}: ".format(key_idx + 1))
+            xact.add_key(privkey)
+        xact.teach_address_to_wallet()
 
     @staticmethod
     def print_tx(xact, addresses):
@@ -1244,7 +1271,7 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
         All data required for transaction construction is input at the terminal
         """
         safety_checklist()
-        ensure_bitcoind_running()
+        ensure_bitcoind_running(descriptors=True)
 
         approve = False
 
@@ -1256,8 +1283,8 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
             print("*** WARNING: Incorrect data may lead to loss of funds ***\n")
             self.print_tx(xact, addresses)
             print("\nSigning with private keys: ")
-            for key in xact.keys:
-                print("{}".format(key))
+            for privkey, _ in xact.keys:
+                print("{}".format(privkey))
             print("\n")
             confirm = yes_no_interactive()
 
@@ -1342,7 +1369,6 @@ class ManualWithdrawalBuilder(BaseWithdrawalBuilder):
         # fees, amount, and change
 
         fee = get_fee_interactive(xact, addresses)
-        # Got this far
         if fee > input_amount:
             raise GlacierFatal("Your fee is greater than the sum of your unspent transactions.  Try using larger unspent transactions")
 
