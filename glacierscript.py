@@ -598,7 +598,8 @@ class BaseWithdrawalXact:
         if len(results) != 1:
             raise Exception("How did wallet import not return exactly 1 result?")
         result = results[0]
-        if not result["success"] or "warnings" in result:
+        warnings_ok = "warnings" not in result
+        if not (result["success"] and warnings_ok):
             raise Exception("Problem importing address to wallet")  # pragma: no cover
 
     def _find_pubkeys(self):
