@@ -277,16 +277,15 @@ def ensure_bitcoind_running(*extra_args, descriptors=False):
     # message (to /dev/null) and exit.
     #
     # -connect=0.0.0.0 because we're doing local operations only (and have no network connection anyway)
-    bitcoin_cli.bitcoind_call("-daemon", "-deprecatedrpc=walletwarningfield", "-connect=0.0.0.0", *extra_args)
+    bitcoin_cli.bitcoind_call("-daemon", "-connect=0.0.0.0", *extra_args)
 
     # verify bitcoind started up and is functioning correctly
     times = 0
     while times <= 20:
         times += 1
         if bitcoin_cli.call("getnetworkinfo") == 0:
-            # We need to support PSBTs that have both witness and non-witness data.
-            # See https://github.com/bitcoin/bitcoin/pull/19215
-            require_minimum_bitcoind_version(200100)
+            # v25.0 changed "warnings" field in createwallet/loadwallet
+            require_minimum_bitcoind_version(250000)
             create_default_wallet(descriptors=descriptors)
             ensure_expected_wallet(descriptors=descriptors)
             return
@@ -322,8 +321,9 @@ def create_default_wallet(descriptors=False):
             "blank=true",
         ]
     loaded_wallet = bitcoin_cli.json(*cmd)
-    if loaded_wallet["warning"] \
-       and not loaded_wallet["warning"].startswith("Wallet created successfully"):
+    if "warnings" in loaded_wallet \
+       and (len(loaded_wallet["warnings"]) != 1 or
+            not loaded_wallet["warnings"][0].startswith("Wallet created successfully")):
         raise Exception("problem running {} on default wallet".format(cmd))  # pragma: no cover
 
 
