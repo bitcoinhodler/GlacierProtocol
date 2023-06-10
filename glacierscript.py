@@ -277,7 +277,7 @@ def ensure_bitcoind_running(*extra_args, descriptors=False):
     # message (to /dev/null) and exit.
     #
     # -connect=0.0.0.0 because we're doing local operations only (and have no network connection anyway)
-    bitcoin_cli.bitcoind_call("-daemon", "-connect=0.0.0.0", *extra_args)
+    bitcoin_cli.bitcoind_call("-daemon", "-deprecatedrpc=walletwarningfield", "-connect=0.0.0.0", *extra_args)
 
     # verify bitcoind started up and is functioning correctly
     times = 0
