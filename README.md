@@ -91,6 +91,8 @@ issue](https://github.com/GlacierProtocol/GlacierProtocol/issues/38).
 * (desc-offline) Convert offline wallet (glacierscript.py) to use
   descriptor wallets.
 
+* (bitcoin-core-25) Added compatibility with Bitcoin Core 25.0.
+
 ## Improvements for Glacier developers
 
 * (tidypy) Clean up source code using linters from

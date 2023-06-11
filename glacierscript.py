@@ -101,14 +101,7 @@ def address_from_vout(vout):
     """
     Given a vout from decoderawtransaction, return the Bitcoin address.
     """
-    # Bitcoin Core <22.0 has list "addresses" (but always 0 or 1);
-    # Bitcoin Core 22.0 has scalar "address"
-    addrs = vout["scriptPubKey"].get("addresses", [
-        vout["scriptPubKey"].get("address", None)
-    ])
-    if len(addrs) > 1:
-        raise TypeError("how does one scriptPubKey have >1 corresponding address?")
-    return addrs[0] if addrs else None
+    return vout["scriptPubKey"].get("address", None)
 
 
 ################################################################################################
@@ -284,9 +277,8 @@ def ensure_bitcoind_running(*extra_args, descriptors=False):
     while times <= 20:
         times += 1
         if bitcoin_cli.call("getnetworkinfo") == 0:
-            # We need to support PSBTs that have both witness and non-witness data.
-            # See https://github.com/bitcoin/bitcoin/pull/19215
-            require_minimum_bitcoind_version(200100)
+            # v25.0 changed "warnings" field in createwallet/loadwallet
+            require_minimum_bitcoind_version(250000)
             create_default_wallet(descriptors=descriptors)
             ensure_expected_wallet(descriptors=descriptors)
             return
@@ -322,8 +314,9 @@ def create_default_wallet(descriptors=False):
             "blank=true",
         ]
     loaded_wallet = bitcoin_cli.json(*cmd)
-    if loaded_wallet["warning"] \
-       and not loaded_wallet["warning"].startswith("Wallet created successfully"):
+    if "warnings" in loaded_wallet \
+       and (len(loaded_wallet["warnings"]) != 1 or
+            not loaded_wallet["warnings"][0].startswith("Wallet created successfully")):
         raise Exception("problem running {} on default wallet".format(cmd))  # pragma: no cover
 
 
