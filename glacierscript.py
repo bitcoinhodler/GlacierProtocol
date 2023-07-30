@@ -262,7 +262,7 @@ class GlacierFatal(Exception):
 ################################################################################################
 
 
-def ensure_bitcoind_running(*extra_args, descriptors=False):
+def ensure_bitcoind_running(*extra_args, descriptors=None):
     """
     Start bitcoind (if it's not already running) and ensure it's functioning properly.
     """
@@ -279,8 +279,9 @@ def ensure_bitcoind_running(*extra_args, descriptors=False):
         if bitcoin_cli.call("getnetworkinfo") == 0:
             # v25.0 changed "warnings" field in createwallet/loadwallet
             require_minimum_bitcoind_version(250000)
-            create_default_wallet(descriptors=descriptors)
-            ensure_expected_wallet(descriptors=descriptors)
+            if descriptors is not None:
+                create_default_wallet(descriptors=descriptors)
+                ensure_expected_wallet(descriptors=descriptors)
             return
         time.sleep(0.5)
 
