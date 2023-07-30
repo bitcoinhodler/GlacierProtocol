@@ -52,7 +52,7 @@ def start(args, *, mine_txjson=True):
     # time we run.
     stop(None)
     os.makedirs('bitcoin-online-data')
-    glacierscript.ensure_bitcoind_running('-txindex')
+    glacierscript.ensure_bitcoind_running('-txindex', descriptors=False)
     # This seed comes from a new wallet I once made:
     bitcoin_cli.checkoutput("sethdseed", "true", "cNGZqmpNeUvJ5CNTeJKc6Huz2N9paoifVDxAC9JuxJEkH6DUdtEZ")
     mine_block(101)  # 101 so we have some coinbase outputs that are spendable
