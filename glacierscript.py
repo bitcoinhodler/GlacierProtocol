@@ -288,6 +288,21 @@ def ensure_bitcoind_running(*extra_args, descriptors=None):
     raise Exception("Timeout while starting bitcoin server")  # pragma: no cover
 
 
+class BitcoinWallet:
+    """Manage a wallet from bitcoind.
+
+    This is useful because some of our wallet usage requires a wallet
+    with disable_private_keys=True, so we need to juggle multiple
+    wallets.
+
+    """
+
+    def __init__(self, *, descriptors):
+        """Load wallet, or create new one if it doesn't exist."""
+        create_default_wallet(descriptors=descriptors)
+        ensure_expected_wallet(descriptors=descriptors)
+
+
 def create_default_wallet(descriptors=False):
     """
     Ensure our wallet exists and is loaded.
@@ -532,6 +547,7 @@ class BaseWithdrawalXact:
         self.segwit = self._validate_address()
         self.sigsrequired, self._pubkeys = self._find_pubkeys()
         self.fee = None  # not yet known
+        self.wallet = BitcoinWallet(descriptors=descriptors)
 
     def add_key(self, privkey):
         """
@@ -1170,6 +1186,7 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
     # We still need the wallet in order to find the redeem script.
     # Even though user doesn't really need redeem script anymore if they're
     # using a PSBT flow.
+    wallet = BitcoinWallet(descriptors=True)
     bitcoin_cli.json("importdescriptors", jsonstr([{
         'desc': desc_with_privkeys,
         'timestamp': 'now',
@@ -1510,7 +1527,7 @@ def main():
     # Remaining subcommands all require bitcoind
     bitcoin_cli.verbose_mode = args.verbose
     set_network_params(args.testnet, args.regtest)
-    ensure_bitcoind_running(descriptors=True)
+    ensure_bitcoind_running()
 
     if args.program == "create-deposit-data":
         deposit_interactive(args.m, args.n, args.dice, args.rng, args.p2wsh)
