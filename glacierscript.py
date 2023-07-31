@@ -522,7 +522,7 @@ class PsbtFinalOutput(FinalOutput):
 class BaseWithdrawalXact:
     """Class representing withdrawal transaction, either via input TXs or PSBT."""
 
-    def __init__(self, source_address, redeem_script):
+    def __init__(self, source_address, redeem_script, descriptors=True):
         """
         Construct a new withdrawal.
         """
@@ -625,11 +625,11 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
 
     MAX_FEE = .005  # in btc.  hardcoded limit to protect against user typos
 
-    def __init__(self, source_address, redeem_script):
+    def __init__(self, source_address, redeem_script, descriptors=True):
         """
         Construct a new withdrawal from the specified source address.
         """
-        super().__init__(source_address, redeem_script)
+        super().__init__(source_address, redeem_script, descriptors=descriptors)
         self._seen_txhashes = set()  # only for detecting duplicates
         self._inputs = []
         self.fee_basis_satoshis_per_byte = None
@@ -749,7 +749,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
 
     """
 
-    def __init__(self, psbt_raw):
+    def __init__(self, psbt_raw, descriptors=True):
         """
         Construct transaction based on the provided base64 psbt.
         """
@@ -757,7 +757,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         self.psbt = bitcoin_cli.json("decodepsbt", self.psbt_raw)
         self.sanity_check_psbt()
         source_address, redeem_script = self._find_source_address()
-        super().__init__(source_address, redeem_script)
+        super().__init__(source_address, redeem_script, descriptors=descriptors)
         self.destinations = self._find_output_addresses()
         self.fee = self.psbt['fee']
 
