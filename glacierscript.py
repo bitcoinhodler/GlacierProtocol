@@ -299,6 +299,10 @@ class BitcoinWallet:
         self._create_default_wallet(descriptors=descriptors)
         self._ensure_expected_wallet(descriptors=descriptors)
 
+    def json(self, *args):
+        """Return decoded JSON from a bitcoin-cli call."""
+        return bitcoin_cli.json(*args)
+
     def _create_default_wallet(self, descriptors=False):
         """
         Ensure our wallet exists and is loaded.
@@ -338,7 +342,7 @@ class BitcoinWallet:
         Descriptor wallets are the future but will take some work to
         support throughout Glacier.
         """
-        info = bitcoin_cli.json("getwalletinfo")
+        info = self.json("getwalletinfo")
         if info.get("descriptors", False) != descriptors:
             if descriptors:
                 raise Exception("default wallet is a legacy wallet; expected a descriptor wallet")
