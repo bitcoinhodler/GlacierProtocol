@@ -296,55 +296,53 @@ class BitcoinWallet:
 
     def __init__(self, *, descriptors):
         """Load wallet, or create new one if it doesn't exist."""
-        create_default_wallet(descriptors=descriptors)
-        ensure_expected_wallet(descriptors=descriptors)
+        self._create_default_wallet(descriptors=descriptors)
+        self._ensure_expected_wallet(descriptors=descriptors)
 
+    def _create_default_wallet(self, descriptors=False):
+        """
+        Ensure our wallet exists and is loaded.
+        """
+        # Anything other than "" requires -rpcwallet= on every bitcoin-cli call:
+        wallet_name = ""
+        loaded_wallets = bitcoin_cli.json("listwallets")
+        if wallet_name in loaded_wallets:
+            return  # our wallet already loaded
+        all_wallets = bitcoin_cli.json("listwalletdir")
+        # {
+        #     "wallets": [
+        #         {
+        #             "name": ""
+        #         }
+        #     ]
+        # }
+        found = any(w["name"] == wallet_name for w in all_wallets["wallets"])
+        cmd = ["loadwallet", wallet_name] if found else \
+            [
+                "-named",
+                "createwallet",
+                "wallet_name=" + wallet_name,
+                "descriptors=" + ("true" if descriptors else "false"),
+                "blank=true",
+            ]
+        loaded_wallet = bitcoin_cli.json(*cmd)
+        if "warnings" in loaded_wallet \
+           and (len(loaded_wallet["warnings"]) != 1 or
+                not loaded_wallet["warnings"][0].startswith("Wallet created successfully")):
+            raise Exception("problem running {} on default wallet".format(cmd))  # pragma: no cover
 
-def create_default_wallet(descriptors=False):
-    """
-    Ensure our wallet exists and is loaded.
-    """
-    # Anything other than "" requires -rpcwallet= on every bitcoin-cli call:
-    wallet_name = ""
-    loaded_wallets = bitcoin_cli.json("listwallets")
-    if wallet_name in loaded_wallets:
-        return  # our wallet already loaded
-    all_wallets = bitcoin_cli.json("listwalletdir")
-    # {
-    #     "wallets": [
-    #         {
-    #             "name": ""
-    #         }
-    #     ]
-    # }
-    found = any(w["name"] == wallet_name for w in all_wallets["wallets"])
-    cmd = ["loadwallet", wallet_name] if found else \
-        [
-            "-named",
-            "createwallet",
-            "wallet_name=" + wallet_name,
-            "descriptors=" + ("true" if descriptors else "false"),
-            "blank=true",
-        ]
-    loaded_wallet = bitcoin_cli.json(*cmd)
-    if "warnings" in loaded_wallet \
-       and (len(loaded_wallet["warnings"]) != 1 or
-            not loaded_wallet["warnings"][0].startswith("Wallet created successfully")):
-        raise Exception("problem running {} on default wallet".format(cmd))  # pragma: no cover
+    def _ensure_expected_wallet(self, descriptors=False):
+        """
+        Ensure the expected wallet exists and is the expected type.
 
-
-def ensure_expected_wallet(descriptors=False):
-    """
-    Ensure the expected wallet exists and is the expected type.
-
-    Descriptor wallets are the future but will take some work to
-    support throughout Glacier.
-    """
-    info = bitcoin_cli.json("getwalletinfo")
-    if info.get("descriptors", False) != descriptors:
-        if descriptors:
-            raise Exception("default wallet is a legacy wallet; expected a descriptor wallet")
-        raise Exception("default wallet is a descriptor wallet; expected a legacy wallet")
+        Descriptor wallets are the future but will take some work to
+        support throughout Glacier.
+        """
+        info = bitcoin_cli.json("getwalletinfo")
+        if info.get("descriptors", False) != descriptors:
+            if descriptors:
+                raise Exception("default wallet is a legacy wallet; expected a descriptor wallet")
+            raise Exception("default wallet is a descriptor wallet; expected a legacy wallet")
 
 
 def require_minimum_bitcoind_version(min_version):
