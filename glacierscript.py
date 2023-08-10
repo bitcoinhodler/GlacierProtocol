@@ -294,25 +294,26 @@ class BitcoinWallet:
 
     """
 
-    def __init__(self, *, descriptors):
+    def __init__(self, name, *, descriptors):
         """Load wallet, or create new one if it doesn't exist."""
+        self.name = name
         self._create_default_wallet(descriptors=descriptors)
         self._ensure_expected_wallet(descriptors=descriptors)
 
     def json(self, *args):
         """Return decoded JSON from a bitcoin-cli call."""
-        return bitcoin_cli.json(*args)
+        return bitcoin_cli.json("-rpcwallet=" + self.name, *args)
 
     def checkoutput(self, *args):
         """Run bitcoin-cli and ensure success."""
-        return bitcoin_cli.checkoutput(*args)
+        return bitcoin_cli.checkoutput("-rpcwallet=" + self.name, *args)
 
     def _create_default_wallet(self, descriptors=False):
         """
         Ensure our wallet exists and is loaded.
         """
         # Anything other than "" requires -rpcwallet= on every bitcoin-cli call:
-        wallet_name = ""
+        wallet_name = self.name
         loaded_wallets = bitcoin_cli.json("listwallets")
         if wallet_name in loaded_wallets:
             return  # our wallet already loaded
@@ -550,7 +551,7 @@ class BaseWithdrawalXact:
         self.segwit = self._validate_address()
         self.sigsrequired, self._pubkeys = self._find_pubkeys()
         self.fee = None  # not yet known
-        self.wallet = BitcoinWallet(descriptors=descriptors)
+        self.wallet = BitcoinWallet("offline-wallet", descriptors=descriptors)
 
     def add_key(self, privkey):
         """
@@ -1190,7 +1191,7 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
     # We still need the wallet in order to find the redeem script.
     # Even though user doesn't really need redeem script anymore if they're
     # using a PSBT flow.
-    wallet = BitcoinWallet(descriptors=True)
+    wallet = BitcoinWallet("offline-wallet", descriptors=True)
     wallet.json("importdescriptors", jsonstr([{
         'desc': desc_with_privkeys,
         'timestamp': 'now',

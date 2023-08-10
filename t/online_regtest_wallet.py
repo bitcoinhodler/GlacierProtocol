@@ -51,7 +51,7 @@ regtest_wallet = None
 def create_regtest_wallet():
     """Create global BitcoinWallet object for online wallet."""
     global regtest_wallet
-    regtest_wallet = glacierscript.BitcoinWallet(descriptors=False)
+    regtest_wallet = glacierscript.BitcoinWallet("sim-online-wallet", descriptors=False)
 
 
 def start(args, *, mine_txjson=True):
