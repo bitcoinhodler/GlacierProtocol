@@ -603,7 +603,7 @@ class BaseWithdrawalXact:
         if len(priv_for_pub) < len(keys):
             # Avoid warning about "Some private keys are missing[...]"
             import_this["watchonly"] = True
-        results = bitcoin_cli.json(how, jsonstr([import_this]))
+        results = self.wallet.json(how, jsonstr([import_this]))
         if len(results) != 1:
             raise Exception("How did wallet import not return exactly 1 result?")
         result = results[0]
@@ -666,7 +666,7 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
             "0",  # locktime
             "false",  # replaceable
         ).strip()
-        signed_tx = bitcoin_cli.json(
+        signed_tx = self.wallet.json(
             "signrawtransactionwithwallet",
             tx_unsigned_hex, prev_txs)
         return signed_tx
@@ -832,7 +832,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         """
         if destinations != self.destinations:
             raise GlacierFatal("unable to change destinations of PSBT")  # pragma: no cover
-        prcs = bitcoin_cli.json("walletprocesspsbt", self.psbt_raw, 'true', 'ALL', 'false')
+        prcs = self.wallet.json("walletprocesspsbt", self.psbt_raw, 'true', 'ALL', 'false')
         if expect_complete != prcs['complete']:
             if expect_complete:
                 raise GlacierFatal("Expected PSBT to be complete by now")  # pragma: no cover
@@ -1186,12 +1186,12 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
     # Even though user doesn't really need redeem script anymore if they're
     # using a PSBT flow.
     wallet = BitcoinWallet(descriptors=True)
-    bitcoin_cli.json("importdescriptors", jsonstr([{
+    wallet.json("importdescriptors", jsonstr([{
         'desc': desc_with_privkeys,
         'timestamp': 'now',
         'watchonly': True,
     }]))
-    ainfo = bitcoin_cli.json("getaddressinfo", address)
+    ainfo = wallet.json("getaddressinfo", address)
     script = ainfo["embedded"]["hex"] if "embedded" in ainfo else ainfo["hex"]
 
     print("Private keys:")
