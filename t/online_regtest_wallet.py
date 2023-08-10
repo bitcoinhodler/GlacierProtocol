@@ -45,6 +45,14 @@ glacierscript.wif_prefix = "EF"
 
 MIN_FEE = Decimal("0.00010000")
 
+regtest_wallet = None
+
+
+def create_regtest_wallet():
+    """Create global BitcoinWallet object for online wallet."""
+    global regtest_wallet
+    regtest_wallet = glacierscript.BitcoinWallet(descriptors=False)
+
 
 def start(args, *, mine_txjson=True):
     """Run the `start` subcommand to load bitcoind."""
@@ -52,7 +60,8 @@ def start(args, *, mine_txjson=True):
     # time we run.
     stop(None)
     os.makedirs('bitcoin-online-data')
-    glacierscript.ensure_bitcoind_running('-txindex', descriptors=False)
+    glacierscript.ensure_bitcoind_running('-txindex')
+    create_regtest_wallet()
     # This seed comes from a new wallet I once made:
     bitcoin_cli.checkoutput("sethdseed", "true", "cNGZqmpNeUvJ5CNTeJKc6Huz2N9paoifVDxAC9JuxJEkH6DUdtEZ")
     mine_block(101)  # 101 so we have some coinbase outputs that are spendable
@@ -537,6 +546,7 @@ def submit(args):
     decoded_tx = ""
     if 'psbt' in found:
         decoded_tx += "\n".join(bitcoin_cli.checkoutput("decodepsbt", p) for p in found['psbt'])
+    create_regtest_wallet()
     if 'rawtx' in found:
         if len(found['rawtx']) != 1:
             raise RuntimeError("How did we find more than one rawtx?")
