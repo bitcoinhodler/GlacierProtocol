@@ -63,7 +63,7 @@ def start(args, *, mine_txjson=True):
     glacierscript.ensure_bitcoind_running('-txindex')
     create_regtest_wallet()
     # This seed comes from a new wallet I once made:
-    bitcoin_cli.checkoutput("sethdseed", "true", "cNGZqmpNeUvJ5CNTeJKc6Huz2N9paoifVDxAC9JuxJEkH6DUdtEZ")
+    regtest_wallet.checkoutput("sethdseed", "true", "cNGZqmpNeUvJ5CNTeJKc6Huz2N9paoifVDxAC9JuxJEkH6DUdtEZ")
     mine_block(101)  # 101 so we have some coinbase outputs that are spendable
     if not mine_txjson:
         return
@@ -182,8 +182,8 @@ class PsbtCreator(metaclass=ABCMeta):
             '0',  # locktime
             'false',  # replaceable
         ).strip()
-        bitcoin_cli.checkoutput("lockunspent", 'false', glacierscript.jsonstr(newinputs))
-        results = bitcoin_cli.json("walletprocesspsbt", createpsbt, 'false', 'ALL', 'false')
+        regtest_wallet.checkoutput("lockunspent", 'false', glacierscript.jsonstr(newinputs))
+        results = regtest_wallet.json("walletprocesspsbt", createpsbt, 'false', 'ALL', 'false')
         return trim_psbt.strip(results['psbt']) if self.trim else results['psbt']
 
 
@@ -318,7 +318,7 @@ def mine_block(count=1):
     """
     Mine one or more blocks in our regtest blockchain.
     """
-    adrs = bitcoin_cli.checkoutput("getnewaddress", '', 'p2sh-segwit').strip()
+    adrs = regtest_wallet.checkoutput("getnewaddress", '', 'p2sh-segwit').strip()
     bitcoin_cli.json("generatetoaddress", "{}".format(count), adrs)
 
 
@@ -341,13 +341,13 @@ def create_input2(amount, *, addresstype='bech32', dest=None):
     """
     # Sort for stability...the order of transactions in listunspent
     # can be nondeterministic in v24.0
-    unspents = sorted(bitcoin_cli.json("listunspent"), key=itemgetter("txid", "vout"))
+    unspents = sorted(regtest_wallet.json("listunspent"), key=itemgetter("txid", "vout"))
     # Choose first unspent that's large enough. There should always be one because of
     # all our coinbase outputs of 50.0 BTC
     inputtx = next(unspent for unspent in unspents
                    if unspent["amount"] >= amount + MIN_FEE and unspent["spendable"])
-    change_adrs = bitcoin_cli.checkoutput("getnewaddress", '', addresstype).strip()
-    dest_adrs = dest or bitcoin_cli.checkoutput("getnewaddress", '', addresstype).strip()
+    change_adrs = regtest_wallet.checkoutput("getnewaddress", '', addresstype).strip()
+    dest_adrs = dest or regtest_wallet.checkoutput("getnewaddress", '', addresstype).strip()
     outputs = [
         {dest_adrs: amount}
     ]
@@ -445,7 +445,7 @@ def build_one_inp_output(cold_address, vout):
     if vout["scriptPubKey"]["type"] not in type_conversion:
         raise NotImplementedError("unrecognized scriptPubKey type in vout: {}".format(vout))
     addr_type = type_conversion[vout["scriptPubKey"]["type"]]
-    change_adrs = bitcoin_cli.checkoutput("getnewaddress", '', addr_type).strip()
+    change_adrs = regtest_wallet.checkoutput("getnewaddress", '', addr_type).strip()
     return {change_adrs: vout["value"]}
 
 
@@ -505,7 +505,7 @@ def create_and_mine(inputs, outputs):
                                     "0",  # locktime
                                     "false",  # replaceable
                                     ).strip()
-    signedtx = bitcoin_cli.json("signrawtransactionwithwallet", rawtx)
+    signedtx = regtest_wallet.json("signrawtransactionwithwallet", rawtx)
     if not signedtx["complete"]:
         raise ValueError("unable to sign transaction")
     try:

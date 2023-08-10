@@ -303,6 +303,10 @@ class BitcoinWallet:
         """Return decoded JSON from a bitcoin-cli call."""
         return bitcoin_cli.json(*args)
 
+    def checkoutput(self, *args):
+        """Run bitcoin-cli and ensure success."""
+        return bitcoin_cli.checkoutput(*args)
+
     def _create_default_wallet(self, descriptors=False):
         """
         Ensure our wallet exists and is loaded.
