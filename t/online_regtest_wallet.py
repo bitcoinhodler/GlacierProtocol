@@ -54,6 +54,12 @@ def create_regtest_wallet():
     regtest_wallet = glacierscript.BitcoinWallet("sim-online-wallet", descriptors=False)
 
 
+def initialize_regtest_wallet():
+    """Initialize a new blank wallet with a predictable set of keys."""
+    # This seed comes from a new wallet I once made:
+    regtest_wallet.checkoutput("sethdseed", "true", "cNGZqmpNeUvJ5CNTeJKc6Huz2N9paoifVDxAC9JuxJEkH6DUdtEZ")
+
+
 def start(args, *, mine_txjson=True):
     """Run the `start` subcommand to load bitcoind."""
     # We seed the wallet so that our addresses will be the same every
@@ -62,8 +68,7 @@ def start(args, *, mine_txjson=True):
     os.makedirs('bitcoin-online-data')
     glacierscript.ensure_bitcoind_running('-txindex')
     create_regtest_wallet()
-    # This seed comes from a new wallet I once made:
-    regtest_wallet.checkoutput("sethdseed", "true", "cNGZqmpNeUvJ5CNTeJKc6Huz2N9paoifVDxAC9JuxJEkH6DUdtEZ")
+    initialize_regtest_wallet()
     mine_block(101)  # 101 so we have some coinbase outputs that are spendable
     if not mine_txjson:
         return
