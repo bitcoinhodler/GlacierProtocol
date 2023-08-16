@@ -137,7 +137,10 @@ class PsbtCreator(metaclass=ABCMeta):
 
     def __init__(self, xact, trim):
         """Create new instance."""
-        xact.teach_address_to_wallet("importmulti", wallet=regtest_wallet)
+        self.watchonly_wallet = glacierscript.BitcoinWallet(
+            "sim-online-watch-wallet", descriptors=False, watchonly=True)
+        xact.teach_address_to_wallet("importmulti",
+                                     wallet=self.watchonly_wallet)
         self.xact = xact
         self.trim = trim
 
@@ -188,7 +191,8 @@ class PsbtCreator(metaclass=ABCMeta):
             'false',  # replaceable
         ).strip()
         regtest_wallet.checkoutput("lockunspent", 'false', glacierscript.jsonstr(newinputs))
-        results = regtest_wallet.json("walletprocesspsbt", createpsbt, 'false', 'ALL', 'false')
+        intermed = regtest_wallet.json("walletprocesspsbt", createpsbt, 'false', 'ALL', 'false')['psbt']
+        results = self.watchonly_wallet.json("walletprocesspsbt", intermed, 'false', 'ALL', 'false')
         return trim_psbt.strip(results['psbt']) if self.trim else results['psbt']
 
 
