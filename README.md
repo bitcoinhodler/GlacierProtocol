@@ -93,6 +93,9 @@ issue](https://github.com/GlacierProtocol/GlacierProtocol/issues/38).
 
 * (bitcoin-core-25) Added compatibility with Bitcoin Core 25.0.
 
+* (desc-online) Convert online wallet (t/online_regtest_wallet.py) to
+  use descriptor wallets.
+
 ## Improvements for Glacier developers
 
 * (tidypy) Clean up source code using linters from
