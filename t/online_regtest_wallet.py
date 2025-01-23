@@ -51,13 +51,17 @@ regtest_wallet = None
 def create_regtest_wallet():
     """Create global BitcoinWallet object for online wallet."""
     global regtest_wallet
-    regtest_wallet = glacierscript.BitcoinWallet("sim-online-wallet", descriptors=False)
+    regtest_wallet = glacierscript.BitcoinWallet("sim-online-wallet", descriptors=True)
 
 
 def initialize_regtest_wallet():
     """Initialize a new blank wallet with a predictable set of keys."""
-    # This seed comes from a new wallet I once made:
-    regtest_wallet.checkoutput("sethdseed", "true", "cNGZqmpNeUvJ5CNTeJKc6Huz2N9paoifVDxAC9JuxJEkH6DUdtEZ")
+    # This file was created by createwallet+listdescriptors. Hand-edited to
+    # leave only the array of descriptors, and change all timestamps to "now".
+    filename = os.path.join(os.path.dirname(__file__), "sim-online-wallet.descriptors")
+    with open(filename, "rt") as infile:
+        walletdescs = infile.read()
+    regtest_wallet.checkoutput("importdescriptors", walletdescs)
 
 
 def start(args, *, mine_txjson=True):
@@ -138,8 +142,8 @@ class PsbtCreator(metaclass=ABCMeta):
     def __init__(self, xact, trim):
         """Create new instance."""
         self.watchonly_wallet = glacierscript.BitcoinWallet(
-            "sim-online-watch-wallet", descriptors=False, watchonly=True)
-        xact.teach_address_to_wallet("importmulti",
+            "sim-online-watch-wallet", descriptors=True, watchonly=True)
+        xact.teach_address_to_wallet("importdescriptors",
                                      wallet=self.watchonly_wallet)
         self.xact = xact
         self.trim = trim
@@ -214,7 +218,7 @@ class PsbtPsbtCreator(PsbtCreator):
         self.rawpsbt = rawpsbt
         # Obviously we aren't creating a withdrawal, but constructing
         # this object does all the heavy lifting of decoding & importing:
-        super().__init__(glacierscript.PsbtWithdrawalXact(self.rawpsbt, descriptors=False), trim)
+        super().__init__(glacierscript.PsbtWithdrawalXact(self.rawpsbt, descriptors=True), trim)
         self.psbt = self.xact.psbt
 
     def gen_witness_tuples(self):
@@ -260,7 +264,7 @@ class TxlistPsbtCreator(PsbtCreator):
         # Start a withdrawal transaction just so it can figure out the
         # address details -- namely, segwit or not.
         super().__init__(glacierscript.ManualWithdrawalXact(
-            prf.cold_storage_address, prf.redeem_script, descriptors=False), trim)
+            prf.cold_storage_address, prf.redeem_script, descriptors=True), trim)
 
     def gen_witness_tuples(self):
         """Generate tuples of (amount, dest, sequence) for each input."""
