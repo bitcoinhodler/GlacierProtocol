@@ -51,7 +51,7 @@ regtest_wallet = None
 def create_regtest_wallet():
     """Create global BitcoinWallet object for online wallet."""
     global regtest_wallet
-    regtest_wallet = glacierscript.BitcoinWallet("sim-online-wallet", descriptors=True)
+    regtest_wallet = glacierscript.BitcoinWallet("sim-online-wallet")
 
 
 def initialize_regtest_wallet():
@@ -142,7 +142,7 @@ class PsbtCreator(metaclass=ABCMeta):
     def __init__(self, xact, trim):
         """Create new instance."""
         self.watchonly_wallet = glacierscript.BitcoinWallet(
-            "sim-online-watch-wallet", descriptors=True, watchonly=True)
+            "sim-online-watch-wallet", watchonly=True)
         xact.teach_address_to_wallet("importdescriptors",
                                      wallet=self.watchonly_wallet)
         self.xact = xact

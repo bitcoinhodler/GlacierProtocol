@@ -294,11 +294,11 @@ class BitcoinWallet:
 
     """
 
-    def __init__(self, name, *, descriptors, watchonly=False):
+    def __init__(self, name, *, watchonly=False):
         """Load wallet, or create new one if it doesn't exist."""
         self.name = name
-        self._create_wallet(descriptors=descriptors, watchonly=watchonly)
-        self._ensure_expected_wallet(descriptors=descriptors)
+        self._create_wallet(descriptors=True, watchonly=watchonly)
+        self._ensure_expected_wallet(descriptors=True)
 
     def json(self, *args):
         """Return decoded JSON from a bitcoin-cli call."""
@@ -552,7 +552,7 @@ class BaseWithdrawalXact:
         self.segwit = self._validate_address()
         self.sigsrequired, self._pubkeys = self._find_pubkeys()
         self.fee = None  # not yet known
-        self.wallet = BitcoinWallet("offline-wallet", descriptors=True)
+        self.wallet = BitcoinWallet("offline-wallet")
 
     def add_key(self, privkey):
         """
@@ -1192,7 +1192,7 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
     # We still need the wallet in order to find the redeem script.
     # Even though user doesn't really need redeem script anymore if they're
     # using a PSBT flow.
-    wallet = BitcoinWallet("offline-wallet", descriptors=True)
+    wallet = BitcoinWallet("offline-wallet")
     wallet.json("importdescriptors", jsonstr([{
         'desc': desc_with_privkeys,
         'timestamp': 'now',
