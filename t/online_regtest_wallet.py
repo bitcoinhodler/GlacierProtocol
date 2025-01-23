@@ -218,7 +218,7 @@ class PsbtPsbtCreator(PsbtCreator):
         self.rawpsbt = rawpsbt
         # Obviously we aren't creating a withdrawal, but constructing
         # this object does all the heavy lifting of decoding & importing:
-        super().__init__(glacierscript.PsbtWithdrawalXact(self.rawpsbt, descriptors=True), trim)
+        super().__init__(glacierscript.PsbtWithdrawalXact(self.rawpsbt), trim)
         self.psbt = self.xact.psbt
 
     def gen_witness_tuples(self):
@@ -264,7 +264,7 @@ class TxlistPsbtCreator(PsbtCreator):
         # Start a withdrawal transaction just so it can figure out the
         # address details -- namely, segwit or not.
         super().__init__(glacierscript.ManualWithdrawalXact(
-            prf.cold_storage_address, prf.redeem_script, descriptors=True), trim)
+            prf.cold_storage_address, prf.redeem_script), trim)
 
     def gen_witness_tuples(self):
         """Generate tuples of (amount, dest, sequence) for each input."""

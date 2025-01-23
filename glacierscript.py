@@ -542,7 +542,7 @@ class PsbtFinalOutput(FinalOutput):
 class BaseWithdrawalXact:
     """Class representing withdrawal transaction, either via input TXs or PSBT."""
 
-    def __init__(self, source_address, redeem_script, descriptors=True):
+    def __init__(self, source_address, redeem_script):
         """
         Construct a new withdrawal.
         """
@@ -552,7 +552,7 @@ class BaseWithdrawalXact:
         self.segwit = self._validate_address()
         self.sigsrequired, self._pubkeys = self._find_pubkeys()
         self.fee = None  # not yet known
-        self.wallet = BitcoinWallet("offline-wallet", descriptors=descriptors)
+        self.wallet = BitcoinWallet("offline-wallet", descriptors=True)
 
     def add_key(self, privkey):
         """
@@ -647,11 +647,11 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
 
     MAX_FEE = .005  # in btc.  hardcoded limit to protect against user typos
 
-    def __init__(self, source_address, redeem_script, descriptors=True):
+    def __init__(self, source_address, redeem_script):
         """
         Construct a new withdrawal from the specified source address.
         """
-        super().__init__(source_address, redeem_script, descriptors=descriptors)
+        super().__init__(source_address, redeem_script)
         self._seen_txhashes = set()  # only for detecting duplicates
         self._inputs = []
         self.fee_basis_satoshis_per_byte = None
@@ -771,7 +771,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
 
     """
 
-    def __init__(self, psbt_raw, descriptors=True):
+    def __init__(self, psbt_raw):
         """
         Construct transaction based on the provided base64 psbt.
         """
@@ -779,7 +779,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         self.psbt = bitcoin_cli.json("decodepsbt", self.psbt_raw)
         self.sanity_check_psbt()
         source_address, redeem_script = self._find_source_address()
-        super().__init__(source_address, redeem_script, descriptors=descriptors)
+        super().__init__(source_address, redeem_script)
         self.destinations = self._find_output_addresses()
         self.fee = self.psbt['fee']
 
