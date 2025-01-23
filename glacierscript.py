@@ -297,7 +297,7 @@ class BitcoinWallet:
     def __init__(self, name, *, watchonly=False):
         """Load wallet, or create new one if it doesn't exist."""
         self.name = name
-        self._create_wallet(descriptors=True, watchonly=watchonly)
+        self._create_wallet(watchonly=watchonly)
         self._ensure_expected_wallet(descriptors=True)
 
     def json(self, *args):
@@ -308,7 +308,7 @@ class BitcoinWallet:
         """Run bitcoin-cli and ensure success."""
         return bitcoin_cli.checkoutput("-rpcwallet=" + self.name, *args)
 
-    def _create_wallet(self, descriptors=False, watchonly=False):
+    def _create_wallet(self, watchonly=False):
         """
         Ensure our wallet exists and is loaded.
         """
@@ -331,7 +331,7 @@ class BitcoinWallet:
                 "-named",
                 "createwallet",
                 "wallet_name=" + wallet_name,
-                "descriptors=" + ("true" if descriptors else "false"),
+                "descriptors=true",
                 "disable_private_keys=" + ("true" if watchonly else "false"),
                 "blank=true",
             ]
