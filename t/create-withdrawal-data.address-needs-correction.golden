@@ -21,31 +21,31 @@ How many private keys will you be signing this transaction with (at least 2 requ
 #: Key #1: Key #2: 
 Enter fee rate.
 Satoshis per vbyte: 
-Based on the provided rate, the fee will be 0.00000405 bitcoin.
+Based on the provided rate, the fee will be 0.00000404 bitcoin.
 Confirm? (y/n): 
 Fee calculation aborted. Starting over...
 
 Enter fee rate.
 Satoshis per vbyte: 
-Based on the provided rate, the fee will be 0.00004050 bitcoin.
+Based on the provided rate, the fee will be 0.00004040 bitcoin.
 Confirm? (y/n): 
 Please enter the decimal amount (in bitcoin) to withdraw to the destination address.
 
 Example: For 2.3 bitcoins, enter "2.3".
 
-After a fee of 0.00004050, you have 0.00000950 bitcoins available to withdraw.
+After a fee of 0.00004040, you have 0.00000960 bitcoins available to withdraw.
 
 *** Technical note for experienced Bitcoin users:  If the withdrawal amount & fee are cumulatively less than the total amount of the unspent transactions, the remainder will be sent back to the same cold storage address as change. ***
 
-Amount to send to mp1KQzUoDf9div7jjgon3UuqLThMSo3tmF (leave blank to withdraw all funds stored in these unspent transactions): 0.00000550 being returned to cold storage address address 2N238gpicqPFfMz8sUN7pqqaJnYkgsC1WmL.
+Amount to send to mp1KQzUoDf9div7jjgon3UuqLThMSo3tmF (leave blank to withdraw all funds stored in these unspent transactions): 0.00000560 being returned to cold storage address address 2N238gpicqPFfMz8sUN7pqqaJnYkgsC1WmL.
 
 Is this data correct?
 *** WARNING: Incorrect data may lead to loss of funds ***
 
 0.00005000 BTC in unspent inputs from cold storage address 2N238gpicqPFfMz8sUN7pqqaJnYkgsC1WmL
-0.00000550 BTC going back to cold storage address 2N238gpicqPFfMz8sUN7pqqaJnYkgsC1WmL
+0.00000560 BTC going back to cold storage address 2N238gpicqPFfMz8sUN7pqqaJnYkgsC1WmL
 0.00000400 BTC going to destination address mp1KQzUoDf9div7jjgon3UuqLThMSo3tmF
-Fee amount: 0.00004050
+Fee amount: 0.00004040
 
 Signing with private keys: 
 cSfvoUsWWZ81M4qGYciPHdNxHXQxPEsXBdGWjYdchpisPabtiKVQ
@@ -109,8 +109,8 @@ Calculating transaction...
 Final fee rate: 10.00 satoshis per vbyte
 
 Raw signed transaction (hex):
-02000000019ad12e12b76004389c5cf5b9f0e436880876958c2ebedad7fb301ff23a767d4701000000fd1e010047304402205dd0f425189a389d65a537f0dddd1a7032c6d60b112186cfc292cfd96a20578e0220412d14b40a3bff078218ce948b66318f0f21dcfccaa157e18bc90b0868296be70147304402203a2b20aeccd8ea78fe0170baa6a3ee6c308553ca0a0d51e45b5154e3c4f7c683022046f65a618250b3fb9dec4cba267c0e4cccea219cdd97123fee1c5ac557e60fe1014c8b52210277f15f22aeffaf3f3bc48a280a767f7c6af21276783c09ff3bcaabbece178113210203f642223bc751e125ab604ed20c544e933eb82a19201f90bda6236a9ddbedac21026895f3ed01c09025ba9cfab7b67d699e3ebaceada0beff70bc72c7f10df2d1c621039f3cb152130c241e01b9220a147f69f7111b830def35b510973ab47bb9af7ff654aeffffffff02440200000000000017a914606fb72624603795d73b911a729d88f95f9b6ac88790010000000000001600146e88bd9437ce56f7800059a8d4d137f557880ccd00000000
+020000000191fd6940a7b94ff40069668e6d16af3afbbde5e636c9dfe894a1e54afa63e99101000000fd1e010047304402207017e0e4d4c26cc7ffe928ca51ee79f0f8d7d2de5fbc008847f9a400c0a27df9022031a84af21d92e8d9e28d70f86f15c964922c4ddb29fad0b5fa3b7e8fd84b302b0147304402200091b634fc996d9fb5304cacfb48acd9a13183f2a2b237d158fccf8a4a54f6aa02204b6c0c7cd2a992bd856170b393263b7c097028e18296064ed06348ed6ad76946014c8b52210277f15f22aeffaf3f3bc48a280a767f7c6af21276783c09ff3bcaabbece178113210203f642223bc751e125ab604ed20c544e933eb82a19201f90bda6236a9ddbedac21026895f3ed01c09025ba9cfab7b67d699e3ebaceada0beff70bc72c7f10df2d1c621039f3cb152130c241e01b9220a147f69f7111b830def35b510973ab47bb9af7ff654aeffffffff02440200000000000017a914606fb72624603795d73b911a729d88f95f9b6ac88790010000000000001600146e88bd9437ce56f7800059a8d4d137f557880ccd00000000
 
 Transaction fingerprint (md5):
-6f8c40f196816b0987af32a300b83cd3
+eb79314ad1d87e8e575e8a8694bc6799
 QR code for transaction written to transaction.png

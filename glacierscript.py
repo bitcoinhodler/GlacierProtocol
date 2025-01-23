@@ -262,7 +262,7 @@ class GlacierFatal(Exception):
 ################################################################################################
 
 
-def ensure_bitcoind_running(*extra_args, descriptors=False):
+def ensure_bitcoind_running(*extra_args):
     """
     Start bitcoind (if it's not already running) and ensure it's functioning properly.
     """
@@ -279,59 +279,74 @@ def ensure_bitcoind_running(*extra_args, descriptors=False):
         if bitcoin_cli.call("getnetworkinfo") == 0:
             # v25.0 changed "warnings" field in createwallet/loadwallet
             require_minimum_bitcoind_version(250000)
-            create_default_wallet(descriptors=descriptors)
-            ensure_expected_wallet(descriptors=descriptors)
             return
         time.sleep(0.5)
 
     raise Exception("Timeout while starting bitcoin server")  # pragma: no cover
 
 
-def create_default_wallet(descriptors=False):
-    """
-    Ensure our wallet exists and is loaded.
-    """
-    # Anything other than "" requires -rpcwallet= on every bitcoin-cli call:
-    wallet_name = ""
-    loaded_wallets = bitcoin_cli.json("listwallets")
-    if wallet_name in loaded_wallets:
-        return  # our wallet already loaded
-    all_wallets = bitcoin_cli.json("listwalletdir")
-    # {
-    #     "wallets": [
-    #         {
-    #             "name": ""
-    #         }
-    #     ]
-    # }
-    found = any(w["name"] == wallet_name for w in all_wallets["wallets"])
-    cmd = ["loadwallet", wallet_name] if found else \
-        [
-            "-named",
-            "createwallet",
-            "wallet_name=" + wallet_name,
-            "descriptors=" + ("true" if descriptors else "false"),
-            "blank=true",
-        ]
-    loaded_wallet = bitcoin_cli.json(*cmd)
-    if "warnings" in loaded_wallet \
-       and (len(loaded_wallet["warnings"]) != 1 or
-            not loaded_wallet["warnings"][0].startswith("Wallet created successfully")):
-        raise Exception("problem running {} on default wallet".format(cmd))  # pragma: no cover
+class BitcoinWallet:
+    """Manage a wallet from bitcoind.
 
+    This is useful because some of our wallet usage requires a wallet
+    with disable_private_keys=True, so we need to juggle multiple
+    wallets.
 
-def ensure_expected_wallet(descriptors=False):
     """
-    Ensure the expected wallet exists and is the expected type.
 
-    Descriptor wallets are the future but will take some work to
-    support throughout Glacier.
-    """
-    info = bitcoin_cli.json("getwalletinfo")
-    if info.get("descriptors", False) != descriptors:
-        if descriptors:
+    def __init__(self, name, *, watchonly=False):
+        """Load wallet, or create new one if it doesn't exist."""
+        self.name = name
+        self._create_wallet(watchonly=watchonly)
+        self._ensure_expected_wallet()
+
+    def json(self, *args):
+        """Return decoded JSON from a bitcoin-cli call."""
+        return bitcoin_cli.json("-rpcwallet=" + self.name, *args)
+
+    def checkoutput(self, *args):
+        """Run bitcoin-cli and ensure success."""
+        return bitcoin_cli.checkoutput("-rpcwallet=" + self.name, *args)
+
+    def _create_wallet(self, watchonly=False):
+        """
+        Ensure our wallet exists and is loaded.
+        """
+        # Anything other than "" requires -rpcwallet= on every bitcoin-cli call:
+        wallet_name = self.name
+        loaded_wallets = bitcoin_cli.json("listwallets")
+        if wallet_name in loaded_wallets:
+            return  # our wallet already loaded
+        all_wallets = bitcoin_cli.json("listwalletdir")
+        # {
+        #     "wallets": [
+        #         {
+        #             "name": ""
+        #         }
+        #     ]
+        # }
+        found = any(w["name"] == wallet_name for w in all_wallets["wallets"])
+        cmd = ["loadwallet", wallet_name] if found else \
+            [
+                "-named",
+                "createwallet",
+                "wallet_name=" + wallet_name,
+                "disable_private_keys=" + ("true" if watchonly else "false"),
+                "blank=true",
+            ]
+        loaded_wallet = bitcoin_cli.json(*cmd)
+        if "warnings" in loaded_wallet \
+           and (len(loaded_wallet["warnings"]) != 1 or
+                not loaded_wallet["warnings"][0].startswith("Wallet created successfully")):
+            raise Exception("problem running {} on default wallet".format(cmd))  # pragma: no cover
+
+    def _ensure_expected_wallet(self):
+        """
+        Ensure the expected wallet exists and is the expected type.
+        """
+        info = self.json("getwalletinfo")
+        if info.get("descriptors", False) != True:
             raise Exception("default wallet is a legacy wallet; expected a descriptor wallet")
-        raise Exception("default wallet is a descriptor wallet; expected a legacy wallet")
 
 
 def require_minimum_bitcoind_version(min_version):
@@ -531,6 +546,7 @@ class BaseWithdrawalXact:
         self.segwit = self._validate_address()
         self.sigsrequired, self._pubkeys = self._find_pubkeys()
         self.fee = None  # not yet known
+        self.wallet = BitcoinWallet("offline-wallet")
 
     def add_key(self, privkey):
         """
@@ -563,7 +579,7 @@ class BaseWithdrawalXact:
                 return True
         raise GlacierFatal("Redemption script does not match cold storage address. Doublecheck for typos")
 
-    def teach_address_to_wallet(self, how="importdescriptors"):
+    def teach_address_to_wallet(self, how="importdescriptors", wallet=None):
         """
         Teach the bitcoind wallet about our multisig address.
 
@@ -587,7 +603,8 @@ class BaseWithdrawalXact:
         if len(priv_for_pub) < len(keys):
             # Avoid warning about "Some private keys are missing[...]"
             import_this["watchonly"] = True
-        results = bitcoin_cli.json(how, jsonstr([import_this]))
+        wallet = wallet if wallet else self.wallet
+        results = wallet.json(how, jsonstr([import_this]))
         if len(results) != 1:
             raise Exception("How did wallet import not return exactly 1 result?")
         result = results[0]
@@ -650,7 +667,7 @@ class ManualWithdrawalXact(BaseWithdrawalXact):
             "0",  # locktime
             "false",  # replaceable
         ).strip()
-        signed_tx = bitcoin_cli.json(
+        signed_tx = self.wallet.json(
             "signrawtransactionwithwallet",
             tx_unsigned_hex, prev_txs)
         return signed_tx
@@ -816,7 +833,7 @@ class PsbtWithdrawalXact(BaseWithdrawalXact):
         """
         if destinations != self.destinations:
             raise GlacierFatal("unable to change destinations of PSBT")  # pragma: no cover
-        prcs = bitcoin_cli.json("walletprocesspsbt", self.psbt_raw, 'true', 'ALL', 'false')
+        prcs = self.wallet.json("walletprocesspsbt", self.psbt_raw, 'true', 'ALL', 'false')
         if expect_complete != prcs['complete']:
             if expect_complete:
                 raise GlacierFatal("Expected PSBT to be complete by now")  # pragma: no cover
@@ -1101,8 +1118,6 @@ def entropy(count, length):
     """
     Generate n random strings for the user from /dev/random.
     """
-    safety_checklist()
-
     print("\n\n")
     print("Making {} random data strings....".format(count))
     print("If strings don't appear right away, please continually move your mouse cursor. These movements generate entropy which is used to create random data.\n")
@@ -1151,9 +1166,6 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
     rng_seed_length: <int> minimum length of random seed required
     p2wsh: if True, generate p2wsh instead of p2wsh-in-p2sh
     """
-    safety_checklist()
-    ensure_bitcoind_running(descriptors=True)
-
     print("\n")
     print("Creating {0}-of-{1} cold storage address.\n".format(nrequired, nkeys))
 
@@ -1174,12 +1186,13 @@ def deposit_interactive(nrequired, nkeys, dice_seed_length=62, rng_seed_length=2
     # We still need the wallet in order to find the redeem script.
     # Even though user doesn't really need redeem script anymore if they're
     # using a PSBT flow.
-    bitcoin_cli.json("importdescriptors", jsonstr([{
+    wallet = BitcoinWallet("offline-wallet")
+    wallet.json("importdescriptors", jsonstr([{
         'desc': desc_with_privkeys,
         'timestamp': 'now',
         'watchonly': True,
     }]))
-    ainfo = bitcoin_cli.json("getaddressinfo", address)
+    ainfo = wallet.json("getaddressinfo", address)
     script = ainfo["embedded"]["hex"] if "embedded" in ainfo else ainfo["hex"]
 
     print("Private keys:")
@@ -1263,9 +1276,6 @@ class BaseWithdrawalBuilder(metaclass=ABCMeta):
 
         All data required for transaction construction is input at the terminal
         """
-        safety_checklist()
-        ensure_bitcoind_running(descriptors=True)
-
         approve = False
 
         while not approve:
@@ -1508,12 +1518,16 @@ def main():
         parser.print_usage()
         raise GlacierFatal("you must specify a subcommand")
 
-    bitcoin_cli.verbose_mode = args.verbose
-
-    set_network_params(args.testnet, args.regtest)
+    safety_checklist()
 
     if args.program == "entropy":
         entropy(args.num_keys, args.rng)
+        return
+
+    # Remaining subcommands all require bitcoind
+    bitcoin_cli.verbose_mode = args.verbose
+    set_network_params(args.testnet, args.regtest)
+    ensure_bitcoind_running()
 
     if args.program == "create-deposit-data":
         deposit_interactive(args.m, args.n, args.dice, args.rng, args.p2wsh)

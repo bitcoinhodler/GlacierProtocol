@@ -45,6 +45,24 @@ glacierscript.wif_prefix = "EF"
 
 MIN_FEE = Decimal("0.00010000")
 
+regtest_wallet = None
+
+
+def create_regtest_wallet():
+    """Create global BitcoinWallet object for online wallet."""
+    global regtest_wallet
+    regtest_wallet = glacierscript.BitcoinWallet("sim-online-wallet")
+
+
+def initialize_regtest_wallet():
+    """Initialize a new blank wallet with a predictable set of keys."""
+    # This file was created by createwallet+listdescriptors. Hand-edited to
+    # leave only the array of descriptors, and change all timestamps to "now".
+    filename = os.path.join(os.path.dirname(__file__), "sim-online-wallet.descriptors")
+    with open(filename, "rt") as infile:
+        walletdescs = infile.read()
+    regtest_wallet.checkoutput("importdescriptors", walletdescs)
+
 
 def start(args, *, mine_txjson=True):
     """Run the `start` subcommand to load bitcoind."""
@@ -53,8 +71,8 @@ def start(args, *, mine_txjson=True):
     stop(None)
     os.makedirs('bitcoin-online-data')
     glacierscript.ensure_bitcoind_running('-txindex')
-    # This seed comes from a new wallet I once made:
-    bitcoin_cli.checkoutput("sethdseed", "true", "cNGZqmpNeUvJ5CNTeJKc6Huz2N9paoifVDxAC9JuxJEkH6DUdtEZ")
+    create_regtest_wallet()
+    initialize_regtest_wallet()
     mine_block(101)  # 101 so we have some coinbase outputs that are spendable
     if not mine_txjson:
         return
@@ -123,7 +141,10 @@ class PsbtCreator(metaclass=ABCMeta):
 
     def __init__(self, xact, trim):
         """Create new instance."""
-        xact.teach_address_to_wallet("importmulti")
+        self.watchonly_wallet = glacierscript.BitcoinWallet(
+            "sim-online-watch-wallet", watchonly=True)
+        xact.teach_address_to_wallet("importdescriptors",
+                                     wallet=self.watchonly_wallet)
         self.xact = xact
         self.trim = trim
 
@@ -173,8 +194,9 @@ class PsbtCreator(metaclass=ABCMeta):
             '0',  # locktime
             'false',  # replaceable
         ).strip()
-        bitcoin_cli.checkoutput("lockunspent", 'false', glacierscript.jsonstr(newinputs))
-        results = bitcoin_cli.json("walletprocesspsbt", createpsbt, 'false', 'ALL', 'false')
+        regtest_wallet.checkoutput("lockunspent", 'false', glacierscript.jsonstr(newinputs))
+        intermed = regtest_wallet.json("walletprocesspsbt", createpsbt, 'false', 'ALL', 'false')['psbt']
+        results = self.watchonly_wallet.json("walletprocesspsbt", intermed, 'false', 'ALL', 'false')
         return trim_psbt.strip(results['psbt']) if self.trim else results['psbt']
 
 
@@ -309,7 +331,7 @@ def mine_block(count=1):
     """
     Mine one or more blocks in our regtest blockchain.
     """
-    adrs = bitcoin_cli.checkoutput("getnewaddress", '', 'p2sh-segwit').strip()
+    adrs = regtest_wallet.checkoutput("getnewaddress", '', 'p2sh-segwit').strip()
     bitcoin_cli.json("generatetoaddress", "{}".format(count), adrs)
 
 
@@ -332,13 +354,13 @@ def create_input2(amount, *, addresstype='bech32', dest=None):
     """
     # Sort for stability...the order of transactions in listunspent
     # can be nondeterministic in v24.0
-    unspents = sorted(bitcoin_cli.json("listunspent"), key=itemgetter("txid", "vout"))
+    unspents = sorted(regtest_wallet.json("listunspent"), key=itemgetter("txid", "vout"))
     # Choose first unspent that's large enough. There should always be one because of
     # all our coinbase outputs of 50.0 BTC
     inputtx = next(unspent for unspent in unspents
                    if unspent["amount"] >= amount + MIN_FEE and unspent["spendable"])
-    change_adrs = bitcoin_cli.checkoutput("getnewaddress", '', addresstype).strip()
-    dest_adrs = dest or bitcoin_cli.checkoutput("getnewaddress", '', addresstype).strip()
+    change_adrs = regtest_wallet.checkoutput("getnewaddress", '', addresstype).strip()
+    dest_adrs = dest or regtest_wallet.checkoutput("getnewaddress", '', addresstype).strip()
     outputs = [
         {dest_adrs: amount}
     ]
@@ -373,14 +395,13 @@ def build_one_input2(vin, amount_btc):
 
     # The input could also be a multisig p2sh, or any other crazy
     # thing, but I don't think we need to support that.
-
     scriptsigs = {
         # Standard P2PKH: sig pubkey
-        'legacy': r'sig: [0-9a-f]{140,144}\[ALL\] [0-9a-f]{66} witness: None',
+        'legacy': r'sig: [0-9a-f]{138,144}\[ALL\] [0-9a-f]{66} witness: None',
         # P2WPKH-in-P2SH: (we won't always have the witness sigs, if it's a PSBT)
-        'p2sh-segwit': r'sig: [0-9a-f]{44} witness: (None|[0-9a-f]{140,144} [0-9a-f]{66})',
+        'p2sh-segwit': r'sig: [0-9a-f]{44} witness: (None|[0-9a-f]{138,144} [0-9a-f]{66})',
         # P2WPKH:
-        'bech32': r'sig:  witness: (None|[0-9a-f]{140,144} [0-9a-f]{66})',
+        'bech32': r'sig:  witness: (None|[0-9a-f]{138,144} [0-9a-f]{66})',
     }
     witness = " ".join(vin["txinwitness"]) if "txinwitness" in vin else "None"
     vin_sig = "sig: {} witness: {}".format(vin["scriptSig"]["asm"], witness)
@@ -436,7 +457,7 @@ def build_one_inp_output(cold_address, vout):
     if vout["scriptPubKey"]["type"] not in type_conversion:
         raise NotImplementedError("unrecognized scriptPubKey type in vout: {}".format(vout))
     addr_type = type_conversion[vout["scriptPubKey"]["type"]]
-    change_adrs = bitcoin_cli.checkoutput("getnewaddress", '', addr_type).strip()
+    change_adrs = regtest_wallet.checkoutput("getnewaddress", '', addr_type).strip()
     return {change_adrs: vout["value"]}
 
 
@@ -496,7 +517,7 @@ def create_and_mine(inputs, outputs):
                                     "0",  # locktime
                                     "false",  # replaceable
                                     ).strip()
-    signedtx = bitcoin_cli.json("signrawtransactionwithwallet", rawtx)
+    signedtx = regtest_wallet.json("signrawtransactionwithwallet", rawtx)
     if not signedtx["complete"]:
         raise ValueError("unable to sign transaction")
     try:
@@ -537,6 +558,7 @@ def submit(args):
     decoded_tx = ""
     if 'psbt' in found:
         decoded_tx += "\n".join(bitcoin_cli.checkoutput("decodepsbt", p) for p in found['psbt'])
+    create_regtest_wallet()
     if 'rawtx' in found:
         if len(found['rawtx']) != 1:
             raise RuntimeError("How did we find more than one rawtx?")
