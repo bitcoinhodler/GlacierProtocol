@@ -298,7 +298,7 @@ class BitcoinWallet:
         """Load wallet, or create new one if it doesn't exist."""
         self.name = name
         self._create_wallet(watchonly=watchonly)
-        self._ensure_expected_wallet(descriptors=True)
+        self._ensure_expected_wallet()
 
     def json(self, *args):
         """Return decoded JSON from a bitcoin-cli call."""
@@ -341,18 +341,13 @@ class BitcoinWallet:
                 not loaded_wallet["warnings"][0].startswith("Wallet created successfully")):
             raise Exception("problem running {} on default wallet".format(cmd))  # pragma: no cover
 
-    def _ensure_expected_wallet(self, descriptors=False):
+    def _ensure_expected_wallet(self):
         """
         Ensure the expected wallet exists and is the expected type.
-
-        Descriptor wallets are the future but will take some work to
-        support throughout Glacier.
         """
         info = self.json("getwalletinfo")
-        if info.get("descriptors", False) != descriptors:
-            if descriptors:
-                raise Exception("default wallet is a legacy wallet; expected a descriptor wallet")
-            raise Exception("default wallet is a descriptor wallet; expected a legacy wallet")
+        if info.get("descriptors", False) != True:
+            raise Exception("default wallet is a legacy wallet; expected a descriptor wallet")
 
 
 def require_minimum_bitcoind_version(min_version):
