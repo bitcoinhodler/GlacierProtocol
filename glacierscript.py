@@ -331,7 +331,6 @@ class BitcoinWallet:
                 "-named",
                 "createwallet",
                 "wallet_name=" + wallet_name,
-                "descriptors=true",
                 "disable_private_keys=" + ("true" if watchonly else "false"),
                 "blank=true",
             ]
