@@ -1,0 +1,20 @@
+#!/bin/bash
+set -e
+
+# Test withdrawing from transaction that also has a taproot output.
+# We send our withdrawal to a taproot output too.
+
+$GLACIERSCRIPT --regtest=$1 sign-psbt << INPUT 2>&1
+y
+y
+y
+y
+y
+y
+../../t/sign-psbt.taproot-input.psbt
+y
+2
+cNYaH3onqrdMffpznhMMmrHn34fuTU59w5j8LM3H42VPcUsLeXy5
+cRoydfinDRzzRQJp5niqJWukSYTfPJQM6ytqGN6nzonaz1mafgwD
+y
+INPUT

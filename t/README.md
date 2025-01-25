@@ -88,7 +88,7 @@ $ make COVERAGE=1; firefox coverage-report/index.html
 | `sequential-sign-samekey`  | PSBT only| | Sequential signing (one key at a time), second run signing PSBT created by first, using same key |
 | `sequential-sign-serial`   | PSBT only| | Sequential signing (one key at a time), second run signing PSBT created by first |
 | `sequential-sign-3-of-5`   | PSBT only| | Sequential signing (one key at a time), second run signing PSBT created by first, third run signing PSBT created by second |
-| `taproot-input`            | CWD only (for now)| | Input with a taproot output to a taproot destination |
+| `taproot-input`            | Both     | | Input with a taproot output to a taproot destination |
 | `too-few-keys`             | CWD only | | Not enough private keys provided (PSBT covered under sequential-sign-*) |
 | `uncompressed`             | Both     | | Basic p2sh with uncompressed keys (original Glacier release) |
 | `witness-then-non-witness` | PSBT only| | psbt with 1st input witness, 2nd non-witness |
