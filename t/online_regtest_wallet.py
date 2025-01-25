@@ -453,6 +453,7 @@ def build_one_inp_output(cold_address, vout):
         'pubkeyhash': 'legacy',
         'scripthash': 'p2sh-segwit',  # not necessarily true, but Glacier can't tell the difference
         'witness_v0_keyhash': 'bech32',
+        'witness_v1_taproot': 'bech32m',
     }
     if vout["scriptPubKey"]["type"] not in type_conversion:
         raise NotImplementedError("unrecognized scriptPubKey type in vout: {}".format(vout))
