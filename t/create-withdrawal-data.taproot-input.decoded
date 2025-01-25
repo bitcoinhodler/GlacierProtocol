@@ -1,0 +1,39 @@
+{
+  "txid": "362cd0baa47c4110b2338c5bb1515d0e88fc52c4caf2b4d643211d252492a127",
+  "hash": "e5c93c0b1498cfc1b9ccf6827fdfc07f6d4966af738a5c985ef39f1136cf03d9",
+  "version": 2,
+  "size": 382,
+  "vsize": 166,
+  "weight": 664,
+  "locktime": 0,
+  "vin": [
+    {
+      "txid": "a7337a2850a4425df3e4fe7e4f86d7f2403cf11179657ade795027593e466c8e",
+      "vout": 1,
+      "scriptSig": {
+        "asm": "",
+        "hex": ""
+      },
+      "txinwitness": [
+        "",
+        "30440220671e76c42685bfe60fff09ebb8a6ac98ed2bbb65b3bfcec747be665a7005254c02201297fcf91b3a806b19eb992034418c416306868886a5716aae9a273cd371101701",
+        "304402201000e16d75f896688ce4e2e16ad798aa05f2890ab279f10686647f885d66c2a90220444c7d9199b54e8af91b3f66a3330ba25c09425daf7d7a0e9078b980222641c501",
+        "522103d14ddcfb6817f5579695bbb3eb3e185887bf2942b031e6f716343b8fe7e9e8e221028fcd46f8614b2cbf318096968242a1e22bcfb6d8f2b6dc939c8c27c347b2937b210315acb550120f4cdcb460d5c49080ab508ca4ccd8dedecac22feeac8cd017d4c121022b063ee2f22f9e1982c140fe778672c683111a796dcccdbd47bb65e3d608a98354ae"
+      ],
+      "sequence": 4294967295
+    }
+  ],
+  "vout": [
+    {
+      "value": 0.00009834,
+      "n": 0,
+      "scriptPubKey": {
+        "asm": "1 901069f8e009bb67a27b47054150c60287b0af5511bb214facfebe0945114df4",
+        "desc": "rawtr(901069f8e009bb67a27b47054150c60287b0af5511bb214facfebe0945114df4)#4chsgtwg",
+        "hex": "5120901069f8e009bb67a27b47054150c60287b0af5511bb214facfebe0945114df4",
+        "address": "bcrt1pjqgxn78qpxak0gnmguz5z5xxq2rmpt64zxajznavl6lqj3g3fh6qlvaknf",
+        "type": "witness_v1_taproot"
+      }
+    }
+  ]
+}
